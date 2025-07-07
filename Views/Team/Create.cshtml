@@ -1,0 +1,16 @@
+@model LoanManagementSystem.Models.Team
+
+@{
+    ViewData["Title"] = "Create Team";
+}
+
+<div class="container mt-4">
+    <h2>Create New Team</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Team Name</label>
+            <input asp-for="TeamName" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+</div>

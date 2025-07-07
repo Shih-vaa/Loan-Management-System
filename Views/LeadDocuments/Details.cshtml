@@ -1,0 +1,6 @@
+@if (User.IsInRole("admin") || User.IsInRole("office") || User.IsInRole("calling"))
+{
+    <a class="btn btn-sm btn-outline-primary mt-2" href="/LeadDocuments/Create?leadId=@Model.LeadId">
+        📤 Upload Document
+    </a>
+}

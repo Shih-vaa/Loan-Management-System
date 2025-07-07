@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Upload Document";
+}
+
+<div class="container mt-4">
+    <h2>Upload Document</h2>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="leadId" value="@ViewBag.LeadId" />
+
+        <div class="mb-3">
+            <label for="file" class="form-label">Choose File</label>
+            <input type="file" class="form-control" name="file" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload</button>
+        <a class="btn btn-secondary" href="/Lead/Details/@ViewBag.LeadId">Back to Lead</a>
+    </form>
+</div>

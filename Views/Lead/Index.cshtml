@@ -1,0 +1,49 @@
+@model IEnumerable<LoanManagementSystem.Models.Lead>
+@{
+    ViewData["Title"] = "Leads";
+    var role = Context.Session.GetString("UserRole");
+}
+
+<div class="container mt-4">
+    <h2>Leads</h2>
+
+    @* Only Admin or Marketing can create leads *@
+    @if (User.IsInRole("admin") || User.IsInRole("marketing"))
+    {
+        <a class="btn btn-primary mb-2" asp-controller="Lead" asp-action="Create">+ New Lead</a>
+    }
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Lead Generator</th>
+                <th>Assigned To</th>
+                <th style="width: 150px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var lead in Model)
+        {
+            <tr>
+                <td>@lead.LeadId</td>
+                <td>@lead.Customer?.FullName</td>
+                <td>₹@lead.LoanAmount.ToString("N2")</td>
+                <td>@lead.Status</td>
+                <td>@lead.LeadGenerator?.FullName</td>
+                <td>@lead.AssignedUser?.FullName</td>
+                <td>
+                    <a class="btn btn-sm btn-info" asp-controller="Lead" asp-action="Details" asp-route-id="@lead.LeadId">View</a>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <a class="btn btn-sm btn-warning" asp-controller="Lead" asp-action="Edit" asp-route-id="@lead.LeadId">Edit</a>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

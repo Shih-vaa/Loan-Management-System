@@ -1,0 +1,28 @@
+@model List<LoanManagementSystem.Models.Team>
+
+@{
+    ViewData["Title"] = "Teams";
+}
+
+<div class="container mt-4">
+    <h2>Teams</h2>
+    <a href="/Team/Create" class="btn btn-primary mb-2">+ Create Team</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>ID</th><th>Name</th><th>Created By</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var team in Model)
+            {
+                <tr>
+                    <td>@team.TeamId</td>
+                    <td>@team.TeamName</td>
+                    <td>@team.Creator?.FullName</td>
+                    <td>
+                        <a href="/Team/Members/@team.TeamId" class="btn btn-sm btn-info">Manage Members</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

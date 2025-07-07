@@ -1,0 +1,39 @@
+@model LoanManagementSystem.Models.Lead
+@{
+    ViewData["Title"] = "Edit Lead";
+}
+
+<div class="container mt-4">
+    <h2>Edit Lead</h2>
+    <form method="post">
+        <input type="hidden" asp-for="LeadId" />
+
+        <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select asp-for="Status" class="form-control">
+                <option value="new">New</option>
+                <option value="assigned">Assigned</option>
+                <option value="in_process">In Process</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="disbursed">Disbursed</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Assign To</label>
+            <select asp-for="AssignedTo" class="form-control">
+                <option value="">-- Unassigned --</option>
+                @foreach (var user in ViewBag.Users)
+                {
+                    <option value="@user.UserId" selected="@(Model.AssignedTo == user.UserId ? "selected" : null)">
+                        @user.FullName (@user.Role)
+                    </option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

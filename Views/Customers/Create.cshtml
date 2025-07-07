@@ -1,0 +1,29 @@
+@model LoanManagementSystem.Models.Customer
+@{
+    ViewData["Title"] = "Create Customer";
+}
+
+<div class="container mt-4">
+    <h2>Add New Customer</h2>
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Address</label>
+            <textarea asp-for="Address" class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Create</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </form>
+</div>

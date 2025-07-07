@@ -1,0 +1,41 @@
+@model List<LoanManagementSystem.Models.LeadDocument>
+@{
+    ViewData["Title"] = "Lead Documents";
+    int leadId = ViewBag.LeadId;
+}
+
+<div class="container mt-4">
+    <h2>📁 Documents for Lead #@leadId</h2>
+    <hr />
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>File Name</th>
+                <th>Uploaded By</th>
+                <th>Uploaded At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var doc in Model)
+        {
+            <tr>
+                <td>@doc.FileName</td>
+                <td>@doc.UploadedByUser?.FullName</td>
+                <td>@doc.UploadedAt.ToString("g")</td>
+                <td>
+                    <a class="btn btn-sm btn-success" href="@doc.FilePath" target="_blank">Download</a>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <form asp-action="Delete" asp-route-id="@doc.DocId" method="post" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this document?')">Delete</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <a class="btn btn-secondary mt-3" href="/Lead/Details/@leadId">← Back to Lead</a>
+</div>
