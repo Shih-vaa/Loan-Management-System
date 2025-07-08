@@ -88,35 +88,69 @@ namespace LoanManagementSystem.Controllers
 
             return View(model);
         }
+// LeadController.cs (inside LoanManagementSystem.Controllers)
 
-        // POST: /Lead/Edit
-        [HttpPost]
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Edit(EditLeadViewModel model)
+private decimal CalculateCommissionAmount(decimal loanAmount)
+{
+    return loanAmount * 0.02M; // Example: 2% commission
+}
+
+// POST: /Lead/Edit
+[HttpPost]
+[Authorize(Roles = "admin")]
+public async Task<IActionResult> Edit(EditLeadViewModel model)
+{
+    if (!ModelState.IsValid)
+    {
+        foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
         {
-            if (!ModelState.IsValid)
-            {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine($"🔴 {error.ErrorMessage}");
-                }
-
-                ViewBag.Users = await _context.Users
-                    .Where(u => u.Role == "calling" || u.Role == "office")
-                    .ToListAsync();
-
-                return View(model);
-            }
-
-            var lead = await _context.Leads.FindAsync(model.LeadId);
-            if (lead == null) return NotFound();
-
-            lead.Status = model.Status;
-            lead.AssignedTo = model.AssignedTo;
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            Console.WriteLine($"🔴 {error.ErrorMessage}");
         }
+
+        ViewBag.Users = await _context.Users
+            .Where(u => u.Role == "calling" || u.Role == "office")
+            .ToListAsync();
+
+        return View(model);
+    }
+
+    var lead = await _context.Leads.FindAsync(model.LeadId);
+    if (lead == null) return NotFound();
+
+    // Capture old status before update
+    var previousStatus = lead.Status;
+
+    lead.Status = model.Status;
+    lead.AssignedTo = model.AssignedTo;
+
+    // ✨ Auto-generate commission if moving to approved/disbursed and not already generated
+    if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
+    {
+        bool commissionExists = await _context.Commissions
+            .AnyAsync(c => c.LeadId == lead.LeadId && c.UserId == model.AssignedTo.Value);
+
+        if (!commissionExists)
+        {
+            var commissionAmount = CalculateCommissionAmount(lead.LoanAmount); // You can customize this logic
+
+            _context.Commissions.Add(new Commission
+            {
+                LeadId = lead.LeadId,
+                UserId = model.AssignedTo.Value,
+                Amount = commissionAmount,
+                Status = "pending",
+                CalculatedAt = DateTime.UtcNow
+            });
+
+            Console.WriteLine($"💰 Commission created for Lead {lead.LeadId} assigned to User {model.AssignedTo.Value}");
+        }
+    }
+
+    await _context.SaveChangesAsync();
+    return RedirectToAction(nameof(Index));
+}
+
+
 
         // GET: /Lead/Details/{id}
         public async Task<IActionResult> Details(int id)
