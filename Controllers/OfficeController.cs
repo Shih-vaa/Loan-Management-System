@@ -5,7 +5,7 @@ using LoanManagementSystem.Helpers;
 
 namespace LoanManagementSystem.Controllers
 {
-    [Authorize(Roles = "Office")]
+    [Authorize(Roles = "office")]
     public class OfficeController : Controller
     {
         private readonly ApplicationDbContext _context;

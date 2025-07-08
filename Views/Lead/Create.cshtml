@@ -1,51 +1,40 @@
 @model LoanManagementSystem.Models.Lead
 @{
-    ViewData["Title"] = "Add Lead";
+    ViewData["Title"] = "New Lead";
 }
 
 <div class="container mt-4">
     <h2>Add New Lead</h2>
-
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger">@ViewBag.Error</div>
-    }
-
     <form method="post">
         <div class="mb-3">
             <label class="form-label">Customer</label>
-            <select asp-for="CustomerId" class="form-control"
-                asp-items='@new SelectList(ViewBag.Customers, "CustomerId", "FullName")'>
+            <select asp-for="CustomerId" class="form-control" required>
                 <option value="">-- Select Customer --</option>
+                @foreach (var customer in ViewBag.Customers)
+                {
+                    <option value="@customer.CustomerId">@customer.FullName</option>
+                }
             </select>
-            <span asp-validation-for="CustomerId" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Loan Amount</label>
-            <input asp-for="LoanAmount" class="form-control" />
-            <span asp-validation-for="LoanAmount" class="text-danger"></span>
+            <input asp-for="LoanAmount" class="form-control" required />
         </div>
 
         <div class="mb-3">
-            <select asp-for="LoanType" class="form-control">
-                <option value="">-- Select Loan Type --</option>
-                <option value="Personal Loan">Personal Loan</option>
-                <option value="Home Loan">Home Loan</option>
-                <option value="Car Loan">Car Loan</option>
-                <option value="Education Loan">Education Loan</option>
-                <option value="Business Loan">Business Loan</option>
+            <label class="form-label">Loan Type</label>
+            <select asp-for="LoanType" class="form-control" required>
+                <option value="">-- Select Type --</option>
+                <option>Home Loan</option>
+                <option>Personal Loan</option>
+                <option>Vehicle Loan</option>
+                <option>Education Loan</option>
+                <option>Business Loan</option>
             </select>
-            <span asp-validation-for="LoanType" class="text-danger"></span>
-
         </div>
 
-        <button type="submit" class="btn btn-success">Create Lead</button>
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a href="/Lead/Index" class="btn btn-secondary ms-2">Cancel</a>
     </form>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

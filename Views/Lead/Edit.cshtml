@@ -1,16 +1,19 @@
-@model LoanManagementSystem.Models.Lead
+@model LoanManagementSystem.Models.ViewModels.EditLeadViewModel
+
 @{
     ViewData["Title"] = "Edit Lead";
 }
 
 <div class="container mt-4">
-    <h2>Edit Lead</h2>
-    <form method="post">
+    <h2>Edit Lead Assignment</h2>
+
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
         <input type="hidden" asp-for="LeadId" />
 
         <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select asp-for="Status" class="form-control">
+            <label asp-for="Status" class="form-label"></label>
+            <select asp-for="Status" class="form-control" required>
                 <option value="new">New</option>
                 <option value="assigned">Assigned</option>
                 <option value="in_process">In Process</option>
@@ -21,19 +24,19 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Assign To</label>
-            <select asp-for="AssignedTo" class="form-control">
-                <option value="">-- Unassigned --</option>
+            <label asp-for="AssignedTo" class="form-label"></label>
+            <select asp-for="AssignedTo" class="form-control" required>
+                <option value="">-- Select Staff --</option>
                 @foreach (var user in ViewBag.Users)
                 {
-                    <option value="@user.UserId" selected="@(Model.AssignedTo == user.UserId ? "selected" : null)">
+                    <option value="@user.UserId" selected="@(user.UserId == Model.AssignedTo ? "selected" : null)">
                         @user.FullName (@user.Role)
                     </option>
                 }
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-success">Update Lead</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
     </form>
 </div>

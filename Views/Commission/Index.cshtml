@@ -1,0 +1,46 @@
+@model IEnumerable<LoanManagementSystem.Models.Commission>
+@{
+    ViewData["Title"] = "Commissions";
+}
+
+<div class="container mt-4">
+    <h2>Commission Records</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Lead ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Change Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var commission in Model)
+        {
+            <tr>
+                <td>@commission.CommissionId</td>
+                <td>@commission.User?.FullName (@commission.User?.Role)</td>
+                <td>@commission.LeadId</td>
+                <td>@commission.Lead?.Customer?.FullName</td>
+                <td>₹@commission.Amount</td>
+                <td>@commission.Status</td>
+                <td>
+                    <form method="post" asp-action="UpdateStatus">
+                        <input type="hidden" name="id" value="@commission.CommissionId" />
+                        <select name="status" class="form-select form-select-sm d-inline w-auto">
+                            <option value="pending" selected="@("pending" == commission.Status)">Pending</option>
+                            <option value="approved" selected="@("approved" == commission.Status)">Approved</option>
+                            <option value="paid" selected="@("paid" == commission.Status)">Paid</option>
+                        </select>
+                        <button class="btn btn-sm btn-success ms-1">Update</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -57,29 +57,38 @@ namespace LoanManagementSystem.Controllers
             return View(customer);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Customer customer)
+    [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(int id, Customer customer)
+{
+    if (id != customer.CustomerId)
+        return NotFound();
+
+    if (ModelState.IsValid)
+    {
+        try
         {
-            if (id != customer.CustomerId) return NotFound();
+            _context.Update(customer);
 
-            if (!ModelState.IsValid) return View(customer);
+            // ✅ Prevent overwriting created_at
+            _context.Entry(customer).Property(c => c.CreatedAt).IsModified = false;
 
-            try
-            {
-                _context.Update(customer);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Customers.Any(e => e.CustomerId == id))
-                    return NotFound();
-                else
-                    throw;
-            }
-
-            return RedirectToAction(nameof(Index));
+            await _context.SaveChangesAsync();
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!_context.Customers.Any(e => e.CustomerId == customer.CustomerId))
+                return NotFound();
+            else
+                throw;
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    return View(customer);
+}
+
 
         public async Task<IActionResult> Delete(int? id)
         {

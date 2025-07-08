@@ -63,13 +63,11 @@ namespace LoanManagementSystem.Data
         public DbSet<LeadDocument> LeadDocuments { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<TeamMember> TeamMembers { get; set; }
+        public DbSet<Commission> Commissions { get; set; }
 
 
         // === Future modules ===
-        // public DbSet<Team> Teams { get; set; }
-        // public DbSet<TeamMember> TeamMembers { get; set; }
-        // public DbSet<LeadDocument> LeadDocuments { get; set; }
-        // public DbSet<Commission> Commissions { get; set; }
+
         // public DbSet<Notification> Notifications { get; set; }
         // public DbSet<AuditLog> AuditLogs { get; set; }
     }

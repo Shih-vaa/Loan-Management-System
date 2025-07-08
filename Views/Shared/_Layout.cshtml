@@ -12,89 +12,102 @@
 
 <body>
     <header>
-        
-<nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-    <div class="container-fluid">
-        <a class="navbar-brand" asp-controller="Home" asp-action="Index">LoanManagementSystem</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                </li>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">LoanManagementSystem</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                    aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-                @if (User.Identity?.IsAuthenticated ?? false)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark">Hi, @User.Identity.Name</a>
-                    </li>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav me-auto mb-2 mb-sm-0">
+                        @* <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+                        </li> *@
 
-                    @* 🧭 Role Dashboards *@
-                    @if (User.IsInRole("admin"))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
-                        </li>
-                    }
-                    @if (User.IsInRole("marketing"))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Marketing" asp-action="Dashboard">Marketing Dashboard</a>
-                        </li>
-                    }
-                    @if (User.IsInRole("calling"))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Calling" asp-action="Dashboard">Calling Dashboard</a>
-                        </li>
-                    }
-                    @if (User.IsInRole("office"))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Office" asp-action="Dashboard">Office Dashboard</a>
-                        </li>
-                    }
 
-                    @* 📁 Feature links by role *@
-                    @if (User.IsInRole("admin") || User.IsInRole("office"))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Customers" asp-action="Index">Customers</a>
-                        </li>
-                    }
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark">Hi, @User.Identity.Name</a>
+                            </li>
 
-                    @if (User.IsInRole("admin"))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Team" asp-action="Index">Teams</a>
-                        </li>
-                    }
+                            @* 🧭 Role Dashboards *@
+                            @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin
+                                        Dashboard</a>
+                                </li>
+                            }
 
-                    @* 📋 Common for all roles *@
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Lead" asp-action="Index">Leads</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Auth" asp-action="Logout">Logout</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">Login</a>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
-</nav>
+                            @if (User.IsInRole("marketing"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Marketing" asp-action="Dashboard">Marketing
+                                        Dashboard</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("calling"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Calling" asp-action="Dashboard">Calling
+                                        Dashboard</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("office"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Office" asp-action="Dashboard">Office
+                                        Dashboard</a>
+                                </li>
+                            }
+
+                            @* 📁 Feature links by role *@
+                            @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Commission" asp-action="Index">Commissions</a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("admin") || User.IsInRole("office"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Customers" asp-action="Index">Customers</a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Team" asp-action="Index">Teams</a>
+                                </li>
+                            }
+
+                            @* 📋 Common for all roles *@
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Lead" asp-action="Index">Leads</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Logout">Logout</a>
+                            </li>
+                            @* <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li> *@
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">Login</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
 
 
     </header>
