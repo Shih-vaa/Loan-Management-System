@@ -1,0 +1,50 @@
+@model LoanManagementSystem.Models.Team
+@{
+    ViewData["Title"] = "Manage Team Members";
+    var availableUsers = ViewBag.AvailableUsers as List<LoanManagementSystem.Models.User>;
+}
+
+<div class="container mt-4">
+    <h2>Manage Members of: @Model.TeamName</h2>
+
+    <h4>➕ Add New Member</h4>
+    <form method="post" asp-action="AddMember">
+        <input type="hidden" name="teamId" value="@Model.TeamId" />
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <select name="userId" class="form-select">
+                    @foreach (var user in availableUsers)
+                    {
+                        <option value="@user.UserId">@user.FullName (@user.Role)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Add Member</button>
+            </div>
+        </div>
+    </form>
+
+    <h4 class="mt-4">👥 Current Members</h4>
+    <table class="table table-bordered">
+        <thead><tr><th>Name</th><th>Role</th><th>Action</th></tr></thead>
+        <tbody>
+            @foreach (var member in Model.Members)
+            {
+                <tr>
+                    <td>@member.User?.FullName</td>
+                    <td>@member.User?.Role</td>
+                    <td>
+                        <form method="post" asp-action="RemoveMember">
+                            <input type="hidden" name="teamId" value="@Model.TeamId" />
+                            <input type="hidden" name="userId" value="@member.UserId" />
+                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a class="btn btn-secondary mt-3" asp-action="Index">Back to Teams</a>
+</div>

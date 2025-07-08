@@ -16,43 +16,44 @@ namespace LoanManagementSystem.Data
         public DbSet<Lead> Leads { get; set; }
 
         // === Fluent API Configuration ===
-       protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-    base.OnModelCreating(modelBuilder);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-    // 👉 COMPOSITE PRIMARY KEY for TeamMember
-    modelBuilder.Entity<TeamMember>()
-        .HasKey(tm => new { tm.TeamId, tm.UserId });
+            // 👉 COMPOSITE PRIMARY KEY for TeamMember
+            modelBuilder.Entity<TeamMember>()
+                .HasKey(tm => new { tm.TeamId, tm.UserId });
 
-    // (Optional) Relationships — uncomment if you’ve defined navigation properties
-    modelBuilder.Entity<TeamMember>()
-        .HasOne(tm => tm.Team)
-        .WithMany(t => t.Members) // if Team has ICollection<TeamMember> Members
-        .HasForeignKey(tm => tm.TeamId);
+            // (Optional) Relationships — uncomment if you’ve defined navigation properties
+            modelBuilder.Entity<TeamMember>()
+                .HasOne(tm => tm.Team)
+                .WithMany(t => t.Members) // if Team has ICollection<TeamMember> Members
+                .HasForeignKey(tm => tm.TeamId);
 
-    modelBuilder.Entity<TeamMember>()
-        .HasOne(tm => tm.User)
-        .WithMany() // no reverse nav, or you can define User.TeamMemberships
-        .HasForeignKey(tm => tm.UserId);
+            modelBuilder.Entity<TeamMember>()
+                .HasOne(tm => tm.User)
+                .WithMany() // no reverse nav, or you can define User.TeamMemberships
+                .HasForeignKey(tm => tm.UserId);
 
-    // Existing configurations for Lead
-    modelBuilder.Entity<Lead>()
-        .HasOne(l => l.LeadGenerator)
-        .WithMany()
-        .HasForeignKey(l => l.LeadGeneratorId)
-        .OnDelete(DeleteBehavior.Restrict);
+            // Existing configurations for Lead
+            modelBuilder.Entity<Lead>()
+                .HasOne(l => l.LeadGenerator)
+                .WithMany()
+                .HasForeignKey(l => l.LeadGeneratorId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-    modelBuilder.Entity<Lead>()
-        .HasOne(l => l.AssignedUser)
-        .WithMany()
-        .HasForeignKey(l => l.AssignedTo)
-        .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Lead>()
+                .HasOne(l => l.AssignedUser)
+                .WithMany()
+                .HasForeignKey(l => l.AssignedTo)
+                .OnDelete(DeleteBehavior.Restrict);
 
-    modelBuilder.Entity<Lead>()
-        .HasOne(l => l.Customer)
-        .WithMany()
-        .HasForeignKey(l => l.CustomerId)
-        .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Lead>()
+                .HasOne(l => l.Customer)
+                .WithMany()
+                .HasForeignKey(l => l.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+        
 }
 
 

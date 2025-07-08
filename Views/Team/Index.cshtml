@@ -9,7 +9,12 @@
     <a href="/Team/Create" class="btn btn-primary mb-2">+ Create Team</a>
     <table class="table table-bordered">
         <thead>
-            <tr><th>ID</th><th>Name</th><th>Created By</th><th>Actions</th></tr>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Created By</th>
+                <th>Actions</th>
+            </tr>
         </thead>
         <tbody>
             @foreach (var team in Model)
@@ -19,7 +24,7 @@
                     <td>@team.TeamName</td>
                     <td>@team.Creator?.FullName</td>
                     <td>
-                        <a href="/Team/Members/@team.TeamId" class="btn btn-sm btn-info">Manage Members</a>
+                        <a href="/Team/Members/@team.TeamId" class="btn btn-sm btn-primary">Manage Members</a>
                     </td>
                 </tr>
             }

@@ -1,8 +1,38 @@
 @{
-    ViewData["Title"] = "Marketing Dashboard";
+    ViewData["Title"] = "Dashboard";
+    var teams = ViewBag.TeamMemberships as List<LoanManagementSystem.Models.Team>;
+    var teammates = ViewBag.Teammates as List<LoanManagementSystem.Models.TeamMember>;
+    int currentUserId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
 }
 
-<div class="container mt-5">
-    <h2>Welcome, @ViewBag.Name (Marketing)</h2>
-    <p>This is your marketing panel. You can add and manage your leads here.</p>
+<div class="container mt-4">
+    <h2>Welcome, @ViewBag.Name!</h2>
+    <hr />
+
+    @if (teams != null && teams.Any())
+    {
+        @foreach (var team in teams)
+        {
+            <div class="mb-4">
+                <h4>Team: @team.TeamName</h4>
+                <ul class="list-group">
+                    @foreach (var member in teammates.Where(t => t.TeamId == team.TeamId))
+                    {
+                        var user = member.User;
+                        if (user != null)
+                        {
+                            <li class="list-group-item">
+                                @user.FullName (@user.Role)
+                                @(user.UserId == currentUserId ? " ← You" : "")
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted">You are not assigned to any team.</p>
+    }
 </div>

@@ -5,38 +5,76 @@
 }
 
 <div class="container mt-4">
-    <h2>Manage Members for @Model.TeamName</h2>
+    <h2 class="mb-3">Manage Members for Team: <strong>@Model.TeamName</strong></h2>
 
-    <form method="post" asp-action="AddMember">
-        <input type="hidden" name="teamId" value="@Model.TeamId" />
-        <div class="mb-3 d-flex">
-            <select class="form-select" name="userId" required>
-                @foreach (var user in allUsers)
-                {
-                    <option value="@user.UserId">@user.FullName (@user.Role)</option>
-                }
-            </select>
-            <button type="submit" class="btn btn-success ms-2">Add</button>
-        </div>
-    </form>
-
-    <table class="table table-bordered">
-        <thead><tr><th>User</th><th>Role</th><th>Action</th></tr></thead>
-        <tbody>
-        @foreach (var member in Model.Members)
+    <div class="mb-4">
+        <h5>🧑‍🤝‍🧑 Current Members</h5>
+        @if (Model.Members != null && Model.Members.Any())
         {
-            <tr>
-                <td>@member.User?.FullName</td>
-                <td>@member.User?.Role</td>
-                <td>
-                    <form method="post" asp-action="RemoveMember">
-                        <input type="hidden" name="teamId" value="@Model.TeamId" />
-                        <input type="hidden" name="userId" value="@member.UserId" />
-                        <button class="btn btn-sm btn-danger">Remove</button>
-                    </form>
-                </td>
-            </tr>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in Model.Members)
+                    {
+                        <tr>
+                            <td>@member.User.FullName</td>
+                            <td>@member.User.Email</td>
+                            <td>@member.User.Role</td>
+                            <td>
+                                <form method="post" asp-action="RemoveMember" class="d-inline">
+                                    <input type="hidden" name="teamId" value="@Model.TeamId" />
+                                    <input type="hidden" name="userId" value="@member.UserId" />
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Remove this user from team?')">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
-        </tbody>
-    </table>
+        else
+        {
+            <p class="text-muted">No members in this team yet.</p>
+        }
+    </div>
+
+    <div>
+        <h5>➕ Add New Member</h5>
+        @if (allUsers != null && allUsers.Any())
+        {
+            <form method="post" asp-action="AddMember">
+                <input type="hidden" name="teamId" value="@Model.TeamId" />
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <select name="userId" class="form-select" required>
+                            <option value="">-- Select User --</option>
+                            @foreach (var user in allUsers)
+                            {
+                                <option value="@user.UserId">@user.FullName (@user.Role)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-success">Add Member</button>
+                    </div>
+                </div>
+            </form>
+        }
+        else
+        {
+            <p class="text-muted">All users are already part of this team.</p>
+        }
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">← Back to Teams</a>
+    </div>
 </div>
