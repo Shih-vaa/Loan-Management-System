@@ -65,10 +65,10 @@ namespace LoanManagementSystem.Data
         public DbSet<TeamMember> TeamMembers { get; set; }
         public DbSet<Commission> Commissions { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
 
         // === Future modules ===
 
-        // public DbSet<Notification> Notifications { get; set; }
         // public DbSet<AuditLog> AuditLogs { get; set; }
     }
 }

@@ -16,6 +16,16 @@ namespace LoanManagementSystem.Controllers
             _context = context;
         }
 
+
+
+
+
+
+
+
+
+
+
         // GET: /Team
         public async Task<IActionResult> Index()
         {
@@ -28,11 +38,33 @@ namespace LoanManagementSystem.Controllers
             return View(teams);
         }
 
+
+
+
+
+
+
+
+
+
+
         // GET: /Team/Create
         public IActionResult Create()
         {
             return View();
         }
+
+
+
+
+
+
+
+
+
+
+
+
 
         // POST: /Team/Create
         [HttpPost]
@@ -46,6 +78,18 @@ namespace LoanManagementSystem.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+
+
+
+
+
+
+
+
+
+
+
 
         // GET: /Team/Members/{id}
         public async Task<IActionResult> Members(int id)
@@ -65,24 +109,56 @@ namespace LoanManagementSystem.Controllers
             return View(team);
         }
 
+
+
+
+
+
+
+
+
+
+
+
         // POST: /Team/AddMember
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddMember(int teamId, int userId)
+        public async Task<IActionResult> AddMember(int teamId, int userId, bool canManageLeads, bool canUploadDocs, bool canVerifyDocs)
         {
-            var exists = await _context.TeamMembers.FindAsync(teamId, userId);
-            if (exists == null)
+            var exists = await _context.TeamMembers
+                .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
+            if (exists)
             {
-                _context.TeamMembers.Add(new TeamMember
-                {
-                    TeamId = teamId,
-                    UserId = userId
-                });
-                await _context.SaveChangesAsync();
+                TempData["Error"] = "User is already part of the team.";
+                return RedirectToAction("Members", new { id = teamId });
             }
+
+            var member = new TeamMember
+            {
+                TeamId = teamId,
+                UserId = userId,
+                CanManageLeads = canManageLeads,
+                CanUploadDocs = canUploadDocs,
+                CanVerifyDocs = canVerifyDocs
+            };
+
+            _context.TeamMembers.Add(member);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Members", new { id = teamId });
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // POST: /Team/RemoveMember
         [HttpPost]

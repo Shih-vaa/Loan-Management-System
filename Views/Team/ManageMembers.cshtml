@@ -22,12 +22,31 @@
             <div class="col-md-4">
                 <button type="submit" class="btn btn-primary">Add Member</button>
             </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="canManageLeads" value="true" id="leadsCheck">
+                <label class="form-check-label" for="leadsCheck">Can Manage Leads</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="canUploadDocs" value="true" id="uploadCheck">
+                <label class="form-check-label" for="uploadCheck">Can Upload Docs</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="canVerifyDocs" value="true" id="verifyCheck">
+                <label class="form-check-label" for="verifyCheck">Can Verify Docs</label>
+            </div>
+
         </div>
     </form>
 
     <h4 class="mt-4">👥 Current Members</h4>
     <table class="table table-bordered">
-        <thead><tr><th>Name</th><th>Role</th><th>Action</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+        </thead>
         <tbody>
             @foreach (var member in Model.Members)
             {

@@ -17,11 +17,11 @@ namespace LoanManagementSystem.Models
 
         [Required]
         [Column("file_name")]
-        public string FileName { get; set; }
+        public required string FileName { get; set; }
 
         [Required]
         [Column("file_path")]
-        public string FilePath { get; set; }
+        public required string FilePath { get; set; }
 
         [Column("document_type")]
         public string? DocumentType { get; set; }
