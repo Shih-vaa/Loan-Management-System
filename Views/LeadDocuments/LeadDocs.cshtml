@@ -1,41 +1,40 @@
 @model List<LoanManagementSystem.Models.LeadDocument>
 @{
-    ViewData["Title"] = "Lead Documents";
+    ViewData["Title"] = "Documents for Lead";
     int leadId = ViewBag.LeadId;
 }
 
-<div class="container mt-4">
-    <h2>📁 Documents for Lead #@leadId</h2>
-    <hr />
-    <table class="table table-bordered table-striped">
-        <thead class="table-light">
-            <tr>
-                <th>File Name</th>
-                <th>Uploaded By</th>
-                <th>Uploaded At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+<h3>Uploaded Documents for Lead @leadId</h3>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>File</th>
+            <th>Uploaded By</th>
+            <th>Status</th>
+            <th>Uploaded At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
         @foreach (var doc in Model)
         {
             <tr>
-                <td>@doc.FileName</td>
+                <td>@doc.DocumentType</td>
+                <td><a href="@doc.FilePath" target="_blank">@doc.FileName</a></td>
                 <td>@doc.UploadedByUser?.FullName</td>
+                <td>@doc.Status</td>
                 <td>@doc.UploadedAt.ToString("g")</td>
                 <td>
-                    <a class="btn btn-sm btn-success" href="@doc.FilePath" target="_blank">Download</a>
-                    @if (User.IsInRole("admin"))
-                    {
-                        <form asp-action="Delete" asp-route-id="@doc.DocId" method="post" style="display:inline">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this document?')">Delete</button>
-                        </form>
-                    }
+                    <form asp-action="Delete" method="post" asp-controller="LeadDocuments">
+                        <input type="hidden" name="id" value="@doc.DocId" />
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
                 </td>
             </tr>
         }
-        </tbody>
-    </table>
+    </tbody>
+</table>
 
-    <a class="btn btn-secondary mt-3" href="/Lead/Details/@leadId">← Back to Lead</a>
-</div>
+<a class="btn btn-secondary" href="/Lead/Details/@leadId">Back to Lead</a>

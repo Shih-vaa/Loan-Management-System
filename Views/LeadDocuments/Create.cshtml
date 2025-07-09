@@ -2,17 +2,27 @@
     ViewData["Title"] = "Upload Document";
 }
 
-<div class="container mt-4">
-    <h2>Upload Document</h2>
-    <form method="post" enctype="multipart/form-data">
-        <input type="hidden" name="leadId" value="@ViewBag.LeadId" />
+<h2>Upload Document</h2>
 
-        <div class="mb-3">
-            <label for="file" class="form-label">Choose File</label>
-            <input type="file" class="form-control" name="file" required />
-        </div>
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="leadId" value="@ViewBag.LeadId" />
 
-        <button type="submit" class="btn btn-primary">Upload</button>
-        <a class="btn btn-secondary" href="/Lead/Details/@ViewBag.LeadId">Back to Lead</a>
-    </form>
-</div>
+    <div class="mb-3">
+        <label class="form-label">Document Type</label>
+        <select name="documentType" class="form-control" required>
+            <option value="">-- Select --</option>
+            <option value="Aadhaar">Aadhaar</option>
+            <option value="PAN">PAN</option>
+            <option value="Bank Statement">Bank Statement</option>
+            <option value="Salary Slip">Salary Slip</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Select File</label>
+        <input type="file" name="file" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+    <a class="btn btn-secondary ms-2" href="/Lead/Details/@ViewBag.LeadId">Back</a>
+</form>

@@ -39,5 +39,8 @@ namespace LoanManagementSystem.Models
 
         [ForeignKey("CustomerId")]
         public Customer? Customer { get; set; }
+        // Lead.cs
+        public virtual ICollection<LeadDocument>? Documents { get; set; }
+
     }
 }

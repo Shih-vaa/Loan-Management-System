@@ -1,0 +1,47 @@
+@model List<LoanManagementSystem.Models.LeadDocument>
+
+@{
+    ViewData["Title"] = "Document Verification";
+}
+
+<div class="container mt-4">
+    <h2>Review Uploaded Documents</h2>
+    <hr />
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Document Type</th>
+                <th>File</th>
+                <th>Uploaded By</th>
+                <th>Status</th>
+                <th>Remarks</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var doc in Model)
+        {
+            <tr>
+                <td>@doc.DocumentType</td>
+                <td><a href="@doc.FilePath" target="_blank">@doc.FileName</a></td>
+                <td>@doc.UploadedByUser?.FullName</td>
+                <td>@doc.Status</td>
+
+                <td colspan="2">
+                    <form method="post" asp-action="Verify">
+                        <input type="hidden" name="id" value="@doc.DocId" />
+                        <div class="mb-2">
+                            <textarea name="remarks" class="form-control" placeholder="Optional remarks" rows="2"></textarea>
+                        </div>
+                        <button type="submit" name="status" value="approved" class="btn btn-success btn-sm me-2">Approve</button>
+                        <button type="submit" name="status" value="rejected" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <a class="btn btn-secondary" href="/Lead/Details/@ViewBag.LeadId">← Back to Lead</a>
+</div>

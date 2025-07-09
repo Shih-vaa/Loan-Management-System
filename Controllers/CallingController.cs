@@ -5,7 +5,7 @@ using LoanManagementSystem.Helpers;
 
 namespace LoanManagementSystem.Controllers
 {
-    [Authorize(Roles = "Calling")]
+    [Authorize(Roles = "calling")]
     public class CallingController : Controller
     {
         private readonly ApplicationDbContext _context;

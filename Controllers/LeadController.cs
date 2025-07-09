@@ -20,6 +20,20 @@ namespace LoanManagementSystem.Controllers
             _logger = logger;
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // GET: /Lead
         public async Task<IActionResult> Index()
         {
@@ -40,6 +54,23 @@ namespace LoanManagementSystem.Controllers
             return View(await leads.ToListAsync());
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // GET: /Lead/Create
         [Authorize(Roles = "admin,marketing")]
         public IActionResult Create()
@@ -47,6 +78,15 @@ namespace LoanManagementSystem.Controllers
             ViewBag.Customers = _context.Customers.ToList();
             return View();
         }
+
+
+
+
+
+
+
+
+
 
         // POST: /Lead/Create
         [HttpPost]
@@ -68,6 +108,16 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+
+
+
+
+
+
+
+
+
         // GET: /Lead/Edit/{id}
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int id)
@@ -88,80 +138,108 @@ namespace LoanManagementSystem.Controllers
 
             return View(model);
         }
-// LeadController.cs (inside LoanManagementSystem.Controllers)
+        // LeadController.cs (inside LoanManagementSystem.Controllers)
 
-private decimal CalculateCommissionAmount(decimal loanAmount)
-{
-    return loanAmount * 0.02M; // Example: 2% commission
-}
 
-// POST: /Lead/Edit
-[HttpPost]
-[Authorize(Roles = "admin")]
-public async Task<IActionResult> Edit(EditLeadViewModel model)
-{
-    if (!ModelState.IsValid)
-    {
-        foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+
+
+
+
+
+
+
+
+        private decimal CalculateCommissionAmount(decimal loanAmount)
         {
-            Console.WriteLine($"🔴 {error.ErrorMessage}");
+            return loanAmount * 0.02M; // Example: 2% commission
         }
 
-        ViewBag.Users = await _context.Users
-            .Where(u => u.Role == "calling" || u.Role == "office")
-            .ToListAsync();
 
-        return View(model);
-    }
 
-    var lead = await _context.Leads.FindAsync(model.LeadId);
-    if (lead == null) return NotFound();
 
-    // Capture old status before update
-    var previousStatus = lead.Status;
 
-    lead.Status = model.Status;
-    lead.AssignedTo = model.AssignedTo;
 
-    // ✨ Auto-generate commission if moving to approved/disbursed and not already generated
-    if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
-    {
-        bool commissionExists = await _context.Commissions
-            .AnyAsync(c => c.LeadId == lead.LeadId && c.UserId == model.AssignedTo.Value);
 
-        if (!commissionExists)
+
+
+        // POST: /Lead/Edit
+        [HttpPost]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Edit(EditLeadViewModel model)
         {
-            var commissionAmount = CalculateCommissionAmount(lead.LoanAmount); // You can customize this logic
-
-            _context.Commissions.Add(new Commission
+            if (!ModelState.IsValid)
             {
-                LeadId = lead.LeadId,
-                UserId = model.AssignedTo.Value,
-                Amount = commissionAmount,
-                Status = "pending",
-                CalculatedAt = DateTime.UtcNow
-            });
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"🔴 {error.ErrorMessage}");
+                }
 
-            Console.WriteLine($"💰 Commission created for Lead {lead.LeadId} assigned to User {model.AssignedTo.Value}");
+                ViewBag.Users = await _context.Users
+                    .Where(u => u.Role == "calling" || u.Role == "office")
+                    .ToListAsync();
+
+                return View(model);
+            }
+
+            var lead = await _context.Leads.FindAsync(model.LeadId);
+            if (lead == null) return NotFound();
+
+            lead.Status = model.Status;
+            lead.AssignedTo = model.AssignedTo;
+
+            // ✅ Auto-create commission once per lead (not per user)
+            if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
+            {
+                bool commissionExists = await _context.Commissions
+                    .AnyAsync(c => c.LeadId == lead.LeadId);
+
+                if (!commissionExists)
+                {
+                    decimal commissionAmount = CalculateCommissionAmount(lead.LoanAmount); // Customize if needed
+
+                    _context.Commissions.Add(new Commission
+                    {
+                        LeadId = lead.LeadId,
+                        UserId = model.AssignedTo.Value,
+                        Amount = commissionAmount,
+                        Status = "pending",
+                        CalculatedAt = DateTime.UtcNow
+                    });
+
+                    Console.WriteLine($"💰 Commission created for Lead {lead.LeadId} (User {model.AssignedTo.Value})");
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
-    }
 
-    await _context.SaveChangesAsync();
-    return RedirectToAction(nameof(Index));
-}
+
+
+
+
+
+
+
+
 
 
 
         // GET: /Lead/Details/{id}
-        public async Task<IActionResult> Details(int id)
-        {
-            var lead = await _context.Leads
-                .Include(l => l.Customer)
-                .Include(l => l.LeadGenerator)
-                .Include(l => l.AssignedUser)
-                .FirstOrDefaultAsync(l => l.LeadId == id);
+     public async Task<IActionResult> Details(int id)
+{
+    var lead = await _context.Leads
+        .Include(l => l.Customer)
+        .Include(l => l.LeadGenerator)
+        .Include(l => l.AssignedUser)
+        .Include(l => l.Documents!) // 👈 Include documents
+            .ThenInclude(d => d.UploadedByUser)
+        .Include(l => l.Documents!)
+            .ThenInclude(d => d.Verifier)
+        .FirstOrDefaultAsync(l => l.LeadId == id);
 
-            return lead == null ? NotFound() : View(lead);
-        }
+    return lead == null ? NotFound() : View(lead);
+}
+
     }
 }
