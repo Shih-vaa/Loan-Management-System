@@ -1,10 +1,18 @@
 @model List<LoanManagementSystem.Models.LeadDocument>
 @{
     ViewData["Title"] = "Documents for Lead";
-    int leadId = ViewBag.LeadId;
+    int? leadId = ViewBag.LeadId as int?;
 }
-
-<h3>Uploaded Documents for Lead @leadId</h3>
+<h3>
+    @if (leadId.HasValue)
+    {
+        <text>📄 Uploaded Documents for Lead @leadId</text>
+    }
+    else
+    {
+        <text>📄 All Uploaded Documents</text>
+    }
+</h3>
 
 <table class="table table-bordered">
     <thead>
@@ -37,4 +45,11 @@
     </tbody>
 </table>
 
-<a class="btn btn-secondary" href="/Lead/Details/@leadId">Back to Lead</a>
+@if (leadId.HasValue)
+{
+    <a class="btn btn-secondary" href="/Lead/Details/@leadId">← Back to Lead</a>
+}
+else
+{
+    <a class="btn btn-secondary" href="/Admin/Dashboard">← Back to Dashboard</a>
+}

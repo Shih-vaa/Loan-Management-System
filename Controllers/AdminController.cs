@@ -51,15 +51,20 @@ namespace LoanManagementSystem.Controllers
                 TotalUsers = await _context.Users.CountAsync(),
                 TotalTeams = await _context.Teams.CountAsync(),
                 TotalCommissionPaid = await _context.Commissions
-                      .Where(c => c.Status == "paid").SumAsync(c => (decimal?)c.Amount) ?? 0,
+          .Where(c => c.Status == "paid").SumAsync(c => (decimal?)c.Amount) ?? 0,
                 TotalCommissionPending = await _context.Commissions
-                      .Where(c => c.Status == "pending").SumAsync(c => (decimal?)c.Amount) ?? 0,
+          .Where(c => c.Status == "pending").SumAsync(c => (decimal?)c.Amount) ?? 0,
+
+                // ✅ Add this:
+                TotalCommission = await _context.Commissions.SumAsync(c => (decimal?)c.Amount) ?? 0,
+
                 TotalDocumentsUploaded = await _context.LeadDocuments.CountAsync(),
                 PendingDocuments = await _context.LeadDocuments.CountAsync(d => d.Status == "pending"),
                 LeadStatusCounts = await _context.Leads
-                      .GroupBy(l => l.Status)
-                      .ToDictionaryAsync(g => g.Key, g => g.Count())
+          .GroupBy(l => l.Status)
+          .ToDictionaryAsync(g => g.Key ?? "Unknown", g => g.Count())
             };
+
 
             return View(metrics); // 👈 Send to view
         }

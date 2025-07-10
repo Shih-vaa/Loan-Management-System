@@ -17,6 +17,57 @@
     .ToList()
     : new List<LoanManagementSystem.Models.Notification>();
 }
+@* 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LoanManagementSystem</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/homepage.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/LoanManagementSystem.styles.css" asp-append-version="true" />
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <header class="fixed-top bg-white">
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            
+        </nav>
+    </header>
+
+    <main class="flex-grow-1 overflow-auto mt-5 mb-5">
+        <div class="container py-3">
+            @RenderBody()
+        </div>
+    </main>
+
+
+    <footer class="footer mt-auto py-3 bg-light fixed-bottom border-top">
+        <div class="container text-center text-black">
+            &copy; 2025 - LoanManagementSystem - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+   
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+ *@
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,13 +78,50 @@
     <title>@ViewData["Title"] - LoanManagementSystem</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-     <link rel="stylesheet" href="~/css/homepage.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/homepage.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LoanManagementSystem.styles.css" asp-append-version="true" />
+    <style>
+        /* Custom styles for fixed header and footer */
+        body {
+            padding-top: 56px;
+            /* Height of your fixed header */
+            padding-bottom: 60px;
+            /* Height of your fixed footer */
+            min-height: 100vh;
+            position: relative;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            /* Adjust based on your footer height */
+            z-index: 1030;
+        }
+
+        main {
+            overflow-y: auto;
+            height: calc(100vh - 116px);
+            /* 100vh minus header and footer heights */
+            margin-top: 1rem;
+        }
+    </style>
 </head>
 
 <body>
-    <header>
+    <header class="bg-white">
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <!-- Your existing header content -->
             <div class="container-fluid">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">LoanManagementSystem</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
@@ -133,17 +221,17 @@
         </nav>
     </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main class="container py-3">
+        @RenderBody()
+    </main>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
+    <footer class="py-3 bg-light border-top">
+        <div class="container text-center text-black">
             &copy; 2025 - LoanManagementSystem - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
+    <!-- Your existing scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -161,25 +249,25 @@
 
                     if (!data.notifications || data.notifications.length === 0) {
                         list.innerHTML = `
-                                <li class="dropdown-item text-muted text-center">
-                                    Nothing in here!
-                                </li>
-                            `;
+                                            <li class="dropdown-item text-muted text-center">
+                                                Nothing in here!
+                                            </li>
+                                        `;
                     } else {
                         data.notifications.forEach(note => {
                             const item = document.createElement("li");
                             item.className = "dropdown-item text-wrap" + (note.isRead ? "" : " fw-bold");
                             item.innerHTML = `
-                                    <div>${note.message}</div>
-                                    <small class="text-muted">${note.createdAt}</small>
-                                `;
+                                                <div>${note.message}</div>
+                                                <small class="text-muted">${note.createdAt}</small>
+                                            `;
                             list.appendChild(item);
                         });
 
                         list.innerHTML += `
-                                <li><hr class="dropdown-divider" /></li>
-                                <li><a class="dropdown-item text-center" href="/Notifications">View All</a></li>
-                            `;
+                                            <li><hr class="dropdown-divider" /></li>
+                                            <li><a class="dropdown-item text-center" href="/Notifications">View All</a></li>
+                                        `;
                     }
 
                     const badge = document.getElementById("notificationBadge");

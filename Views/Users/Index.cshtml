@@ -1,0 +1,39 @@
+@model List<LoanManagementSystem.Models.User>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h2>👥 Users</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserId</td>
+                <td>@user.FullName</td>
+                <td>@user.Email</td>
+                <td>@user.Phone</td>
+                <td>@user.Role</td>
+                <td>
+                    <a class="btn btn-sm btn-warning" href="/Users/Edit/@user.UserId">Edit</a>
+                    <form method="post" asp-action="Delete" asp-route-id="@user.UserId" class="d-inline"
+                        onsubmit="return confirm('Delete user?')">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

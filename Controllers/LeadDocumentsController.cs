@@ -263,5 +263,56 @@ namespace LoanManagementSystem.Controllers
 
             return RedirectToAction("LeadDocs", new { leadId = doc.LeadId });
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> AllDocs()
+        {
+            var docs = await _context.LeadDocuments
+                .Include(d => d.UploadedByUser)
+                .ToListAsync();
+            return View("LeadDocs", docs); // Reuse the existing view
+        }
+
+
+
+
+
+
+
+
+
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> PendingDocs()
+        {
+            var docs = await _context.LeadDocuments
+                .Where(d => d.Status == "pending")
+                .Include(d => d.UploadedByUser)
+                .ToListAsync();
+            return View("LeadDocs", docs); // Reuse
+        }
+        
+
+
+
+
+
+
+
+
     }
-}
+    }

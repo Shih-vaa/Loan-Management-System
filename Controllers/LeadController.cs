@@ -127,6 +127,12 @@ namespace LoanManagementSystem.Controllers
 
                 if (!commissionExists)
                 {
+                    if (lead.LoanAmount <= 0)
+                    {
+                        Console.WriteLine("⚠️ Loan amount is zero. Defaulting to 500000");
+                        lead.LoanAmount = 500000;
+                    }
+
                     decimal commissionAmount = CalculateCommissionAmount(lead.LoanAmount);
 
                     _context.Commissions.Add(new Commission
@@ -138,9 +144,10 @@ namespace LoanManagementSystem.Controllers
                         CalculatedAt = DateTime.UtcNow
                     });
 
-                    Console.WriteLine($"💰 Commission created for Lead {lead.LeadId} (User {model.AssignedTo.Value})");
+                    Console.WriteLine($"💰 Commission created: ₹{commissionAmount} for Lead {lead.LeadId}");
                 }
             }
+
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

@@ -18,71 +18,88 @@
 
         <div class="row g-4">
             <div class="col-md-3">
+                <a href="/Lead" class="text-decoration-none">
                 <div class="card text-bg-primary">
                     <div class="card-body">
                         <h5 class="card-title">Total Leads</h5>
                         <p class="display-6">@Model.TotalLeads</p>
                     </div>
                 </div>
+                </a>
             </div>
             <div class="col-md-3">
-                <div class="card text-bg-warning">
-                    <div class="card-body">
-                        <h5 class="card-title">Pending Leads</h5>
-                        <p class="display-6">@Model.PendingLeads</p>
+                <a href="/Lead?status=pending" class="text-decoration-none">
+                    <div class="card text-bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Leads</h5>
+                            <p class="display-6">@Model.PendingLeads</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-3">
-                <div class="card text-bg-success">
-                    <div class="card-body">
-                        <h5 class="card-title">Approved Leads</h5>
-                        <p class="display-6">@Model.ApprovedLeads</p>
+                <a href="/Lead?status=approved" class="text-decoration-none">
+                    <div class="card text-bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Approved Leads</h5>
+                            <p class="display-6">@Model.ApprovedLeads</p>
+                        </div>
                     </div>
-                </div>
+                </a>
+
             </div>
             <div class="col-md-3">
-                <div class="card text-bg-secondary">
-                    <div class="card-body">
-                        <h5 class="card-title">Customers</h5>
-                        <p class="display-6">@Model.TotalCustomers</p>
+                <a href="/Customers" class="text-decoration-none">
+                    <div class="card text-bg-secondary">
+                        <div class="card-body">
+                            <h5 class="card-title">Customers</h5>
+                            <p class="display-6">@Model.TotalCustomers</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
         <div class="row g-4 mt-2">
             <div class="col-md-3">
-                <div class="card text-bg-dark">
-                    <div class="card-body">
-                        <h5 class="card-title">Documents Uploaded</h5>
-                        <p class="display-6">@Model.TotalDocumentsUploaded</p>
+                <a href="/LeadDocuments/AllDocs" class="text-decoration-none">
+                    <div class="card text-bg-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">Documents Uploaded</h5>
+                            <p class="display-6">@Model.TotalDocumentsUploaded</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-3">
-                <div class="card text-bg-danger">
-                    <div class="card-body">
-                        <h5 class="card-title">Pending Docs</h5>
-                        <p class="display-6">@Model.PendingDocuments</p>
+                <a href="/LeadDocuments/PendingDocs" class="text-decoration-none">
+                    <div class="card text-bg-danger">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Docs</h5>
+                            <p class="display-6">@Model.PendingDocuments</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-3">
-                <div class="card text-bg-info">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Commission</h5>
-                        <p class="display-6">₹@Model.TotalCommission.ToString("N2")</p>
+                <a href="/Commission" class="text-decoration-none">
+                    <div class="card text-bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Commission</h5>
+                            <p class="display-6">₹@Model.TotalCommission.ToString("N2")</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-md-3">
-                <div class="card text-bg-light">
-                    <div class="card-body">
-                        <h5 class="card-title">Users</h5>
-                        <p class="display-6">@Model.TotalUsers</p>
+                <a href="/Users" class="text-decoration-none">
+                    <div class="card text-bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Users</h5>
+                            <p class="display-6">@Model.TotalUsers</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
@@ -97,7 +114,7 @@
             <a class="btn btn-outline-primary" href="/Admin/ExportMetrics">📤 Export</a>
         </div>
 
-        <h4 class="mb-3">🔔 Recent Notifications</h4>
+        @* <h4 class="mb-3">🔔 Recent Notifications</h4>
         <ul class="list-group">
             @if (Model.RecentNotifications != null && Model.RecentNotifications.Any())
             {
@@ -119,7 +136,7 @@
             {
                 <li class="list-group-item text-muted">No recent notifications.</li>
             }
-        </ul>
+        </ul> *@
     </div>
 
     @section Scripts {
