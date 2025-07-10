@@ -48,7 +48,7 @@ app.UseSession();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Auth}/{action=Login}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // 🚀 Add this Chrome auto-launch code (macOS specific)
 if (app.Environment.IsDevelopment())
