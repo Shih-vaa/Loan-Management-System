@@ -3,18 +3,146 @@
 }
 
 <div class="container mt-5">
-    <h2>Welcome to Admin Dashboard</h2>
-    <p class="lead">Hello, @ViewBag.UserEmail</p>
+    <h2>Welcome..</h2>
+    @* <p class="lead">Hello, @ViewBag.UserEmail</p> *@
 
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <a href="/Leads" class="btn btn-primary btn-block w-100">Manage Leads</a>
+
+
+    @model LoanManagementSystem.Models.ViewModels.DashboardMetricsViewModel
+    @{
+        ViewData["Title"] = "Admin Dashboard";
+    }
+
+    <div class="container mt-4">
+        <h2 class="mb-4">📊 Admin Dashboard</h2>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card text-bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Leads</h5>
+                        <p class="display-6">@Model.TotalLeads</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Leads</h5>
+                        <p class="display-6">@Model.PendingLeads</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Approved Leads</h5>
+                        <p class="display-6">@Model.ApprovedLeads</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-bg-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">Customers</h5>
+                        <p class="display-6">@Model.TotalCustomers</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <a href="/Users" class="btn btn-secondary btn-block w-100">Manage Users</a>
+
+        <div class="row g-4 mt-2">
+            <div class="col-md-3">
+                <div class="card text-bg-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">Documents Uploaded</h5>
+                        <p class="display-6">@Model.TotalDocumentsUploaded</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-bg-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Docs</h5>
+                        <p class="display-6">@Model.PendingDocuments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-bg-info">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Commission</h5>
+                        <p class="display-6">₹@Model.TotalCommission.ToString("N2")</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Users</h5>
+                        <p class="display-6">@Model.TotalUsers</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <a href="/Teams" class="btn btn-success btn-block w-100">Manage Teams</a>
+
+        <hr class="my-4" />
+
+        <h4 class="mb-3">📌 Lead Status Chart</h4>
+        <canvas id="leadStatusChart" width="400" height="150"></canvas>
+
+        <hr class="my-4" />
+        <div class="d-flex justify-content-end mb-3">
+            <a class="btn btn-outline-secondary me-2" onclick="window.print()">🖨️ Print</a>
+            <a class="btn btn-outline-primary" href="/Admin/ExportMetrics">📤 Export</a>
         </div>
+
+        <h4 class="mb-3">🔔 Recent Notifications</h4>
+        <ul class="list-group">
+            @if (Model.RecentNotifications != null && Model.RecentNotifications.Any())
+            {
+                foreach (var n in Model.RecentNotifications)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div>@n.Message</div>
+                            <small class="text-muted">@n.CreatedAt.ToString("dd MMM yyyy hh:mm tt")</small>
+                        </div>
+                        @if (!n.IsRead)
+                        {
+                            <span class="badge bg-danger rounded-pill">New</span>
+                        }
+                    </li>
+                }
+            }
+            else
+            {
+                <li class="list-group-item text-muted">No recent notifications.</li>
+            }
+        </ul>
     </div>
+
+    @section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const leadStatusCtx = document.getElementById('leadStatusChart').getContext('2d');
+            const leadStatusChart = new Chart(leadStatusCtx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Keys)),
+                    datasets: [{
+                        label: 'Lead Count',
+                        data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Values)),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        </script>
+    }
+
 </div>

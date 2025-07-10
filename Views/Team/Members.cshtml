@@ -12,33 +12,38 @@
         @if (Model.Members != null && Model.Members.Any())
         {
             <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var member in Model.Members)
-                    {
-                        <tr>
-                            <td>@member.User.FullName</td>
-                            <td>@member.User.Email</td>
-                            <td>@member.User.Role</td>
-                            <td>
-                                <form method="post" asp-action="RemoveMember" class="d-inline">
-                                    <input type="hidden" name="teamId" value="@Model.TeamId" />
-                                    <input type="hidden" name="userId" value="@member.UserId" />
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Remove this user from team?')">Remove</button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Can Manage Leads</th>
+            <th>Can Upload Docs</th>
+            <th>Can Verify Docs</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var member in Model.Members)
+        {
+            <tr>
+                <td>@member.User?.FullName</td>
+                <td>@member.User?.Role</td>
+                <td>@(member.CanManageLeads ? "✅" : "❌")</td>
+                <td>@(member.CanUploadDocs ? "✅" : "❌")</td>
+                <td>@(member.CanVerifyDocs ? "✅" : "❌")</td>
+                <td>
+                    <form method="post" asp-action="RemoveMember">
+                        <input type="hidden" name="teamId" value="@Model.TeamId" />
+                        <input type="hidden" name="userId" value="@member.UserId" />
+                        <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Remove this user from team?')">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
         }
         else
         {
@@ -52,21 +57,40 @@
         {
             <form method="post" asp-action="AddMember">
                 <input type="hidden" name="teamId" value="@Model.TeamId" />
-                <div class="row g-3 align-items-center">
-                    <div class="col-auto">
-                        <select name="userId" class="form-select" required>
-                            <option value="">-- Select User --</option>
-                            @foreach (var user in allUsers)
-                            {
-                                <option value="@user.UserId">@user.FullName (@user.Role)</option>
-                            }
-                        </select>
+
+                <div class="mb-3">
+                    <label class="form-label">Select User</label>
+                    <select name="userId" class="form-select" required>
+                        <option value="">-- Select User --</option>
+                        @foreach (var user in allUsers)
+                        {
+                            <option value="@user.UserId">@user.FullName (@user.Role)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Permissions</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="canManageLeads" id="canManageLeads"
+                            value="true" />
+                        <label class="form-check-label" for="canManageLeads">Can Manage Leads</label>
                     </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-success">Add Member</button>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="canUploadDocs" id="canUploadDocs"
+                            value="true" />
+                        <label class="form-check-label" for="canUploadDocs">Can Upload Documents</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="canVerifyDocs" id="canVerifyDocs"
+                            value="true" />
+                        <label class="form-check-label" for="canVerifyDocs">Can Verify Documents</label>
                     </div>
                 </div>
+
+                <button type="submit" class="btn btn-success">Add Member</button>
             </form>
+
         }
         else
         {

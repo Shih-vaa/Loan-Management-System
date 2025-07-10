@@ -27,6 +27,7 @@
     <title>@ViewData["Title"] - LoanManagementSystem</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+     <link rel="stylesheet" href="~/css/homepage.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LoanManagementSystem.styles.css" asp-append-version="true" />
 </head>
 
@@ -143,10 +144,10 @@
             &copy; 2025 - LoanManagementSystem - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/homepage.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     @section Scripts {
         <script>
@@ -160,25 +161,25 @@
 
                     if (!data.notifications || data.notifications.length === 0) {
                         list.innerHTML = `
-                        <li class="dropdown-item text-muted text-center">
-                            Nothing in here!
-                        </li>
-                    `;
+                                <li class="dropdown-item text-muted text-center">
+                                    Nothing in here!
+                                </li>
+                            `;
                     } else {
                         data.notifications.forEach(note => {
                             const item = document.createElement("li");
                             item.className = "dropdown-item text-wrap" + (note.isRead ? "" : " fw-bold");
                             item.innerHTML = `
-                            <div>${note.message}</div>
-                            <small class="text-muted">${note.createdAt}</small>
-                        `;
+                                    <div>${note.message}</div>
+                                    <small class="text-muted">${note.createdAt}</small>
+                                `;
                             list.appendChild(item);
                         });
 
                         list.innerHTML += `
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item text-center" href="/Notifications">View All</a></li>
-                    `;
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item text-center" href="/Notifications">View All</a></li>
+                            `;
                     }
 
                     const badge = document.getElementById("notificationBadge");

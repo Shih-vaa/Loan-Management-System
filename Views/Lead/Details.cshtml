@@ -108,8 +108,14 @@
         <p class="text-muted">No documents uploaded yet.</p>
     }
 
-    @* Document Upload Form *@
-    @if (User.IsInRole("admin") || User.IsInRole("calling") || User.IsInRole("office"))
+    @using LoanManagementSystem.Helpers
+    @inject LoanManagementSystem.Data.ApplicationDbContext _context
+
+    @{
+        bool canUploadDocs = PermissionHelper.HasTeamPermission(_context, Context, "CanUploadDocs");
+    }
+
+    @if (User.IsInRole("admin") || canUploadDocs)
     {
         <hr />
         <h4>📎 Upload New Document</h4>

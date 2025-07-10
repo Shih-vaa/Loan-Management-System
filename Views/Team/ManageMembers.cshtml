@@ -54,13 +54,35 @@
                     <td>@member.User?.FullName</td>
                     <td>@member.User?.Role</td>
                     <td>
-                        <form method="post" asp-action="RemoveMember">
+                        @if (member.CanManageLeads)
+                        {
+                            <span class="badge bg-primary">Manage Leads</span>
+                        }
+                        @if (member.CanUploadDocs)
+                        {
+                            <span class="badge bg-success">Upload Docs</span>
+                        }
+                        @if (member.CanVerifyDocs)
+                        {
+                            <span class="badge bg-warning text-dark">Verify Docs</span>
+                        }
+                        @if (!member.CanManageLeads && !member.CanUploadDocs && !member.CanVerifyDocs)
+                        {
+                            <span class="text-muted">No permissions</span>
+                        }
+                    </td>
+                    <td>
+                        <form method="post" asp-action="RemoveMember" class="d-inline">
                             <input type="hidden" name="teamId" value="@Model.TeamId" />
                             <input type="hidden" name="userId" value="@member.UserId" />
-                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Remove this user from team?')">
+                                Remove
+                            </button>
                         </form>
                     </td>
                 </tr>
+
             }
         </tbody>
     </table>

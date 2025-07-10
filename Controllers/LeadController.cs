@@ -20,22 +20,8 @@ namespace LoanManagementSystem.Controllers
             _logger = logger;
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // GET: /Lead
-        public async Task<IActionResult> Index()
+        // ✅ GET: /Lead (with optional status filter)
+        public async Task<IActionResult> Index(string? status = null)
         {
             string role = HttpContext.Session.GetString("UserRole") ?? "";
             int userId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
@@ -46,6 +32,11 @@ namespace LoanManagementSystem.Controllers
                 .Include(l => l.AssignedUser)
                 .AsQueryable();
 
+            if (!string.IsNullOrEmpty(status))
+            {
+                leads = leads.Where(l => l.Status == status);
+            }
+
             if (role == "marketing")
                 leads = leads.Where(l => l.LeadGeneratorId == userId);
             else if (role != "admin")
@@ -54,24 +45,7 @@ namespace LoanManagementSystem.Controllers
             return View(await leads.ToListAsync());
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // GET: /Lead/Create
+        // ✅ GET: /Lead/Create
         [Authorize(Roles = "admin,marketing")]
         public IActionResult Create()
         {
@@ -79,16 +53,7 @@ namespace LoanManagementSystem.Controllers
             return View();
         }
 
-
-
-
-
-
-
-
-
-
-        // POST: /Lead/Create
+        // ✅ POST: /Lead/Create
         [HttpPost]
         [Authorize(Roles = "admin,marketing")]
         public async Task<IActionResult> Create(Lead lead)
@@ -108,17 +73,7 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-
-
-
-
-
-
-
-
-
-        // GET: /Lead/Edit/{id}
+        // ✅ GET: /Lead/Edit/{id}
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -138,31 +93,8 @@ namespace LoanManagementSystem.Controllers
 
             return View(model);
         }
-        // LeadController.cs (inside LoanManagementSystem.Controllers)
 
-
-
-
-
-
-
-
-
-
-        private decimal CalculateCommissionAmount(decimal loanAmount)
-        {
-            return loanAmount * 0.02M; // Example: 2% commission
-        }
-
-
-
-
-
-
-
-
-
-        // POST: /Lead/Edit
+        // ✅ POST: /Lead/Edit
         [HttpPost]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(EditLeadViewModel model)
@@ -187,7 +119,7 @@ namespace LoanManagementSystem.Controllers
             lead.Status = model.Status;
             lead.AssignedTo = model.AssignedTo;
 
-            // ✅ Auto-create commission once per lead (not per user)
+            // ✅ Auto-create commission
             if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
             {
                 bool commissionExists = await _context.Commissions
@@ -195,7 +127,7 @@ namespace LoanManagementSystem.Controllers
 
                 if (!commissionExists)
                 {
-                    decimal commissionAmount = CalculateCommissionAmount(lead.LoanAmount); // Customize if needed
+                    decimal commissionAmount = CalculateCommissionAmount(lead.LoanAmount);
 
                     _context.Commissions.Add(new Commission
                     {
@@ -214,32 +146,26 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ✅ GET: /Lead/Details/{id}
+        public async Task<IActionResult> Details(int id)
+        {
+            var lead = await _context.Leads
+                .Include(l => l.Customer)
+                .Include(l => l.LeadGenerator)
+                .Include(l => l.AssignedUser)
+                .Include(l => l.Documents!)
+                    .ThenInclude(d => d.UploadedByUser)
+                .Include(l => l.Documents!)
+                    .ThenInclude(d => d.Verifier)
+                .FirstOrDefaultAsync(l => l.LeadId == id);
 
+            return lead == null ? NotFound() : View(lead);
+        }
 
-
-
-
-
-
-
-
-
-
-        // GET: /Lead/Details/{id}
-     public async Task<IActionResult> Details(int id)
-{
-    var lead = await _context.Leads
-        .Include(l => l.Customer)
-        .Include(l => l.LeadGenerator)
-        .Include(l => l.AssignedUser)
-        .Include(l => l.Documents!) // 👈 Include documents
-            .ThenInclude(d => d.UploadedByUser)
-        .Include(l => l.Documents!)
-            .ThenInclude(d => d.Verifier)
-        .FirstOrDefaultAsync(l => l.LeadId == id);
-
-    return lead == null ? NotFound() : View(lead);
-}
-
+        // ✅ Commission logic
+        private decimal CalculateCommissionAmount(decimal loanAmount)
+        {
+            return loanAmount * 0.02M; // Example: 2%
+        }
     }
 }

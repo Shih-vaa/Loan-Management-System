@@ -120,19 +120,19 @@ namespace LoanManagementSystem.Controllers
 
 
 
-        // POST: /Team/AddMember
         [HttpPost]
-        public async Task<IActionResult> AddMember(int teamId, int userId, bool canManageLeads, bool canUploadDocs, bool canVerifyDocs)
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> AddMember(int teamId, int userId, bool canManageLeads = false, bool canUploadDocs = false, bool canVerifyDocs = false)
         {
-            var exists = await _context.TeamMembers
-                .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
-            if (exists)
+            // Prevent duplicates
+            bool alreadyMember = await _context.TeamMembers.AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
+            if (alreadyMember)
             {
-                TempData["Error"] = "User is already part of the team.";
+                TempData["Error"] = "User is already a member of this team.";
                 return RedirectToAction("Members", new { id = teamId });
             }
 
-            var member = new TeamMember
+            var newMember = new TeamMember
             {
                 TeamId = teamId,
                 UserId = userId,
@@ -141,12 +141,12 @@ namespace LoanManagementSystem.Controllers
                 CanVerifyDocs = canVerifyDocs
             };
 
-            _context.TeamMembers.Add(member);
+            _context.TeamMembers.Add(newMember);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Member added successfully with permissions.";
             return RedirectToAction("Members", new { id = teamId });
         }
-
 
 
 

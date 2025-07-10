@@ -7,6 +7,14 @@
     <h2>🔔 Notifications</h2>
     <hr />
 
+    <!-- Add Mark All As Read button at the top -->
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <form asp-action="MarkAllAsRead" method="post" class="mb-3">
+            <button type="submit" class="btn btn-outline-primary">Mark All As Read</button>
+        </form>
+    }
+
     @if (!Model.Any())
     {
         <div class="alert alert-info">You have no notifications.</div>
@@ -50,7 +58,6 @@
                                 onsubmit="return confirm('Delete this notification?');">
                                 <input type="hidden" name="id" value="@notification.NotificationId" />
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                <button type="submit" class="btn btn-sm btn-outline-primary mb-3">Mark All As Read</button>
                             </form>
                         </td>
                     </tr>

@@ -1,8 +1,81 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home - Loan Management System";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Streamline Your Loan Management</h1>
+        <p class="hero-subtitle">Efficient, secure, and user-friendly platform for managing loans from lead to disbursement</p>
+        
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <div class="hero-buttons">
+                <a href="/Dashboard" class="btn btn-light btn-lg">Go to Dashboard</a>
+            </div>
+        }
+        else
+        {
+            <div class="hero-buttons">
+                <a href="/Auth/Login" class="btn btn-light btn-lg">Login</a>
+                <a href="/Auth/Register" class="btn btn-outline-light btn-lg">Register</a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="container">
+    <section class="features-section">
+        <h2 class="text-center mb-5">Key Features</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h3>Role-Based Access</h3>
+                    <p>Secure access control with permissions tailored for different team roles.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3>Lead Management</h3>
+                    <p>Track leads from initial contact through approval with customizable statuses.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3>Document Workflow</h3>
+                    <p>Upload, verify, and manage loan documents with full audit trail.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section text-center py-5">
+        <h2 class="mb-5">Our Impact</h2>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-number" data-target="1250">0</div>
+                <p>Leads Processed</p>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number" data-target="850">0</div>
+                <p>Loans Approved</p>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number" data-target="150">0</div>
+                <p>Active Users</p>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number" data-target="25">0</div>
+                <p>Teams Using</p>
+            </div>
+        </div>
+    </section>
 </div>
