@@ -147,6 +147,11 @@ namespace LoanManagementSystem.Controllers
                     Console.WriteLine($"💰 Commission created: ₹{commissionAmount} for Lead {lead.LeadId}");
                 }
             }
+            if (lead.AssignedTo != model.AssignedTo)
+            {
+                lead.AssignedAt = DateTime.UtcNow; // ✅ Timestamp assignment
+            }
+
 
 
             await _context.SaveChangesAsync();
@@ -174,5 +179,7 @@ namespace LoanManagementSystem.Controllers
         {
             return loanAmount * 0.02M; // Example: 2%
         }
+
+
     }
 }

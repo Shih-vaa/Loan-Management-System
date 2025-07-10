@@ -19,12 +19,12 @@
         <div class="row g-4">
             <div class="col-md-3">
                 <a href="/Lead" class="text-decoration-none">
-                <div class="card text-bg-primary">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Leads</h5>
-                        <p class="display-6">@Model.TotalLeads</p>
+                    <div class="card text-bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Leads</h5>
+                            <p class="display-6">@Model.TotalLeads</p>
+                        </div>
                     </div>
-                </div>
                 </a>
             </div>
             <div class="col-md-3">
@@ -58,48 +58,60 @@
                     </div>
                 </a>
             </div>
-        </div>
 
-        <div class="row g-4 mt-2">
             <div class="col-md-3">
-                <a href="/LeadDocuments/AllDocs" class="text-decoration-none">
-                    <div class="card text-bg-dark">
-                        <div class="card-body">
-                            <h5 class="card-title">Documents Uploaded</h5>
-                            <p class="display-6">@Model.TotalDocumentsUploaded</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-3">
-                <a href="/LeadDocuments/PendingDocs" class="text-decoration-none">
+                <a href="/Lead/Index?status=new" class="text-decoration-none">
                     <div class="card text-bg-danger">
                         <div class="card-body">
-                            <h5 class="card-title">Pending Docs</h5>
-                            <p class="display-6">@Model.PendingDocuments</p>
+                            <h5 class="card-title">Unassigned Leads</h5>
+                            <p class="display-6">@Model.UnassignedLeadsCount</p>
                         </div>
                     </div>
                 </a>
             </div>
-            <div class="col-md-3">
-                <a href="/Commission" class="text-decoration-none">
-                    <div class="card text-bg-info">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Commission</h5>
-                            <p class="display-6">₹@Model.TotalCommission.ToString("N2")</p>
+
+
+            <div class="row g-4 mt-2">
+                <div class="col-md-3">
+                    <a href="/LeadDocuments/AllDocs" class="text-decoration-none">
+                        <div class="card text-bg-dark">
+                            <div class="card-body">
+                                <h5 class="card-title">Documents Uploaded</h5>
+                                <p class="display-6">@Model.TotalDocumentsUploaded</p>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-3">
-                <a href="/Users" class="text-decoration-none">
-                    <div class="card text-bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Users</h5>
-                            <p class="display-6">@Model.TotalUsers</p>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/LeadDocuments/PendingDocs" class="text-decoration-none">
+                        <div class="card text-bg-danger">
+                            <div class="card-body">
+                                <h5 class="card-title">Pending Docs</h5>
+                                <p class="display-6">@Model.PendingDocuments</p>
+                            </div>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/Commission" class="text-decoration-none">
+                        <div class="card text-bg-info">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Commission</h5>
+                                <p class="display-6">₹@Model.TotalCommission.ToString("N2")</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/Users" class="text-decoration-none">
+                        <div class="card text-bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Users</h5>
+                                <p class="display-6">@Model.TotalUsers</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
 

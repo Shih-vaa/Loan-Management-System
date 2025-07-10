@@ -47,6 +47,7 @@ namespace LoanManagementSystem.Controllers
                 TotalLeads = await _context.Leads.CountAsync(),
                 ApprovedLeads = await _context.Leads.CountAsync(l => l.Status == "approved"),
                 PendingLeads = await _context.Leads.CountAsync(l => l.Status == "pending"),
+
                 TotalCustomers = await _context.Customers.CountAsync(),
                 TotalUsers = await _context.Users.CountAsync(),
                 TotalTeams = await _context.Teams.CountAsync(),
@@ -60,10 +61,16 @@ namespace LoanManagementSystem.Controllers
 
                 TotalDocumentsUploaded = await _context.LeadDocuments.CountAsync(),
                 PendingDocuments = await _context.LeadDocuments.CountAsync(d => d.Status == "pending"),
+                UnassignedLeadsCount = await _context.Leads
+    .CountAsync(l => l.AssignedTo == null),
+
                 LeadStatusCounts = await _context.Leads
           .GroupBy(l => l.Status)
           .ToDictionaryAsync(g => g.Key ?? "Unknown", g => g.Count())
+
+
             };
+
 
 
             return View(metrics); // 👈 Send to view

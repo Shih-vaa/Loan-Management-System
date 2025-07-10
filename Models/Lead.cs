@@ -29,6 +29,10 @@ namespace LoanManagementSystem.Models
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+        [Column("assigned_at")]
+        public DateTime? AssignedAt { get; set; }
+
+
 
         // Navigation
         [ForeignKey("LeadGeneratorId")]
@@ -39,7 +43,7 @@ namespace LoanManagementSystem.Models
 
         [ForeignKey("CustomerId")]
         public Customer? Customer { get; set; }
-        // Lead.cs
+
         public virtual ICollection<LeadDocument>? Documents { get; set; }
 
     }
