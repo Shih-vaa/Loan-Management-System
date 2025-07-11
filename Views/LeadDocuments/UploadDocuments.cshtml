@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Upload Documents";
+    var lead = ViewBag.Lead as LoanManagementSystem.Models.Lead;
+}
+
+<h3>Upload Documents for @lead?.Customer?.FullName (Lead LMS-@lead?.LeadId.ToString("D4"))</h3>
+<hr />
+
+<form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="id" value="@lead?.LeadId" />
+
+    <div id="docList">
+        <div class="row mb-3">
+            <div class="col-md-5">
+                <input type="file" name="files" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <select name="types" class="form-select">
+                    <option value="PAN">PAN</option>
+                    <option value="Aadhar">Aadhar</option>
+                    <option value="Salary Slips">Salary Slips</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-secondary mb-2" onclick="addDoc()">+ Add More</button>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+@section Scripts {
+    <script>
+        function addDoc() {
+            const docList = document.getElementById('docList');
+            const newRow = docList.firstElementChild.cloneNode(true);
+            docList.appendChild(newRow);
+        }
+    </script>
+}

@@ -28,5 +28,8 @@ namespace LoanManagementSystem.Models
         // Navigation
         [ForeignKey("UserId")]
         public User? User { get; set; }
+        [Column("Link")]
+        public string? Link { get; set; } // In Notification.cs model
+
     }
 }

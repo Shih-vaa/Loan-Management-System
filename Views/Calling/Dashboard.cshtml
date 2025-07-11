@@ -1,8 +1,34 @@
+@model List<LoanManagementSystem.Models.Lead>
 @{
-    ViewData["Title"] = "Calling Team Dashboard";
+    ViewData["Title"] = "Calling Dashboard";
 }
 
-<div class="container mt-5">
-    <h2>Welcome, @ViewBag.Name (Calling Team)</h2>
-    <p>This is your calling team panel. Follow up and collect lead documents here.</p>
-</div>
+<h3>📞 Assigned Leads</h3>
+<hr />
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Lead ID</th>
+            <th>Customer</th>
+            <th>Loan Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var lead in Model)
+        {
+            <tr>
+                <td>LMS-@lead.LeadId.ToString("D4")</td>
+                <td>@lead.Customer.FullName</td>
+                <td>₹@lead.LoanAmount.ToString("N0")</td>
+                <td>@lead.Status</td>
+                <td>
+                    <a href="/Calling/UploadDocuments/@lead.LeadId" class="btn btn-sm btn-primary">Upload Docs</a>
+                    <a href="/Lead/Details/@lead.LeadId" class="btn btn-sm btn-outline-secondary">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

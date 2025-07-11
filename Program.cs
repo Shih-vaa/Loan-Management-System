@@ -11,6 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
+
+
+// Add API controllers
+builder.Services.AddControllers(); // Add this line
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -46,6 +51,7 @@ app.UseAuthorization();
 
 app.UseSession();
 
+app.MapControllers(); // This maps attribute-routed API controllers
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -61,7 +67,7 @@ if (app.Environment.IsDevelopment())
             {
                 // Wait for server to be ready
                 Task.Delay(2000).Wait();
-                
+
                 // Try multiple ways to open Chrome
                 var chromePaths = new[]
                 {
@@ -83,6 +89,10 @@ if (app.Environment.IsDevelopment())
         }
         catch { /* Silent fail - don't break app if browser doesn't open */ }
     });
+    
 }
+
+
+
 
 app.Run();

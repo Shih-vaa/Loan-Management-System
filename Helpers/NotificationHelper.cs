@@ -5,7 +5,7 @@ namespace LoanManagementSystem.Helpers
 {
 public static class NotificationHelper
 {
-    public static async Task AddNotificationAsync(ApplicationDbContext context, int userId, string message)
+    public static async Task AddNotificationAsync(ApplicationDbContext context, int userId, string message, string? link = null)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
 
@@ -13,8 +13,10 @@ public static class NotificationHelper
         {
             UserId = userId,
             Message = message,
+            Link=link,
             IsRead = false,
             CreatedAt = DateTime.UtcNow
+            
         };
 
         try

@@ -1,73 +1,9 @@
 ﻿@inject LoanManagementSystem.Data.ApplicationDbContext _context
-
 @{
     int userId = User.Identity?.IsAuthenticated == true
     ? int.Parse(User.Claims.First(c => c.Type == "UserId").Value)
     : 0;
-
-    var unreadCount = userId > 0
-    ? _context.Notifications.Count(n => n.UserId == userId && !n.IsRead)
-    : 0;
-
-    var recentNotifications = userId > 0
-    ? _context.Notifications
-    .Where(n => n.UserId == userId)
-    .OrderByDescending(n => n.CreatedAt)
-    .Take(5)
-    .ToList()
-    : new List<LoanManagementSystem.Models.Notification>();
 }
-@* 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - LoanManagementSystem</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/homepage.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/LoanManagementSystem.styles.css" asp-append-version="true" />
-</head>
-
-<body class="d-flex flex-column min-vh-100">
-    <header class="fixed-top bg-white">
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            
-        </nav>
-    </header>
-
-    <main class="flex-grow-1 overflow-auto mt-5 mb-5">
-        <div class="container py-3">
-            @RenderBody()
-        </div>
-    </main>
-
-
-    <footer class="footer mt-auto py-3 bg-light fixed-bottom border-top">
-        <div class="container text-center text-black">
-            &copy; 2025 - LoanManagementSystem - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-   
-</body>
-
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
- *@
 
 <!DOCTYPE html>
 <html lang="en">
@@ -80,50 +16,79 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/homepage.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LoanManagementSystem.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-        /* Custom styles for fixed header and footer */
+        /* Improved fixed layout */
         body {
             padding-top: 56px;
-            /* Height of your fixed header */
             padding-bottom: 60px;
-            /* Height of your fixed footer */
             min-height: 100vh;
-            position: relative;
         }
 
         header {
             position: fixed;
             top: 0;
-            left: 0;
-            right: 0;
+            width: 100%;
             z-index: 1030;
         }
 
         footer {
             position: fixed;
             bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            /* Adjust based on your footer height */
+            width: 100%;
             z-index: 1030;
         }
 
         main {
             overflow-y: auto;
             height: calc(100vh - 116px);
-            /* 100vh minus header and footer heights */
             margin-top: 1rem;
+        }
+
+        /* Notification specific styles */
+        .notification-dropdown {
+            width: 350px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .notification-message {
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+        }
+
+        #notificationBadge {
+            font-size: 0.7rem;
+            top: 5px;
         }
     </style>
 </head>
 
 <body>
-    <header class="bg-white">
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <!-- Your existing header content -->
+    <header class="bg-white shadow-sm">
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">LoanManagementSystem</a>
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-hand-holding-usd me-2"></i>LoanManagementSystem
+                </a>
+                
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
                     aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -131,88 +96,117 @@
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark">Hi, @User.Identity.Name</a>
+                                <span class="nav-link text-dark">
+                                    <i class="fas fa-user me-1"></i> @User.Identity.Name
+                                </span>
                             </li>
 
-                            @* 🧭 Role Dashboards *@
+                            <!-- Role Dashboards -->
                             @if (User.IsInRole("admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin
-                                        Dashboard</a>
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">
+                                        <i class="fas fa-tachometer-alt me-1"></i>Admin Dashboard
+                                    </a>
                                 </li>
                             }
                             @if (User.IsInRole("marketing"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Marketing" asp-action="Dashboard">Marketing
-                                        Dashboard</a>
+                                    <a class="nav-link text-dark" asp-controller="Marketing" asp-action="Dashboard">
+                                        <i class="fas fa-bullhorn me-1"></i>Marketing Dashboard
+                                    </a>
                                 </li>
                             }
                             @if (User.IsInRole("calling"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Calling" asp-action="Dashboard">Calling
-                                        Dashboard</a>
+                                    <a class="nav-link text-dark" asp-controller="Calling" asp-action="Dashboard">
+                                        <i class="fas fa-phone me-1"></i>Calling Dashboard
+                                    </a>
                                 </li>
                             }
                             @if (User.IsInRole("office"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Office" asp-action="Dashboard">Office
-                                        Dashboard</a>
+                                    <a class="nav-link text-dark" asp-controller="Office" asp-action="Dashboard">
+                                        <i class="fas fa-building me-1"></i>Office Dashboard
+                                    </a>
                                 </li>
                             }
 
-                            @* 📁 Feature links by role *@
+                            <!-- Feature Links -->
                             @if (User.IsInRole("admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Commission" asp-action="Index">Commissions</a>
+                                    <a class="nav-link text-dark" asp-controller="Commission" asp-action="Index">
+                                        <i class="fas fa-money-bill-wave me-1"></i>Commissions
+                                    </a>
                                 </li>
                             }
                             @if (User.IsInRole("admin") || User.IsInRole("office"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Customers" asp-action="Index">Customers</a>
+                                    <a class="nav-link text-dark" asp-controller="Customers" asp-action="Index">
+                                        <i class="fas fa-users me-1"></i>Customers
+                                    </a>
                                 </li>
                             }
                             @if (User.IsInRole("admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Team" asp-action="Index">Teams</a>
+                                    <a class="nav-link text-dark" asp-controller="Team" asp-action="Index">
+                                        <i class="fas fa-users-cog me-1"></i>Teams
+                                    </a>
                                 </li>
                             }
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Lead" asp-action="Index">Leads</a>
+                                <a class="nav-link text-dark" asp-controller="Lead" asp-action="Index">
+                                    <i class="fas fa-tasks me-1"></i>Leads
+                                </a>
                             </li>
+                        }
+                    </ul>
 
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationDropdown"
                                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    🔔 Notifications
+                                    <i class="fas fa-bell"></i>
                                     <span id="notificationBadge"
-                                        class="badge bg-danger position-absolute top-0 start-100 translate-middle badge-pill d-none">0</span>
+                                        class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill @(userId > 0 ? "" : "d-none")">
+                                        @(userId > 0 ? _context.Notifications.Count(n => n.UserId == userId && !n.IsRead) : 0)
+                                    </span>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown"
-                                    style="width: 300px;" id="notificationList">
-                                    <li class="dropdown-item text-muted">Loading...</li>
+                                <ul class="dropdown-menu dropdown-menu-end notification-dropdown py-0" 
+                                    aria-labelledby="notificationDropdown" id="notificationList">
+                                    <li class="dropdown-item text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <span class="ms-2">Loading notifications...</span>
+                                    </li>
                                 </ul>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Logout">Logout</a>
+                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Logout">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                </a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">Login</a>
+                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Login
+                                </a>
                             </li>
                         }
                     </ul>
@@ -231,65 +225,166 @@
         </div>
     </footer>
 
-    <!-- Your existing scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/homepage.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-    @section Scripts {
-        <script>
-            async function loadNotifications() {
-                try {
-                    const res = await fetch('/Notifications/GetLatest');
-                    const data = await res.json();
+    
+    <script>
+        // Enhanced Notification System
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+            
+            // Refresh notifications every 20 seconds
+            setInterval(loadNotifications, 3000);
+            
+            // Load when dropdown is opened
+            document.getElementById('notificationDropdown')?.addEventListener('shown.bs.dropdown', loadNotifications);
+        });
 
-                    const list = document.getElementById("notificationList");
-                    list.innerHTML = "";
+        async function loadNotifications() {
+    const list = document.getElementById('notificationList');
+    const badge = document.getElementById('notificationBadge');
+    
+    if (!list) return;
 
-                    if (!data.notifications || data.notifications.length === 0) {
-                        list.innerHTML = `
-                                            <li class="dropdown-item text-muted text-center">
-                                                Nothing in here!
-                                            </li>
-                                        `;
-                    } else {
-                        data.notifications.forEach(note => {
-                            const item = document.createElement("li");
-                            item.className = "dropdown-item text-wrap" + (note.isRead ? "" : " fw-bold");
-                            item.innerHTML = `
-                                                <div>${note.message}</div>
-                                                <small class="text-muted">${note.createdAt}</small>
-                                            `;
-                            list.appendChild(item);
-                        });
-
-                        list.innerHTML += `
-                                            <li><hr class="dropdown-divider" /></li>
-                                            <li><a class="dropdown-item text-center" href="/Notifications">View All</a></li>
-                                        `;
-                    }
-
-                    const badge = document.getElementById("notificationBadge");
-                    if (data.unreadCount > 0) {
-                        badge.classList.remove("d-none");
-                        badge.textContent = data.unreadCount;
-                    } else {
-                        badge.classList.add("d-none");
-                    }
-
-                } catch (err) {
-                    console.error("🔴 Notification fetch failed:", err);
-                    const list = document.getElementById("notificationList");
-                    list.innerHTML = `<li class="dropdown-item text-danger text-center">⚠️ Failed to load notifications</li>`;
-                }
+    try {
+        // Show loading state
+        list.innerHTML = `
+            <li class="dropdown-item text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="ms-2">Loading notifications...</span>
+            </li>
+        `;
+        
+        // Modified fetch call with credentials and proper URL
+        const response = await fetch('@Url.Action("GetLatest", "Notifications")', {
+            credentials: 'include', // Crucial for authenticated requests
+            headers: {
+                'Accept': 'application/json'
             }
-
-            document.addEventListener("DOMContentLoaded", loadNotifications);
-            setInterval(loadNotifications, 15000); // refresh every 15 sec
-        </script>
+        });
+        
+        if (!response.ok) {
+            // More detailed error handling
+            const errorText = await response.text();
+            throw new Error(`Server responded with ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Debugging log
+        console.log('Received notifications:', data);
+        
+        // Clear existing notifications
+        list.innerHTML = '';
+        
+        if (data.notifications && data.notifications.length > 0) {
+            data.notifications.forEach(note => {
+                // Use consistent property naming (adjust based on your actual API response)
+                const isRead = note.IsRead || note.isRead || false;
+                const link = note.Link || note.link || '#';
+                const message = note.Message || note.message || '';
+                const createdAt = note.CreatedAt || note.createdAt || '';
+                const notificationId = note.NotificationId || note.notificationId || 0;
+                
+                const item = document.createElement("li");
+                item.className = `dropdown-item notification-item py-2 ${isRead ? '' : 'unread'}`;
+                item.innerHTML = `
+                    <a href="${link}" class="text-decoration-none d-block" data-id="${notificationId}">
+                        <div class="notification-message">${message}</div>
+                        <div class="notification-time text-muted">
+                            <small>${createdAt}</small>
+                        </div>
+                    </a>
+                `;
+                
+                // Mark as read when clicked if unread
+                if (!isRead) {
+                    item.querySelector('a').addEventListener('click', async function(e) {
+                        if (link && link !== '#') {
+                            e.preventDefault();
+                            await markNotificationAsRead(notificationId);
+                            window.location.href = link;
+                        } else {
+                            await markNotificationAsRead(notificationId);
+                        }
+                    });
+                }
+                
+                list.appendChild(item);
+            });
+            
+            // Add "View All" link
+            list.innerHTML += `
+                <li><hr class="dropdown-divider m-0" /></li>
+                <li>
+                    <a class="dropdown-item text-center py-2" href="/Notifications">
+                        <i class="fas fa-list me-1"></i> View All Notifications
+                    </a>
+                </li>
+            `;
+        } else {
+            list.innerHTML = `
+                <li class="dropdown-item text-center py-3 text-muted">
+                    <i class="far fa-bell-slash me-1"></i> No notifications
+                </li>
+            `;
+        }
+        
+        // Update badge
+        if (badge) {
+            const unreadCount = data.unreadCount || 0;
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+        }
+    } catch (error) {
+        console.error('Notification error:', error);
+        list.innerHTML = `
+            <li class="dropdown-item text-center py-3 text-danger">
+                <i class="fas fa-exclamation-triangle me-1"></i> Error loading notifications
+                <small class="d-block mt-1">${error.message}</small>
+            </li>
+        `;
     }
+}
 
+        async function markNotificationAsRead(id) {
+    try {
+        const response = await fetch(`/Notifications/MarkAsRead?id=${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error("Failed to mark as read");
+
+        // ✅ Update badge count visually
+        const item = document.querySelector(`.notification-item a[data-id="${id}"]`)?.closest('.notification-item');
+        if (item) {
+            item.classList.remove("unread");
+        }
+
+        const badge = document.getElementById("notificationBadge");
+        if (badge && !badge.classList.contains("d-none")) {
+            let count = parseInt(badge.textContent) || 0;
+            count = Math.max(0, count - 1);
+            if (count > 0) badge.textContent = count;
+            else badge.classList.add("d-none");
+        }
+    } catch (err) {
+        console.error("Error marking notification as read:", err);
+    }
+}
+
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

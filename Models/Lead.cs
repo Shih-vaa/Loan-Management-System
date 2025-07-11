@@ -44,6 +44,9 @@ namespace LoanManagementSystem.Models
         [ForeignKey("CustomerId")]
         public Customer? Customer { get; set; }
 
+[Column("deadline")]
+public DateTime? Deadline { get; set; }
+
         public virtual ICollection<LeadDocument>? Documents { get; set; }
 
     }

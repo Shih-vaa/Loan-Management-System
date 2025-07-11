@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using LoanManagementSystem.Data;
 using LoanManagementSystem.Models;
 using LoanManagementSystem.Models.ViewModels;
+using LoanManagementSystem.Helpers; // ✅ For NotificationHelper
 using Microsoft.Extensions.Logging;
+
 
 namespace LoanManagementSystem.Controllers
 {
@@ -33,9 +35,7 @@ namespace LoanManagementSystem.Controllers
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(status))
-            {
                 leads = leads.Where(l => l.Status == status);
-            }
 
             if (role == "marketing")
                 leads = leads.Where(l => l.LeadGeneratorId == userId);
@@ -65,7 +65,7 @@ namespace LoanManagementSystem.Controllers
             }
 
             lead.LeadGeneratorId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
-            lead.CreatedAt = DateTime.Now;
+            lead.CreatedAt = DateTime.UtcNow;
 
             _context.Leads.Add(lead);
             await _context.SaveChangesAsync();
@@ -101,11 +101,6 @@ namespace LoanManagementSystem.Controllers
         {
             if (!ModelState.IsValid)
             {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine($"🔴 {error.ErrorMessage}");
-                }
-
                 ViewBag.Users = await _context.Users
                     .Where(u => u.Role == "calling" || u.Role == "office")
                     .ToListAsync();
@@ -116,20 +111,55 @@ namespace LoanManagementSystem.Controllers
             var lead = await _context.Leads.FindAsync(model.LeadId);
             if (lead == null) return NotFound();
 
+            bool isNewAssignment = model.AssignedTo.HasValue && lead.AssignedTo != model.AssignedTo;
+
             lead.Status = model.Status;
             lead.AssignedTo = model.AssignedTo;
 
-            // ✅ Auto-create commission
+            if (isNewAssignment)
+            {
+                lead.AssignedAt = DateTime.UtcNow;
+                lead.Deadline = DateTime.UtcNow.AddHours(48);
+
+                // // ✅ Notify assigned user
+                // await NotificationHelper.AddNotificationAsync(
+                //     _context,
+                //     model.AssignedTo.Value,
+                //     $"New Lead Assigned: LMS-{lead.LeadId:D4}"
+                // );
+
+                // // ✅ Notify original generator
+                // if (lead.LeadGeneratorId != null)
+                // {
+                //     await NotificationHelper.AddNotificationAsync(
+                //         _context,
+                //         lead.LeadGeneratorId,
+                //         $"Your lead LMS-{lead.LeadId:D4} has been assigned."
+                //     );
+                // }
+                if (model.AssignedTo.HasValue)
+                {
+                    // ✅ Notify assigned user (e.g., Neha)
+                    await NotificationHelper.AddNotificationAsync(_context, model.AssignedTo.Value, $"New Lead Assigned: LMS-{lead.LeadId:D4}");
+
+                    // ✅ Notify lead generator (e.g., Ramesh)
+                    if (lead.LeadGeneratorId != model.AssignedTo.Value)
+                    {
+                        await NotificationHelper.AddNotificationAsync(_context, lead.LeadGeneratorId, $"Your lead LMS-{lead.LeadId:D4} has been assigned");
+                    }
+                }
+
+            }
+
+            // ✅ Auto-create commission if applicable
             if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
             {
-                bool commissionExists = await _context.Commissions
-                    .AnyAsync(c => c.LeadId == lead.LeadId);
-
+                bool commissionExists = await _context.Commissions.AnyAsync(c => c.LeadId == lead.LeadId);
                 if (!commissionExists)
                 {
                     if (lead.LoanAmount <= 0)
                     {
-                        Console.WriteLine("⚠️ Loan amount is zero. Defaulting to 500000");
+                        _logger.LogWarning("Loan amount is zero. Defaulting to ₹5L");
                         lead.LoanAmount = 500000;
                     }
 
@@ -144,15 +174,9 @@ namespace LoanManagementSystem.Controllers
                         CalculatedAt = DateTime.UtcNow
                     });
 
-                    Console.WriteLine($"💰 Commission created: ₹{commissionAmount} for Lead {lead.LeadId}");
+                    _logger.LogInformation($"💰 Commission created for Lead {lead.LeadId}: ₹{commissionAmount}");
                 }
             }
-            if (lead.AssignedTo != model.AssignedTo)
-            {
-                lead.AssignedAt = DateTime.UtcNow; // ✅ Timestamp assignment
-            }
-
-
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -174,12 +198,12 @@ namespace LoanManagementSystem.Controllers
             return lead == null ? NotFound() : View(lead);
         }
 
-        // ✅ Commission logic
+        // ✅ Commission formula
         private decimal CalculateCommissionAmount(decimal loanAmount)
         {
-            return loanAmount * 0.02M; // Example: 2%
+            return loanAmount * 0.02M; // 2% commission
         }
-
-
+        
     }
+    
 }

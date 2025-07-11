@@ -11,6 +11,8 @@
     @if (Model.Any(n => !n.IsRead))
     {
         <form asp-action="MarkAllAsRead" method="post" class="mb-3">
+            @Html.AntiForgeryToken()
+
             <button type="submit" class="btn btn-outline-primary">Mark All As Read</button>
         </form>
     }
@@ -49,10 +51,18 @@
                         <td>
                             @if (!notification.IsRead)
                             {
-                                <form asp-action="MarkAsRead" method="post" class="d-inline">
+                                @* <form asp-action="MarkAsRead" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+
                                     <input type="hidden" name="id" value="@notification.NotificationId" />
                                     <button type="submit" class="btn btn-sm btn-success">Mark as Read</button>
-                                </form>
+                                </form> *@
+                                <button class="btn btn-sm btn-success mark-as-read-btn"
+        data-id="@notification.NotificationId"
+        data-url="@Url.Action("MarkAsRead", "Notifications")">
+    Mark as Read
+</button>
+
                             }
                             <form asp-action="Delete" method="post" class="d-inline ms-1"
                                 onsubmit="return confirm('Delete this notification?');">
@@ -66,3 +76,32 @@
         </table>
     }
 </div>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.mark-as-read-btn').forEach(button => {
+        button.addEventListener('click', async function () {
+            const id = this.dataset.id;
+            const url = `${this.dataset.url}?id=${id}`;
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (res.ok) {
+                    const row = this.closest('tr');
+                    row?.classList.remove('table-warning');
+                    const badge = row.querySelector('.badge');
+                    if (badge) {
+                        badge.className = "badge bg-secondary";
+                        badge.innerText = "Read";
+                    }
+                    this.remove(); // remove the Mark as Read button
+                }
+            } catch (err) {
+                console.error("🔴 Failed to mark as read", err);
+            }
+        });
+    });
+</script>
+}
