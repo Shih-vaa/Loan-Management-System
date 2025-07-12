@@ -100,7 +100,7 @@ namespace LoanManagementSystem.Controllers
                 UploadedBy = currentUserId,
                 UploadedAt = DateTime.UtcNow,
                 DocumentType = documentType,
-                Status = "pending"
+                Status = DocumentStatus.Pending
             };
 
             _context.LeadDocuments.Add(doc);
@@ -209,8 +209,14 @@ namespace LoanManagementSystem.Controllers
             var doc = await _context.LeadDocuments.FindAsync(id);
             if (doc == null) return NotFound();
 
-            if (status != "approved" && status != "rejected")
-                return BadRequest("Invalid status");
+            // Convert to lowercase to match enum exactly
+            status = status?.ToLower();
+
+            if (!DocumentStatus.IsValid(status) ||
+                (status != DocumentStatus.Approved && status != DocumentStatus.Rejected))
+            {
+                return BadRequest("Status must be either 'approved' or 'rejected'");
+            }
 
             var currentUserId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
             var lead = await _context.Leads.FindAsync(doc.LeadId);
@@ -278,7 +284,7 @@ namespace LoanManagementSystem.Controllers
 
 
 
-        
+
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> AllDocs()
         {
@@ -300,12 +306,12 @@ namespace LoanManagementSystem.Controllers
         public async Task<IActionResult> PendingDocs()
         {
             var docs = await _context.LeadDocuments
-                .Where(d => d.Status == "pending")
+                .Where(d => d.Status == DocumentStatus.Pending)
                 .Include(d => d.UploadedByUser)
                 .ToListAsync();
             return View("LeadDocs", docs); // Reuse
         }
-        
+
 
 
 
@@ -315,4 +321,4 @@ namespace LoanManagementSystem.Controllers
 
 
     }
-    }
+}

@@ -42,39 +42,39 @@ namespace LoanManagementSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadDocuments(int id, List<IFormFile> files, List<string> types)
+public async Task<IActionResult> UploadDocuments(int id, List<IFormFile> files, List<string> types)
+{
+    int userId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
+
+    for (int i = 0; i < files.Count; i++)
+    {
+        var file = files[i];
+        var type = types[i];
+
+        if (file != null && file.Length > 0)
         {
-            int userId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
-
-            for (int i = 0; i < files.Count; i++)
+            var fileName = Path.GetFileName(file.FileName);
+            var filePath = Path.Combine("wwwroot/uploads", fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                var file = files[i];
-                var type = types[i];
-
-                if (file != null && file.Length > 0)
-                {
-                    var fileName = Path.GetFileName(file.FileName);
-                    var filePath = Path.Combine("wwwroot/uploads", fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-
-                    _context.LeadDocuments.Add(new LeadDocument
-                    {
-                        LeadId = id,
-                        DocumentType = type,
-                        FileName = fileName,
-                        FilePath = "/uploads/" + fileName,
-                        UploadedAt = DateTime.UtcNow,
-                        UploadedBy = userId,
-                        Status = "pending"
-                    });
-                }
+                await file.CopyToAsync(stream);
             }
 
+            _context.LeadDocuments.Add(new LeadDocument
+            {
+                LeadId = id,
+                DocumentType = type,
+                FileName = fileName,
+                FilePath = "/uploads/" + fileName,
+                UploadedAt = DateTime.UtcNow,
+                UploadedBy = userId,
+                Status = DocumentStatus.Pending
+            });
+        }
+    }
+
             var lead = await _context.Leads.FindAsync(id);
-            lead.Status = "documents_pending";
+            lead.Status = "in_process";
 
             // Notify office team
             var officeUsers = await _context.Users
