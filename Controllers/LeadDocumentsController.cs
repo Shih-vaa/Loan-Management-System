@@ -166,10 +166,16 @@ namespace LoanManagementSystem.Controllers
             var lead = await _context.Leads.FindAsync(leadId);
             if (lead == null) return NotFound();
 
-            if (User.IsInRole("office") && lead.AssignedTo != currentUserId)
-                return Forbid(); // Office can only review their leads
+            var callingUserId = lead.AssignedTo ?? -1;
 
-            var canVerify = User.IsInRole("admin") || PermissionHelper.HasTeamPermission(_context, HttpContext, "CanVerifyDocs");
+            // ✅ Replace this outdated check
+            if (User.IsInRole("office") && !TeamHelper.AreUsersInSameTeam(_context, currentUserId, callingUserId))
+                return Forbid();
+
+            // ✅ Permission check
+            bool canVerify = User.IsInRole("admin") ||
+                             PermissionHelper.HasTeamPermission(_context, HttpContext, "CanVerifyDocs");
+
             if (!canVerify) return Forbid();
 
             var docs = await _context.LeadDocuments
@@ -181,6 +187,7 @@ namespace LoanManagementSystem.Controllers
             ViewBag.LeadId = leadId;
             return View(docs);
         }
+
 
 
 
@@ -221,8 +228,9 @@ namespace LoanManagementSystem.Controllers
             var currentUserId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
             var lead = await _context.Leads.FindAsync(doc.LeadId);
 
-            if (User.IsInRole("office") && lead?.AssignedTo != currentUserId)
+            if (User.IsInRole("office") && !TeamHelper.AreUsersInSameTeam(_context, currentUserId, lead?.AssignedTo ?? -1))
                 return Forbid();
+
 
             bool canVerify = User.IsInRole("admin") || PermissionHelper.HasTeamPermission(_context, HttpContext, "CanVerifyDocs");
             if (!canVerify) return Forbid();
@@ -232,9 +240,30 @@ namespace LoanManagementSystem.Controllers
             doc.VerifiedAt = DateTime.UtcNow;
             doc.Remarks = remarks;
 
+            // ✅ Notify uploader only if available and status is rejected
+            if (status == DocumentStatus.Rejected && doc.UploadedBy.HasValue)
+            {
+                await NotificationHelper.AddNotificationAsync(
+                    _context,
+                    doc.UploadedBy.Value,
+                    $"Document '{doc.DocumentType}' for Lead LMS-{doc.LeadId:D4} was rejected. Remarks: {remarks ?? "No remarks"}"
+                );
+            }
+            if (status == DocumentStatus.Approved)
+            {
+                TempData["Success"] = $"✅ Document '{doc.DocumentType}' approved successfully.";
+            }
+            else if (status == DocumentStatus.Rejected)
+            {
+                TempData["Error"] = $"❌ Document '{doc.DocumentType}' rejected. Remarks: {remarks ?? "No remarks"}";
+            }
+
+
             await _context.SaveChangesAsync();
             return RedirectToAction("Review", new { leadId = doc.LeadId });
+
         }
+
 
 
 

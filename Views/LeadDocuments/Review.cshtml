@@ -6,6 +6,22 @@
 
 <div class="container mt-4">
     <h2>Review Uploaded Documents</h2>
+   @if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+
     <hr />
 
     <table class="table table-bordered">
@@ -20,28 +36,32 @@
             </tr>
         </thead>
         <tbody>
-        @foreach (var doc in Model)
-        {
-            <tr>
-                <td>@doc.DocumentType</td>
-                <td><a href="@doc.FilePath" target="_blank">@doc.FileName</a></td>
-                <td>@doc.UploadedByUser?.FullName</td>
-                <td>@doc.Status</td>
+            @foreach (var doc in Model)
+            {
+                <tr>
+                    <td>@doc.DocumentType</td>
+                    <td><a href="@doc.FilePath" target="_blank">@doc.FileName</a></td>
+                    <td>@doc.UploadedByUser?.FullName</td>
+                    <td>@doc.Status</td>
 
-                <td colspan="2">
-                    <form method="post" asp-action="Verify">
-                        <input type="hidden" name="id" value="@doc.DocId" />
-                        <div class="mb-2">
-                            <textarea name="remarks" class="form-control" placeholder="Optional remarks" rows="2"></textarea>
-                        </div>
-                        <button type="submit" name="status" value="approved" class="btn btn-success btn-sm me-2">Approve</button>
-                        <button type="submit" name="status" value="rejected" class="btn btn-danger btn-sm">Reject</button>
-                    </form>
-                </td>
-            </tr>
-        }
+                    <td colspan="2">
+                        <form method="post" asp-action="Verify">
+                            @Html.AntiForgeryToken() <!-- ✅ Required -->
+                            <input type="hidden" name="id" value="@doc.DocId" />
+                            <div class="mb-2">
+                                <textarea name="remarks" class="form-control" placeholder="Optional remarks"
+                                rows="2"></textarea>
+                            </div>
+                            <button type="submit" name="status" value="approved"
+                                class="btn btn-success btn-sm me-2">Approve</button>
+                            <button type="submit" name="status" value="rejected"
+                                class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 
-    <a class="btn btn-secondary" href="/Lead/Details/@ViewBag.LeadId">← Back to Lead</a>
+    <a class="btn btn-secondary" href="/Lead/Details/@ViewBag.LeadId">← Details</a>
 </div>

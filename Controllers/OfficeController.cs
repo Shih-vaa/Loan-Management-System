@@ -28,13 +28,20 @@ namespace LoanManagementSystem.Controllers
             ViewBag.TeamMemberships = teams;
             ViewBag.Teammates = teammates;
 
+            // Get user IDs of calling members in the same teams
+            var callingUserIds = teammates
+                .Where(tm => tm.User?.Role == "calling")
+                .Select(tm => tm.UserId)
+                .ToList();
+
             var leads = await _context.Leads
                 .Include(l => l.Customer)
                 .Include(l => l.Documents)
-                .Where(l => l.Status == "new") // Make sure this matches your Lead status
+                .Where(l => l.Status == "in_process" && l.AssignedTo != null && callingUserIds.Contains(l.AssignedTo.Value))
                 .ToListAsync();
 
             return View(leads);
         }
+
     }
 }

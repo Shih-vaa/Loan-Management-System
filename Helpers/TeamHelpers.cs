@@ -26,5 +26,22 @@ namespace LoanManagementSystem.Helpers
             var teams = teamMemberships.Select(tm => tm.Team).Distinct().ToList();
             return (teams, teammates);
         }
+
+        public static bool AreUsersInSameTeam(ApplicationDbContext context, int userId1, int userId2)
+        {
+            var user1TeamIds = context.TeamMembers
+                .Where(tm => tm.UserId == userId1)
+                .Select(tm => tm.TeamId)
+                .ToList();
+
+            var user2TeamIds = context.TeamMembers
+                .Where(tm => tm.UserId == userId2)
+                .Select(tm => tm.TeamId)
+                .ToList();
+
+            // ✅ Check if any team ID matches
+            return user1TeamIds.Intersect(user2TeamIds).Any();
+        }
+
     }
 }

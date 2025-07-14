@@ -1,4 +1,8 @@
 @model List<LoanManagementSystem.Models.Lead>
+@{
+    // 👇 Cast ViewBag.TeamMemberships to a strongly typed list
+    var teams = ViewBag.TeamMemberships as List<LoanManagementSystem.Models.Team>;
+}
 
 @{
     ViewData["Title"] = "Verification Dashboard";
@@ -19,38 +23,46 @@
                 <tr>
                     <th>Lead ID</th>
                     <th>Customer</th>
+                    <th>Calling Member</th>
+                    <th>Team</th>
                     <th>Uploaded Docs</th>
                     <th>Last Uploaded</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var lead in Model)
-                {
-                    <tr>
-                        <td>LMS-@lead.LeadId.ToString("D4")</td>
-                        <td>@lead.Customer?.FullName</td>
-                        <td>@lead.Documents?.Count()</td>
-                        <td>
-                            @if (lead.Documents?.Any() == true)
-                            {
-                                @lead.Documents.Max(d => d.UploadedAt).ToString("dd MMM, hh:mm tt")
-                            }
-                            else
-                            {
-                                <text>N/A</text>
-                            }
-                        </td>
-                        <td>
-                            <a class="btn btn-sm btn-primary"
-                               asp-controller="LeadDocuments"
-                               asp-action="Review"
-                               asp-route-leadId="@lead.LeadId">
-                                Review
-                            </a>
-                        </td>
-                    </tr>
-                }
+               @foreach (var lead in Model)
+{
+    var assignedUser = lead.AssignedUser?.FullName ?? "Unassigned";
+    var team = teams?.FirstOrDefault(t => t.Members.Any(m => m.UserId == lead.AssignedTo));
+
+    <tr>
+        <td>LMS-@lead.LeadId.ToString("D4")</td>
+        <td>@lead.Customer?.FullName</td>
+        <td>@assignedUser</td>
+        <td>@(team?.TeamName ?? "N/A")</td>
+        <td>@lead.Documents?.Count()</td>
+        <td>
+            @if (lead.Documents?.Any() == true)
+            {
+                @lead.Documents.Max(d => d.UploadedAt).ToString("dd MMM, hh:mm tt")
+            }
+            else
+            {
+                <text>N/A</text>
+            }
+        </td>
+        <td>
+            <a class="btn btn-sm btn-primary"
+               asp-controller="LeadDocuments"
+               asp-action="Review"
+               asp-route-leadId="@lead.LeadId">
+                Review
+            </a>
+        </td>
+    </tr>
+}
+
             </tbody>
         </table>
     }
