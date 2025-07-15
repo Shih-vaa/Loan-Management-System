@@ -2,255 +2,387 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container mt-5">
-    <h2>Welcome..</h2>
-@* <p class="lead">Hello, @ViewBag.UserEmail</p> *@
-
-
-
 @model LoanManagementSystem.Models.ViewModels.DashboardMetricsViewModel
-@{
-    ViewData["Title"] = "Admin Dashboard";
-}
 
-    <div class="container mt-4">
-        <h2 class="mb-4">📊 Admin Dashboard</h2>
+<div class="container dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header mb-4">
+        <h2 class="dashboard-title">📊 Admin Dashboard</h2>
+        <p class="dashboard-subtitle">Comprehensive overview of your loan management system</p>
+    </div>
 
-        <div class="row g-4">
-            <div class="col-md-3">
-                <a href="/Lead" class="text-decoration-none">
-                    <div class="card text-bg-primary">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Leads</h5>
-                            <p class="display-6">@Model.TotalLeads</p>
-                        </div>
+    <!-- Metrics Cards -->
+    <div class="row g-4">
+        <!-- First Row -->
+        <div class="col-md-3">
+            <a href="/Lead" class="metric-card-link">
+                <div class="card metric-card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Leads</h5>
+                        <p class="metric-value">@Model.TotalLeads</p>
+                        <i class="bi bi-people-fill metric-icon"></i>
                     </div>
-                </a>
-            </div>
-            <div class="col-md-3">
-                <a href="/Lead?status=pending" class="text-decoration-none">
-                    <div class="card text-bg-warning">
-                        <div class="card-body">
-                            <h5 class="card-title">Pending Leads</h5>
-                            <p class="display-6">@Model.PendingLeads</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-3">
-                <a href="/Lead?status=approved" class="text-decoration-none">
-                    <div class="card text-bg-success">
-                        <div class="card-body">
-                            <h5 class="card-title">Approved Leads</h5>
-                            <p class="display-6">@Model.ApprovedLeads</p>
-                        </div>
-                    </div>
-                </a>
-
-            </div>
-            <div class="col-md-3">
-                <a href="/Customers" class="text-decoration-none">
-                    <div class="card text-bg-secondary">
-                        <div class="card-body">
-                            <h5 class="card-title">Customers</h5>
-                            <p class="display-6">@Model.TotalCustomers</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="/Lead/Index?status=new" class="text-decoration-none">
-                    <div class="card text-bg-danger">
-                        <div class="card-body">
-                            <h5 class="card-title">Unassigned Leads</h5>
-                            <p class="display-6">@Model.UnassignedLeadsCount</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-
-            <div class="row g-4 mt-2">
-                <div class="col-md-3">
-                    <a href="/LeadDocuments/AllDocs" class="text-decoration-none">
-                        <div class="card text-bg-dark">
-                            <div class="card-body">
-                                <h5 class="card-title">Documents Uploaded</h5>
-                                <p class="display-6">@Model.TotalDocumentsUploaded</p>
-                            </div>
-                        </div>
-                    </a>
                 </div>
-                <div class="col-md-3">
-                    <a href="/LeadDocuments/PendingDocs" class="text-decoration-none">
-                        <div class="card text-bg-danger">
-                            <div class="card-body">
-                                <h5 class="card-title">Pending Docs</h5>
-                                <p class="display-6">@Model.PendingDocuments</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="/Commission" class="text-decoration-none">
-                        <div class="card text-bg-info">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Commission</h5>
-                                <p class="display-6">₹@Model.TotalCommission.ToString("N2")</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="/Users" class="text-decoration-none">
-                        <div class="card text-bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title">Users</h5>
-                                <p class="display-6">@Model.TotalUsers</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
+            </a>
         </div>
-        <!-- ✅ Team Performance -->
-        <h4 class="mt-5">📈 Team Performance Overview</h4>
-        <div class="d-flex justify-content-end mb-2">
-            <a class="btn btn-sm btn-outline-primary" href="/Admin/ExportMetrics">📥 Export CSV</a>
+
+        <div class="col-md-3">
+            <a href="/Lead?status=pending" class="metric-card-link">
+                <div class="card metric-card bg-warning text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Leads</h5>
+                        <p class="metric-value">@Model.PendingLeads</p>
+                        <i class="bi bi-hourglass-split metric-icon"></i>
+                    </div>
+                </div>
+            </a>
         </div>
-        <table class="table table-bordered table-hover" id="teamTable">
-            <thead class="table-light">
-                <tr>
-                    <th>Team</th>
-                    <th>Leads Generated</th>
-                    <th>Assigned</th>
-                    <th>Docs Uploaded</th>
-                    <th>Docs Verified</th>
-                    <th>Approved</th>
-                    <th>Commission (₹)</th>
-                    <th>🔍</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var t in Model.TeamPerformances)
-                {
+
+        <div class="col-md-3">
+            <a href="/Lead?status=approved" class="metric-card-link">
+                <div class="card metric-card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Approved Leads</h5>
+                        <p class="metric-value">@Model.ApprovedLeads</p>
+                        <i class="bi bi-check-circle-fill metric-icon"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/Customers" class="metric-card-link">
+                <div class="card metric-card bg-secondary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Customers</h5>
+                        <p class="metric-value">@Model.TotalCustomers</p>
+                        <i class="bi bi-person-badge-fill metric-icon"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Second Row -->
+        <div class="col-md-3">
+            <a href="/Lead/Index?status=new" class="metric-card-link">
+                <div class="card metric-card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Unassigned Leads</h5>
+                        <p class="metric-value">@Model.UnassignedLeadsCount</p>
+                        <i class="bi bi-person-x-fill metric-icon"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/LeadDocuments/AllDocs" class="metric-card-link">
+                <div class="card metric-card bg-dark text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Documents Uploaded</h5>
+                        <p class="metric-value">@Model.TotalDocumentsUploaded</p>
+                        <i class="bi bi-file-earmark-arrow-up-fill metric-icon"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/LeadDocuments/PendingDocs" class="metric-card-link">
+                <div class="card metric-card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Docs</h5>
+                        <p class="metric-value">@Model.PendingDocuments</p>
+                        <i class="bi bi-file-earmark-excel-fill metric-icon"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="/Commission" class="metric-card-link">
+                <div class="card metric-card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Commission</h5>
+                        <p class="metric-value">₹@Model.TotalCommission.ToString("N2")</p>
+                        <i class="bi bi-cash-stack metric-icon"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Team Performance Section -->
+    <div class="dashboard-section mt-5">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <h4 class="section-title">📈 Team Performance Overview</h4>
+            <a class="btn btn-sm btn-outline-primary" href="/Admin/ExportMetrics">
+                <i class="bi bi-download"></i> Export CSV
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="teamTable">
+                <thead class="table-light">
                     <tr>
-                        <td>@t.TeamName</td>
-                        <td>@t.TotalLeadsGenerated</td>
-                        <td>@t.LeadsAssigned</td>
-                        <td>@t.DocumentsUploaded</td>
-                        <td>@t.DocumentsVerified</td>
-                        <td>@t.LeadsApproved</td>
-                        <td>@t.TotalCommission.ToString("N2")</td>
-                        <td>
-                            <a href="/Admin/TeamDrilldown?teamName=@t.TeamName" class="btn btn-sm btn-outline-info">
-                                <i class="bi bi-bar-chart-fill"></i>
-                            </a>
-                        </td>
+                        <th>Team</th>
+                        <th>Leads Generated</th>
+                        <th>Assigned</th>
+                        <th>Docs Uploaded</th>
+                        <th>Docs Verified</th>
+                        <th>Approved</th>
+                        <th>Commission (₹)</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.TeamPerformances)
+                    {
+                        <tr>
+                            <td>@t.TeamName</td>
+                            <td>@t.TotalLeadsGenerated</td>
+                            <td>@t.LeadsAssigned</td>
+                            <td>@t.DocumentsUploaded</td>
+                            <td>@t.DocumentsVerified</td>
+                            <td>@t.LeadsApproved</td>
+                            <td>@t.TotalCommission.ToString("N2")</td>
+                            <td class="text-center">
+                                <a href="/Admin/TeamDrilldown?teamName=@t.TeamName" 
+                                   class="btn btn-sm btn-outline-info" 
+                                   title="View Details">
+                                    <i class="bi bi-bar-chart-fill"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        @* <!-- ✅ Team Chart -->
-        <h5 class="mt-5">📊 Team-wise Commission Chart</h5>
-        <canvas id="teamChart" height="100"></canvas> *@
+    <!-- Charts Section -->
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="chart-title">📌 Lead Status Distribution</h5>
+                <canvas id="leadStatusChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="chart-title">📊 Team Performance Comparison</h5>
+                <canvas id="teamPerformanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <!-- ✅ Lead Status Chart -->
-        <h5 class="mt-5">📌 Lead Status Chart</h5>
-        <canvas id="leadStatusChart" style="max-width: 400px; max-height: 400px;"></canvas>
-        <canvas id="teamPerformanceChart" height="200"></canvas>
-        <hr />
 
-        @section Scripts {
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script>
-                // 📊 Team Commission Chart
-                const teamChart = new Chart(document.getElementById('teamChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TeamPerformances.Select(t => t.TeamName))),
-                        datasets: [{
-                            label: 'Total Commission (₹)',
-                            data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TeamPerformances.Select(t => t.TotalCommission))),
-                            backgroundColor: 'rgba(40, 167, 69, 0.6)'
-                        }]
+    <style>
+        .dashboard-container {
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .dashboard-header {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .dashboard-title {
+            font-weight: 600;
+            color: #343a40;
+        }
+        
+        .dashboard-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        
+        .metric-card {
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card-link {
+            text-decoration: none;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-icon {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            font-size: 2.5rem;
+            opacity: 0.2;
+        }
+        
+        .dashboard-section {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .chart-container {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        
+        .chart-title {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 1.5rem;
+        }
+        
+        #teamTable th {
+            white-space: nowrap;
+        }
+    </style>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Lead Status Chart (Pie)
+        const leadStatusCtx = document.getElementById('leadStatusChart').getContext('2d');
+        new Chart(leadStatusCtx, {
+            type: 'pie',
+            data: {
+                labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Keys)),
+                datasets: [{
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Values)),
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
                     },
-                    options: {
-                        plugins: {
-                            tooltip: { enabled: true }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: '₹ Commission' }
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
                             }
                         }
                     }
-                });
+                }
+            }
+        });
 
-                // 📌 Lead Status Chart
-                const leadStatusChart = new Chart(document.getElementById('leadStatusChart'), {
-                    type: 'pie',
-                    data: {
-                        labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Keys)),
-                        datasets: [{
-                            label: 'Lead Count',
-                            data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Values)),
-                            backgroundColor: [
-                                'rgba(54, 162, 235, 0.6)',
-                                'rgba(255, 99, 132, 0.6)',
-                                'rgba(255, 206, 86, 0.6)',
-                                'rgba(75, 192, 192, 0.6)'
-                            ]
-                        }]
-                    }
-                });
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script>
-                        const teamLabels = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.TeamName)));
-
-                        const leadsGenerated = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.TotalLeadsGenerated)));
-                        const leadsAssigned = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.LeadsAssigned)));
-                        const docsUploaded = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.DocumentsUploaded)));
-                        const docsVerified = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.DocumentsVerified)));
-                        const leadsApproved = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.LeadsApproved)));
-                        const commissions = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => Math.Round(t.TotalCommission / 1000)))); // in ₹K
-
-                        const ctx = document.getElementById('teamPerformanceChart').getContext('2d');
-                        new Chart(ctx, {
-                            type: 'bar',
-                        data: {
-                            labels: teamLabels,
-                        datasets: [
-                        {label: 'Leads Generated', data: leadsGenerated, backgroundColor: 'rgba(0,123,255,0.6)' },
-                        {label: 'Leads Assigned', data: leadsAssigned, backgroundColor: 'rgba(255,193,7,0.6)' },
-                        {label: 'Docs Uploaded', data: docsUploaded, backgroundColor: 'rgba(40,167,69,0.6)' },
-                        {label: 'Docs Verified', data: docsVerified, backgroundColor: 'rgba(23,162,184,0.6)' },
-                        {label: 'Leads Approved', data: leadsApproved, backgroundColor: 'rgba(108,117,125,0.6)' },
-                        {label: 'Commission (K ₹)', data: commissions, backgroundColor: 'rgba(220,53,69,0.6)' }
-                        ]
-                },
-                        options: {
-                            responsive: true,
-                        plugins: {
-                            title: {
-                            display: true,
-                        text: '📊 Team Performance Comparison'
-                        },
-                        tooltip: {mode: 'index', intersect: false },
+        // Team Performance Chart (Bar)
+        const teamLabels = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.TeamName)));
+        const teamCtx = document.getElementById('teamPerformanceChart').getContext('2d');
+        new Chart(teamCtx, {
+            type: 'bar',
+            data: {
+                labels: teamLabels,
+                datasets: [
+                    {
+                        label: 'Leads Generated',
+                        data: @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.TotalLeadsGenerated))),
+                        backgroundColor: 'rgba(0, 123, 255, 0.7)'
                     },
-                        scales: {
-                            x: {stacked: true },
-                        y: {
-                            beginAtZero: true,
-                        title: {display: true, text: 'Count / ₹K' }
+                    {
+                        label: 'Leads Assigned',
+                        data: @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.LeadsAssigned))),
+                        backgroundColor: 'rgba(255, 193, 7, 0.7)'
+                    },
+                    {
+                        label: 'Docs Uploaded',
+                        data: @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.DocumentsUploaded))),
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)'
+                    },
+                    {
+                        label: 'Docs Verified',
+                        data: @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.DocumentsVerified))),
+                        backgroundColor: 'rgba(23, 162, 184, 0.7)'
+                    },
+                    {
+                        label: 'Leads Approved',
+                        data: @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.LeadsApproved))),
+                        backgroundColor: 'rgba(108, 117, 125, 0.7)'
+                    },
+                    {
+                        label: 'Commission (K ₹)',
+                        data: @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => Math.Round(t.TotalCommission / 1000)))),
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        type: 'line',
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Team Performance Metrics'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: false
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Count'
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Commission (K ₹)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
                         }
                     }
                 }
-            });
-            </script>
-        }
-
-    </div>
+            }
+        });
+    </script>
+}
