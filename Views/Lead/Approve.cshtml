@@ -1,0 +1,40 @@
+@model LoanManagementSystem.Models.Lead
+@{
+    ViewData["Title"] = "Final Approval";
+}
+
+<div class="container mt-4">
+    <h2>✔️ Final Approval - LMS-@Model.LeadId.ToString("D4")</h2>
+    <hr />
+
+    <dl class="row">
+        <dt class="col-sm-3">Customer</dt>
+        <dd class="col-sm-9">@Model.Customer?.FullName</dd>
+
+        <dt class="col-sm-3">Loan Amount</dt>
+        <dd class="col-sm-9">₹@Model.LoanAmount.ToString("N0")</dd>
+
+        <dt class="col-sm-3">Assigned To</dt>
+        <dd class="col-sm-9">@Model.AssignedUser?.FullName</dd>
+    </dl>
+
+    <form method="post" asp-action="Approve">
+        <input type="hidden" name="leadId" value="@Model.LeadId" />
+
+        <div class="mb-3">
+            <label class="form-label">New Status</label>
+            <select name="status" class="form-select" required>
+                <option value="approved">Approved</option>
+                <option value="disbursed">Disbursed</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Remarks (optional)</label>
+            <textarea name="remarks" class="form-control" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Confirm Approval</button>
+        <a href="/Lead/Index" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>

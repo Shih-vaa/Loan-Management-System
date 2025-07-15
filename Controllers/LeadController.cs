@@ -198,12 +198,95 @@ namespace LoanManagementSystem.Controllers
             return lead == null ? NotFound() : View(lead);
         }
 
+
+
+
+
+
+
+        // GET: Lead/Approve/{id}
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var lead = await _context.Leads
+                .Include(l => l.Customer)
+                .Include(l => l.AssignedUser)
+                .FirstOrDefaultAsync(l => l.LeadId == id);
+
+            if (lead == null) return NotFound();
+            return View(lead);
+        }
+
+        // POST: Lead/Approve
+        [HttpPost]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Approve(int leadId, string status, string? remarks)
+        {
+            var lead = await _context.Leads.FindAsync(leadId);
+            if (lead == null) return NotFound();
+
+            if (status != "approved" && status != "disbursed")
+                return BadRequest("Invalid status");
+
+            lead.Status = status;
+            lead.Remarks = remarks;
+
+            // ✅ Commission logic
+            if (lead.AssignedTo.HasValue)
+            {
+                bool exists = await _context.Commissions.AnyAsync(c => c.LeadId == leadId);
+                if (!exists)
+                {
+                    decimal commission = lead.LoanAmount > 0 ? lead.LoanAmount * 0.02M : 500000 * 0.02M;
+                    _context.Commissions.Add(new Commission
+                    {
+                        LeadId = leadId,
+                        UserId = lead.AssignedTo.Value,
+                        Amount = commission,
+                        Status = "pending",
+                        CalculatedAt = DateTime.UtcNow
+                    });
+                }
+
+                // ✅ Notify assigned calling user
+                await NotificationHelper.AddNotificationAsync(_context,
+                    lead.AssignedTo.Value,
+                    $"Lead LMS-{leadId:D4} has been marked as {status.ToUpper()} by admin.");
+
+                // ✅ Notify marketing agent
+                if (lead.LeadGeneratorId != lead.AssignedTo.Value)
+                {
+                    await NotificationHelper.AddNotificationAsync(_context,
+                        lead.LeadGeneratorId,
+                        $"Your lead LMS-{leadId:D4} has been approved by admin.");
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Lead LMS-{leadId:D4} marked as {status}.";
+            return RedirectToAction("Index");
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // ✅ Commission formula
         private decimal CalculateCommissionAmount(decimal loanAmount)
         {
             return loanAmount * 0.02M; // 2% commission
         }
-        
+
     }
-    
+
 }

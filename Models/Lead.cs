@@ -32,7 +32,8 @@ namespace LoanManagementSystem.Models
         [Column("assigned_at")]
         public DateTime? AssignedAt { get; set; }
 
-
+        [Column("remarks")]
+        public string? Remarks { get; set; }
 
         // Navigation
         [ForeignKey("LeadGeneratorId")]
@@ -44,10 +45,10 @@ namespace LoanManagementSystem.Models
         [ForeignKey("CustomerId")]
         public Customer? Customer { get; set; }
 
-[Column("deadline")]
-public DateTime? Deadline { get; set; }
+        [Column("deadline")]
+        public DateTime? Deadline { get; set; }
 
         public virtual ICollection<LeadDocument>? Documents { get; set; }
-
+        
     }
 }

@@ -1,0 +1,52 @@
+@model int  
+<!-- LeadId passed as model -->
+
+@{
+    ViewData["Title"] = "Re-Upload Documents";
+}
+
+<div class="container mt-4">
+    <h2>📤 Re-Upload Documents for Lead LMS-@Model.ToString("D4")</h2>
+    <hr />
+
+    <form asp-action="ReuploadDocuments" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="@Model" />
+
+        <div id="docList">
+            <div class="row mb-3">
+                <div class="col-md-5">
+                    <input type="file" name="files" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <select name="types" class="form-select">
+                        <option value="PAN">PAN</option>
+                        <option value="Aadhar">Aadhar</option>
+                        <option value="Salary Slips">Salary Slips</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-outline-secondary mb-3" onclick="addDoc()">+ Add More</button>
+        <br />
+        <button type="submit" class="btn btn-primary">Re-Upload Documents</button>
+        <a href="/Calling/Dashboard" class="btn btn-outline-dark ms-2">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function addDoc() {
+            const docList = document.getElementById('docList');
+            const newRow = docList.firstElementChild.cloneNode(true);
+            const inputs = newRow.querySelectorAll("input, select");
+
+            inputs.forEach(el => {
+                if (el.tagName === "INPUT") el.value = "";
+                if (el.tagName === "SELECT") el.selectedIndex = 0;
+            });
+
+            docList.appendChild(newRow);
+        }
+    </script>
+}

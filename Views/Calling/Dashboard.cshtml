@@ -14,6 +14,7 @@
             <th>Loan Amount</th>
             <th>Status</th>
             <th>Actions</th>
+            <th>Rejected Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -28,6 +29,21 @@
                     <a href="/Calling/UploadDocuments/@lead.LeadId" class="btn btn-sm btn-primary">Upload Docs</a>
                     <a href="/Lead/Details/@lead.LeadId" class="btn btn-sm btn-outline-secondary">Details</a>
                 </td>
+                <td>
+                    @* <a href="/Calling/UploadDocuments/@lead.LeadId" class="btn btn-sm btn-primary">Upload Docs</a> *@
+
+                    @if (lead.Documents?.Any(d => d.Status == "rejected") == true)
+                    {
+                        <a asp-controller="Calling" asp-action="ViewRejectedDocs" asp-route-leadId="@lead.LeadId"
+                            class="btn btn-sm btn-warning">
+                            Re-upload
+                        </a>
+
+                    }
+
+                    <a href="/Lead/Details/@lead.LeadId" class="btn btn-sm btn-outline-secondary">Details</a>
+                </td>
+
             </tr>
         }
     </tbody>

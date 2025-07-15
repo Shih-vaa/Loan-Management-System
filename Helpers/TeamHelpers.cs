@@ -42,6 +42,25 @@ namespace LoanManagementSystem.Helpers
             // ✅ Check if any team ID matches
             return user1TeamIds.Intersect(user2TeamIds).Any();
         }
+public static List<User> GetOfficeMembersInSameTeam(ApplicationDbContext context, int callingUserId)
+{
+    // Step 1: Get all team IDs the calling user belongs to
+    var teamIds = context.TeamMembers
+        .Where(tm => tm.UserId == callingUserId)
+        .Select(tm => tm.TeamId)
+        .Distinct()
+        .ToList();
+
+    // Step 2: Get all office users who are in any of those teams
+    var officeUsers = context.TeamMembers
+        .Where(tm => teamIds.Contains(tm.TeamId))
+        .Select(tm => tm.User)
+        .Where(u => u.Role == "office")
+        .Distinct()
+        .ToList();
+
+    return officeUsers;
+}
 
     }
 }
