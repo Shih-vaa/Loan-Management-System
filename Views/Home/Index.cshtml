@@ -2,6 +2,7 @@
     ViewData["Title"] = "Home - Loan Management System";
 }
 
+<!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
         <h1 class="hero-title">Streamline Your Loan Management</h1>
@@ -10,7 +11,19 @@
         @if (User.Identity?.IsAuthenticated ?? false)
         {
             <div class="hero-buttons">
-                <a href="/Dashboard" class="btn btn-light btn-lg">Go to Dashboard</a>
+                <!-- Redirects to role-specific dashboard -->
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="/Admin/Dashboard" class="btn btn-light btn-lg">Admin Dashboard</a>
+                }
+                else if (User.IsInRole("LoanOfficer"))
+                {
+                    <a href="/Officer/Dashboard" class="btn btn-light btn-lg">Officer Dashboard</a>
+                }
+                else
+                {
+                    <a href="/Client/Dashboard" class="btn btn-light btn-lg">My Dashboard</a>
+                }
             </div>
         }
         else
@@ -24,58 +37,97 @@
 </div>
 
 <div class="container">
+    <!-- Features Section (Updated) -->
     <section class="features-section">
-        <h2 class="text-center mb-5">Key Features</h2>
+        <h2 class="text-center mb-5">Why Choose Our Platform?</h2>
         <div class="row">
             <div class="col-md-4">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-user-tie"></i>
+                        <i class="fas fa-bolt"></i>
                     </div>
-                    <h3>Role-Based Access</h3>
-                    <p>Secure access control with permissions tailored for different team roles.</p>
+                    <h3>Instant Approvals</h3>
+                    <p>AI-powered loan decisions in seconds, reducing wait times by 70%.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-project-diagram"></i>
+                        <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h3>Lead Management</h3>
-                    <p>Track leads from initial contact through approval with customizable statuses.</p>
+                    <h3>Fraud Detection</h3>
+                    <p>Advanced algorithms flag suspicious activity before approval.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-file-contract"></i>
+                        <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3>Document Workflow</h3>
-                    <p>Upload, verify, and manage loan documents with full audit trail.</p>
+                    <h3>Real-Time Analytics</h3>
+                    <p>Track loan performance, defaults, and profitability live.</p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Animated Stats Section -->
     <section class="stats-section text-center py-5">
         <h2 class="mb-5">Our Impact</h2>
         <div class="row">
             <div class="col-md-3">
-                <div class="stat-number" data-target="1250">0</div>
+                <div class="stat-number" data-target="1247">0</div>
                 <p>Leads Processed</p>
             </div>
             <div class="col-md-3">
-                <div class="stat-number" data-target="850">0</div>
+                <div class="stat-number" data-target="843">0</div>
                 <p>Loans Approved</p>
             </div>
             <div class="col-md-3">
-                <div class="stat-number" data-target="150">0</div>
-                <p>Active Users</p>
+                <div class="stat-number" data-target="92">0</div>
+                <p>% Approval Rate</p>
             </div>
             <div class="col-md-3">
-                <div class="stat-number" data-target="25">0</div>
-                <p>Teams Using</p>
+                <div class="stat-number" data-target="4.8">0</div>
+                <p>Avg. Client Rating</p>
             </div>
         </div>
     </section>
 </div>
+
+<!-- Animation Script for Stats -->
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const counters = document.querySelectorAll('.stat-number');
+            const speed = 50; // Animation speed (lower = faster)
+            const duration = 4000; // Total animation time (ms)
+
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const isDecimal = target % 1 !== 0;
+                const increment = target / (duration / speed);
+                let current = 0;
+
+                const updateCounter = () => {
+                    current += increment;
+                    if (isDecimal) {
+                        counter.innerText = current.toFixed(1);
+                    } else {
+                        counter.innerText = Math.floor(current);
+                    }
+
+                    if (current < target) {
+                        setTimeout(updateCounter, speed);
+                    } else {
+                        counter.innerText = isDecimal ? target.toFixed(1) : target;
+                    }
+                };
+
+                // Start with random jitter (0-50% of target)
+                current = Math.random() * (target * 0.5);
+                updateCounter();
+            });
+        });
+    </script>
+}

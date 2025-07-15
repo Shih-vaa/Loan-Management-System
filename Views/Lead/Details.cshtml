@@ -1,6 +1,12 @@
 @model LoanManagementSystem.Models.Lead
+@using LoanManagementSystem.Helpers
+@inject LoanManagementSystem.Data.ApplicationDbContext _context
 @{
     ViewData["Title"] = "Lead Details";
+    bool canUploadDocs = PermissionHelper.HasTeamPermission(_context, Context, "CanUploadDocs");
+    var isMarketing = User.IsInRole("marketing");
+    var isAdmin = User.IsInRole("admin");
+    var isOffice = User.IsInRole("office");
 }
 
 <div class="container mt-4">
@@ -9,7 +15,7 @@
 
     <dl class="row">
         <dt class="col-sm-3">Lead ID</dt>
-        <dd class="col-sm-9">@Model.LeadId</dd>
+        <dd class="col-sm-9">LMS-@Model.LeadId.ToString("D4")</dd>
 
         <dt class="col-sm-3">Customer</dt>
         <dd class="col-sm-9">@Model.Customer?.FullName</dd>
@@ -27,119 +33,113 @@
         <dd class="col-sm-9">@Model.AssignedUser?.FullName</dd>
     </dl>
 
-    <hr />
-    <h4>📄 Uploaded Documents</h4>
-
-    @if (Model.Documents != null && Model.Documents.Any())
-    {
-        <table class="table table-sm table-bordered mt-3">
-            <thead class="table-light">
-                <tr>
-                    <th>Type</th>
-                    <th>File</th>
-                    <th>Status</th>
-                    <th>Uploaded By</th>
-                    <th>Uploaded At</th>
-                    <th>Verified By</th>
-                    <th>Verified At</th>
-                    <th>Remarks</th>
-                    @if (User.IsInRole("admin") || User.IsInRole("office"))
-                    {
-                        <th>Action</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var doc in Model.Documents)
-                {
-                    <tr>
-                        <td>@doc.DocumentType</td>
-                        <td>
-                            <a href="@doc.FilePath" target="_blank">@doc.FileName</a>
-                        </td>
-                        <td>
-                            @switch (doc.Status)
-                            {
-                                case "approved":
-                                    <span class="badge bg-success">✔️ Approved</span>
-                                    break;
-                                case "rejected":
-                                    <span class="badge bg-danger">❌ Rejected</span>
-                                    break;
-                                default:
-                                    <span class="badge bg-warning text-dark">⏳ Pending</span>
-                                    break;
-                            }
-                        </td>
-                        <td>@doc.UploadedByUser?.FullName</td>
-                        <td>@doc.UploadedAt.ToString("g")</td>
-                        <td>@doc.Verifier?.FullName</td>
-                        <td>@doc.VerifiedAt?.ToString("g")</td>
-                        <td>@doc.Remarks</td>
-
-                        @if (User.IsInRole("admin") || User.IsInRole("office"))
-                        {
-                            <td>
-                                @if (doc.Status != "approved")
-                                {
-                                    <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@doc.DocId" />
-                                        <input type="hidden" name="status" value="approved" />
-                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                                    </form>
-                                }
-                                @if (doc.Status != "rejected")
-                                {
-                                    <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@doc.DocId" />
-                                        <input type="hidden" name="status" value="rejected" />
-                                        <button type="submit" class="btn btn-sm btn-danger">Reject</button>
-                                    </form>
-                                }
-                            </td>
-                        }
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p class="text-muted">No documents uploaded yet.</p>
-    }
-
-    @using LoanManagementSystem.Helpers
-    @inject LoanManagementSystem.Data.ApplicationDbContext _context
-
-    @{
-        bool canUploadDocs = PermissionHelper.HasTeamPermission(_context, Context, "CanUploadDocs");
-    }
-
-    @if (User.IsInRole("admin") || canUploadDocs)
+    @if (!isMarketing)  // ✅ Marketing role skips everything below
     {
         <hr />
-        <h4>📎 Upload New Document</h4>
-        <form method="post" enctype="multipart/form-data" asp-controller="LeadDocuments" asp-action="Create">
-            <input type="hidden" name="leadId" value="@Model.LeadId" />
+        <h4>📄 Uploaded Documents</h4>
 
-            <div class="mb-3">
-                <label class="form-label">Document Type</label>
-                <select name="documentType" class="form-control" required>
-                    <option value="">-- Select --</option>
-                    <option value="Aadhaar">Aadhaar</option>
-                    <option value="PAN">PAN</option>
-                    <option value="Salary Slip">Salary Slip</option>
-                    <option value="Bank Statement">Bank Statement</option>
-                </select>
-            </div>
+        @if (Model.Documents != null && Model.Documents.Any())
+        {
+            <table class="table table-sm table-bordered mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Type</th>
+                        <th>File</th>
+                        <th>Status</th>
+                        <th>Uploaded By</th>
+                        <th>Uploaded At</th>
+                        <th>Verified By</th>
+                        <th>Verified At</th>
+                        <th>Remarks</th>
+                        @if (isAdmin || isOffice)
+                        {
+                            <th>Action</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var doc in Model.Documents)
+                    {
+                        <tr>
+                            <td>@doc.DocumentType</td>
+                            <td><a href="@doc.FilePath" target="_blank">@doc.FileName</a></td>
+                            <td>
+                                @switch (doc.Status)
+                                {
+                                    case "approved":
+                                        <span class="badge bg-success">✔️ Approved</span>
+                                        break;
+                                    case "rejected":
+                                        <span class="badge bg-danger">❌ Rejected</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-warning text-dark">⏳ Pending</span>
+                                        break;
+                                }
+                            </td>
+                            <td>@doc.UploadedByUser?.FullName</td>
+                            <td>@doc.UploadedAt.ToString("g")</td>
+                            <td>@doc.Verifier?.FullName</td>
+                            <td>@doc.VerifiedAt?.ToString("g")</td>
+                            <td>@doc.Remarks</td>
 
-            <div class="mb-3">
-                <label class="form-label">File</label>
-                <input type="file" name="file" class="form-control" required />
-            </div>
+                            @if (isAdmin || isOffice)
+                            {
+                                <td>
+                                    @if (doc.Status != "approved")
+                                    {
+                                        <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@doc.DocId" />
+                                            <input type="hidden" name="status" value="approved" />
+                                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                        </form>
+                                    }
+                                    @if (doc.Status != "rejected")
+                                    {
+                                        <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@doc.DocId" />
+                                            <input type="hidden" name="status" value="rejected" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                        </form>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">No documents uploaded yet.</p>
+        }
 
-            <button type="submit" class="btn btn-primary">Upload</button>
-        </form>
+        @if (isAdmin || canUploadDocs)
+        {
+            <hr />
+            <h4>📎 Upload New Document</h4>
+            <form method="post" enctype="multipart/form-data" asp-controller="LeadDocuments" asp-action="Create">
+                <input type="hidden" name="leadId" value="@Model.LeadId" />
+
+                <div class="mb-3">
+                    <label class="form-label">Document Type</label>
+                    <select name="documentType" class="form-control" required>
+                        <option value="">-- Select --</option>
+                        <option value="Aadhaar">Aadhaar</option>
+                        <option value="PAN">PAN</option>
+                        <option value="Salary Slip">Salary Slip</option>
+                        <option value="Bank Statement">Bank Statement</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">File</label>
+                    <input type="file" name="file" class="form-control" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        }
     }
 
     <div class="mt-4">
