@@ -4,14 +4,14 @@
 
 <div class="container mt-5">
     <h2>Welcome..</h2>
-    @* <p class="lead">Hello, @ViewBag.UserEmail</p> *@
+@* <p class="lead">Hello, @ViewBag.UserEmail</p> *@
 
 
 
-    @model LoanManagementSystem.Models.ViewModels.DashboardMetricsViewModel
-    @{
-        ViewData["Title"] = "Admin Dashboard";
-    }
+@model LoanManagementSystem.Models.ViewModels.DashboardMetricsViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
 
     <div class="container mt-4">
         <h2 class="mb-4">📊 Admin Dashboard</h2>
@@ -114,64 +114,143 @@
                 </div>
             </div>
         </div>
-
-        <hr class="my-4" />
-
-        <h4 class="mb-3">📌 Lead Status Chart</h4>
-        <canvas id="leadStatusChart" width="400" height="150"></canvas>
-
-        <hr class="my-4" />
-        <div class="d-flex justify-content-end mb-3">
-            <a class="btn btn-outline-secondary me-2" onclick="window.print()">🖨️ Print</a>
-            <a class="btn btn-outline-primary" href="/Admin/ExportMetrics">📤 Export</a>
+        <!-- ✅ Team Performance -->
+        <h4 class="mt-5">📈 Team Performance Overview</h4>
+        <div class="d-flex justify-content-end mb-2">
+            <a class="btn btn-sm btn-outline-primary" href="/Admin/ExportMetrics">📥 Export CSV</a>
         </div>
-
-        @* <h4 class="mb-3">🔔 Recent Notifications</h4>
-        <ul class="list-group">
-            @if (Model.RecentNotifications != null && Model.RecentNotifications.Any())
-            {
-                foreach (var n in Model.RecentNotifications)
+        <table class="table table-bordered table-hover" id="teamTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Team</th>
+                    <th>Leads Generated</th>
+                    <th>Assigned</th>
+                    <th>Docs Uploaded</th>
+                    <th>Docs Verified</th>
+                    <th>Approved</th>
+                    <th>Commission (₹)</th>
+                    <th>🔍</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.TeamPerformances)
                 {
-                    <li class="list-group-item d-flex justify-content-between align-items-start">
-                        <div class="ms-2 me-auto">
-                            <div>@n.Message</div>
-                            <small class="text-muted">@n.CreatedAt.ToString("dd MMM yyyy hh:mm tt")</small>
-                        </div>
-                        @if (!n.IsRead)
-                        {
-                            <span class="badge bg-danger rounded-pill">New</span>
-                        }
-                    </li>
+                    <tr>
+                        <td>@t.TeamName</td>
+                        <td>@t.TotalLeadsGenerated</td>
+                        <td>@t.LeadsAssigned</td>
+                        <td>@t.DocumentsUploaded</td>
+                        <td>@t.DocumentsVerified</td>
+                        <td>@t.LeadsApproved</td>
+                        <td>@t.TotalCommission.ToString("N2")</td>
+                        <td>
+                            <a href="/Admin/TeamDrilldown?teamName=@t.TeamName" class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-bar-chart-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
                 }
-            }
-            else
-            {
-                <li class="list-group-item text-muted">No recent notifications.</li>
-            }
-        </ul> *@
-    </div>
+            </tbody>
+        </table>
 
-    @section Scripts {
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            const leadStatusCtx = document.getElementById('leadStatusChart').getContext('2d');
-            const leadStatusChart = new Chart(leadStatusCtx, {
-                type: 'bar',
-                data: {
-                    labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Keys)),
-                    datasets: [{
-                        label: 'Lead Count',
-                        data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Values)),
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)'
-                    }]
+        <!-- ✅ Team Chart -->
+        <h5 class="mt-5">📊 Team-wise Commission Chart</h5>
+        <canvas id="teamChart" height="100"></canvas>
+
+        <!-- ✅ Lead Status Chart -->
+        <h5 class="mt-5">📌 Lead Status Chart</h5>
+        <canvas id="leadStatusChart" style="max-width: 400px; max-height: 400px;"></canvas>
+        <canvas id="teamPerformanceChart" height="200"></canvas>
+        <hr />
+
+        @section Scripts {
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                // 📊 Team Commission Chart
+                const teamChart = new Chart(document.getElementById('teamChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TeamPerformances.Select(t => t.TeamName))),
+                        datasets: [{
+                            label: 'Total Commission (₹)',
+                            data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TeamPerformances.Select(t => t.TotalCommission))),
+                            backgroundColor: 'rgba(40, 167, 69, 0.6)'
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: { enabled: true }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: '₹ Commission' }
+                            }
+                        }
+                    }
+                });
+
+                // 📌 Lead Status Chart
+                const leadStatusChart = new Chart(document.getElementById('leadStatusChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Keys)),
+                        datasets: [{
+                            label: 'Lead Count',
+                            data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.LeadStatusCounts.Values)),
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(75, 192, 192, 0.6)'
+                            ]
+                        }]
+                    }
+                });
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                        const teamLabels = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.TeamName)));
+
+                        const leadsGenerated = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.TotalLeadsGenerated)));
+                        const leadsAssigned = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.LeadsAssigned)));
+                        const docsUploaded = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.DocumentsUploaded)));
+                        const docsVerified = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.DocumentsVerified)));
+                        const leadsApproved = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => t.LeadsApproved)));
+                        const commissions = @Html.Raw(Json.Serialize(Model.TeamPerformances.Select(t => Math.Round(t.TotalCommission / 1000)))); // in ₹K
+
+                        const ctx = document.getElementById('teamPerformanceChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                        data: {
+                            labels: teamLabels,
+                        datasets: [
+                        {label: 'Leads Generated', data: leadsGenerated, backgroundColor: 'rgba(0,123,255,0.6)' },
+                        {label: 'Leads Assigned', data: leadsAssigned, backgroundColor: 'rgba(255,193,7,0.6)' },
+                        {label: 'Docs Uploaded', data: docsUploaded, backgroundColor: 'rgba(40,167,69,0.6)' },
+                        {label: 'Docs Verified', data: docsVerified, backgroundColor: 'rgba(23,162,184,0.6)' },
+                        {label: 'Leads Approved', data: leadsApproved, backgroundColor: 'rgba(108,117,125,0.6)' },
+                        {label: 'Commission (K ₹)', data: commissions, backgroundColor: 'rgba(220,53,69,0.6)' }
+                        ]
                 },
-                options: {
-                    scales: {
-                        y: { beginAtZero: true }
+                        options: {
+                            responsive: true,
+                        plugins: {
+                            title: {
+                            display: true,
+                        text: '📊 Team Performance Comparison'
+                        },
+                        tooltip: {mode: 'index', intersect: false },
+                    },
+                        scales: {
+                            x: {stacked: true },
+                        y: {
+                            beginAtZero: true,
+                        title: {display: true, text: 'Count / ₹K' }
+                        }
                     }
                 }
             });
-        </script>
-    }
+            </script>
+        }
 
-</div>
+    </div>

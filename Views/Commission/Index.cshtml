@@ -1,10 +1,31 @@
 @model IEnumerable<LoanManagementSystem.Models.Commission>
 @{
     ViewData["Title"] = "Commissions";
+    var currentStatus = ViewBag.SelectedStatus as string ?? "";
 }
 
 <div class="container mt-4">
     <h2>Commission Records</h2>
+    <hr />
+
+    <!-- 🔍 Filter Form -->
+    @* <form method="get" class="mb-3">
+        <label>Status Filter:</label>
+        <select name="status" class="form-select form-select-sm w-auto d-inline">
+            <option value="">All</option>
+            <option value="pending" selected="@(currentStatus == "pending")">Pending</option>
+            <option value="approved" selected="@(currentStatus == "approved")">Approved</option>
+            <option value="paid" selected="@(currentStatus == "paid")">Paid</option>
+        </select>
+        <button class="btn btn-sm btn-outline-primary ms-2">Apply</button>
+    </form> *@
+
+    <!-- 💰 Totals -->
+    <div class="mb-3">
+        <span class="badge bg-warning text-dark">Pending: ₹@ViewBag.TotalPending</span>
+        <span class="badge bg-info text-dark ms-2">Approved: ₹@ViewBag.TotalApproved</span>
+        <span class="badge bg-success text-white ms-2">Paid: ₹@ViewBag.TotalPaid</span>
+    </div>
 
     <table class="table table-bordered table-striped">
         <thead>
@@ -15,7 +36,10 @@
                 <th>Customer</th>
                 <th>Amount</th>
                 <th>Status</th>
-                <th>Change Status</th>
+                @if (User.IsInRole("admin"))
+                {
+                    <th>Change Status</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -24,21 +48,25 @@
             <tr>
                 <td>@commission.CommissionId</td>
                 <td>@commission.User?.FullName (@commission.User?.Role)</td>
-                <td>@commission.LeadId</td>
+                <td>LMS-@commission.LeadId.ToString("D4")</td>
                 <td>@commission.Lead?.Customer?.FullName</td>
                 <td>₹@commission.Amount</td>
                 <td>@commission.Status</td>
-                <td>
-                    <form method="post" asp-action="UpdateStatus">
-                        <input type="hidden" name="id" value="@commission.CommissionId" />
-                        <select name="status" class="form-select form-select-sm d-inline w-auto">
-                            <option value="pending" selected="@("pending" == commission.Status)">Pending</option>
-                            <option value="approved" selected="@("approved" == commission.Status)">Approved</option>
-                            <option value="paid" selected="@("paid" == commission.Status)">Paid</option>
-                        </select>
-                        <button class="btn btn-sm btn-success ms-1">Update</button>
-                    </form>
-                </td>
+
+                @if (User.IsInRole("admin"))
+                {
+                    <td>
+                        <form method="post" asp-action="UpdateStatus">
+                            <input type="hidden" name="id" value="@commission.CommissionId" />
+                            <select name="status" class="form-select form-select-sm d-inline w-auto">
+                                <option value="pending" selected="@("pending" == commission.Status)">Pending</option>
+                                <option value="approved" selected="@("approved" == commission.Status)">Approved</option>
+                                <option value="paid" selected="@("paid" == commission.Status)">Paid</option>
+                            </select>
+                            <button class="btn btn-sm btn-success ms-1">Update</button>
+                        </form>
+                    </td>
+                }
             </tr>
         }
         </tbody>
