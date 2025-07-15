@@ -70,39 +70,86 @@ namespace LoanManagementSystem.Controllers
             return View(metrics);
         }
         [HttpGet]
+        [Authorize(Roles = "admin")]
+        public IActionResult ExportMetrics()
+        {
+            var teams = _context.Teams
+                .Include(t => t.Members)
+                    .ThenInclude(m => m.User)
+                .ToList();
+
+            var leads = _context.Leads.ToList();
+            var docs = _context.LeadDocuments.ToList();
+            var commissions = _context.Commissions.ToList();
+
+            var csv = "Team,Leads Generated,Leads Assigned,Docs Uploaded,Docs Verified,Leads Approved,Total Commission\n";
+
+            foreach (var team in teams)
+            {
+                var memberIds = team.Members.Select(m => m.UserId).ToList();
+
+                var generated = leads.Count(l => memberIds.Contains(l.LeadGeneratorId));
+                var assigned = leads.Count(l => l.AssignedTo.HasValue && memberIds.Contains(l.AssignedTo.Value));
+
+                var uploaded = docs.Count(d => d.UploadedBy != null && memberIds.Contains(d.UploadedBy.Value));
+                var verified = docs.Count(d => d.VerifiedBy != null && memberIds.Contains(d.VerifiedBy.Value));
+                var approved = leads.Count(l => l.Status == "approved" && l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
+                var totalCommission = commissions
+                    .Where(c => c.UserId != null && memberIds.Contains(c.UserId))
+                    .Sum(c => c.Amount);
+
+                csv += $"{team.TeamName},{generated},{assigned},{uploaded},{verified},{approved},{totalCommission}\n";
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+            return File(bytes, "text/csv", "TeamPerformanceMetrics.csv");
+        }
+
+
+
+
+
+
+
 [Authorize(Roles = "admin")]
-public IActionResult ExportMetrics()
+public async Task<IActionResult> TeamDrilldown(string teamName)
 {
-    var teams = _context.Teams
+    if (string.IsNullOrEmpty(teamName))
+        return BadRequest("Team name is required.");
+
+    var team = await _context.Teams
         .Include(t => t.Members)
             .ThenInclude(m => m.User)
-        .ToList();
+        .FirstOrDefaultAsync(t => t.TeamName == teamName);
 
-    var leads = _context.Leads.ToList();
-    var docs = _context.LeadDocuments.ToList();
-    var commissions = _context.Commissions.ToList();
+    if (team == null) return NotFound("Team not found.");
 
-    var csv = "Team,Leads Generated,Leads Assigned,Docs Uploaded,Docs Verified,Leads Approved,Total Commission\n";
+    var memberIds = team.Members.Select(m => m.UserId).ToList();
 
-    foreach (var team in teams)
+    var leadsGenerated = await _context.Leads.CountAsync(l => memberIds.Contains(l.LeadGeneratorId));
+    var leadsAssigned = await _context.Leads.CountAsync(l => l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
+    var docsUploaded = await _context.LeadDocuments.CountAsync(d => d.UploadedBy != null && memberIds.Contains(d.UploadedBy.Value));
+    var docsVerified = await _context.LeadDocuments.CountAsync(d => d.VerifiedBy != null && memberIds.Contains(d.VerifiedBy.Value));
+    var leadsApproved = await _context.Leads.CountAsync(l => l.Status == "approved" && l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
+    var commission = await _context.Commissions
+        .Where(c => memberIds.Contains(c.UserId))
+        .SumAsync(c => (decimal?)c.Amount) ?? 0;
+
+    ViewBag.TeamName = team.TeamName;
+    ViewBag.Members = team.Members.Select(m => m.User?.FullName).ToList();
+
+    var vm = new TeamPerformanceMetrics
     {
-        var memberIds = team.Members.Select(m => m.UserId).ToList();
+        TeamName = team.TeamName,
+        TotalLeadsGenerated = leadsGenerated,
+        LeadsAssigned = leadsAssigned,
+        DocumentsUploaded = docsUploaded,
+        DocumentsVerified = docsVerified,
+        LeadsApproved = leadsApproved,
+        TotalCommission = commission
+    };
 
-        var generated = leads.Count(l => memberIds.Contains(l.LeadGeneratorId));
-        var assigned = leads.Count(l => l.AssignedTo.HasValue && memberIds.Contains(l.AssignedTo.Value));
-
-        var uploaded = docs.Count(d => d.UploadedBy != null && memberIds.Contains(d.UploadedBy.Value));
-        var verified = docs.Count(d => d.VerifiedBy != null && memberIds.Contains(d.VerifiedBy.Value));
-        var approved = leads.Count(l => l.Status == "approved" && l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
-        var totalCommission = commissions
-            .Where(c => c.UserId != null && memberIds.Contains(c.UserId))
-            .Sum(c => c.Amount);
-
-        csv += $"{team.TeamName},{generated},{assigned},{uploaded},{verified},{approved},{totalCommission}\n";
-    }
-
-    var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-    return File(bytes, "text/csv", "TeamPerformanceMetrics.csv");
+    return View("TeamDrilldown", vm); // 👈 We'll create this view next
 }
 
     }

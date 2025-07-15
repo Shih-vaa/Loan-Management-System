@@ -1,0 +1,22 @@
+ @model LoanManagementSystem.Models.ViewModels.TeamPerformanceMetrics
+
+@{
+    ViewData["Title"] = "Team Drilldown - " + Model.TeamName;
+}
+
+<div class="container mt-4">
+    <h2>📌 Team Drilldown: @Model.TeamName</h2>
+    <hr />
+    <p><strong>Members:</strong> @string.Join(", ", ViewBag.Members as List<string>)</p>
+
+    <table class="table table-bordered mt-3">
+        <tr><th>Leads Generated</th><td>@Model.TotalLeadsGenerated</td></tr>
+        <tr><th>Leads Assigned</th><td>@Model.LeadsAssigned</td></tr>
+        <tr><th>Documents Uploaded</th><td>@Model.DocumentsUploaded</td></tr>
+        <tr><th>Documents Verified</th><td>@Model.DocumentsVerified</td></tr>
+        <tr><th>Leads Approved</th><td>@Model.LeadsApproved</td></tr>
+        <tr><th>Total Commission (₹)</th><td>@Model.TotalCommission.ToString("N2")</td></tr>
+    </table>
+
+    <a class="btn btn-secondary mt-2" href="/Admin/Dashboard">← Back to Dashboard</a>
+</div>
