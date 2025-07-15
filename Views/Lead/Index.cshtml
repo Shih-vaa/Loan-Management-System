@@ -39,21 +39,21 @@
 
                     <td>
                         @if (lead.Documents != null && lead.Documents.Any())
-                        {
-                            var total = lead.Documents.Count;
-                            var approved = lead.Documents.Count(d => d.Status == "approved");
-                            var pending = lead.Documents.Count(d => d.Status == "pending" || d.Status == "uploaded");
-                            var rejected = lead.Documents.Count(d => d.Status == "rejected");
+{
+    var total = lead.Documents.Count;
+    var approved = lead.Documents.Count(d => d.Status == "approved");
+    var pending = lead.Documents.Count(d => d.Status == "pending" || d.Status == "uploaded");
+    var rejected = lead.Documents.Count(d => d.Status == "rejected");
 
-                            <span class="badge bg-success me-1">✔️ @approved</span>
-                            <span class="badge bg-warning text-dark me-1">⏳ @pending</span>
-                            <span class="badge bg-danger me-1">❌ @rejected</span>
-                            <span class="badge bg-secondary">📄 @total</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted">No docs</span>
-                        }
+    <span class="badge bg-success me-1">✔️ @approved</span>
+    <span class="badge bg-warning text-dark me-1">⏳ @pending</span>
+    <span class="badge bg-danger me-1">❌ @rejected</span>
+    <span class="badge bg-secondary">📄 @total</span>
+}
+else
+{
+    <span class="text-muted">No docs</span>
+}
                     </td>
 
                     <td>

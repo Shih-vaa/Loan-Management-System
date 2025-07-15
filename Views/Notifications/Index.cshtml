@@ -4,104 +4,89 @@
 }
 
 <div class="container mt-4">
-    <h2>🔔 Notifications</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">🔔 Notifications</h2>
+        @if (Model.Any(n => !n.IsRead))
+        {
+            <form asp-action="MarkAllAsRead" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-check-double me-1"></i> Mark All As Read
+                </button>
+            </form>
+        }
+    </div>
     <hr />
-
-    <!-- Add Mark All As Read button at the top -->
-    @if (Model.Any(n => !n.IsRead))
-    {
-        <form asp-action="MarkAllAsRead" method="post" class="mb-3">
-            @Html.AntiForgeryToken()
-
-            <button type="submit" class="btn btn-outline-primary">Mark All As Read</button>
-        </form>
-    }
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">You have no notifications.</div>
+        <div class="alert alert-info">
+            <i class="fas fa-bell-slash me-2"></i> You have no notifications.
+        </div>
     }
     else
     {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Message</th>
-                    <th>Status</th>
-                    <th>Time</th>
-                    <th style="width: 160px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var notification in Model)
-                {
-                    <tr class="@(notification.IsRead ? "" : "table-warning")">
-                        <td>@notification.Message</td>
-                        <td>
-                            @if (notification.IsRead)
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                                <th style="width: 120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var notification in Model)
                             {
-                                <span class="badge bg-secondary">Read</span>
+                                <tr class="@(notification.IsRead ? "" : "table-active")">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!notification.IsRead)
+                                            {
+                                                <span class="badge bg-primary me-2">New</span>
+                                            }
+                                            <span>@notification.Message</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@(notification.IsRead ? "secondary" : "primary")">
+                                            @(notification.IsRead ? "Read" : "Unread")
+                                        </span>
+                                    </td>
+                                    <td>@notification.CreatedAt.ToIST().ToString("dd MMM yyyy hh:mm tt")</td>
+                                    <td>
+                                        <form asp-action="Delete" method="post" class="d-inline"
+                                            onsubmit="return confirm('Are you sure you want to delete this notification?');">
+                                            <input type="hidden" name="id" value="@notification.NotificationId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
                             }
-                            else
-                            {
-                                <span class="badge bg-primary">Unread</span>
-                            }
-                        </td>
-                        <td>@notification.CreatedAt.ToString("g")</td>
-                        <td>
-                            @if (!notification.IsRead)
-                            {
-                                @* <form asp-action="MarkAsRead" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-
-                                    <input type="hidden" name="id" value="@notification.NotificationId" />
-                                    <button type="submit" class="btn btn-sm btn-success">Mark as Read</button>
-                                </form> *@
-                                <button class="btn btn-sm btn-success mark-as-read-btn"
-        data-id="@notification.NotificationId"
-        data-url="@Url.Action("MarkAsRead", "Notifications")">
-    Mark as Read
-</button>
-
-                            }
-                            <form asp-action="Delete" method="post" class="d-inline ms-1"
-                                onsubmit="return confirm('Delete this notification?');">
-                                <input type="hidden" name="id" value="@notification.NotificationId" />
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     }
 </div>
 
-@section Scripts {
-<script>
-    document.querySelectorAll('.mark-as-read-btn').forEach(button => {
-        button.addEventListener('click', async function () {
-            const id = this.dataset.id;
-            const url = `${this.dataset.url}?id=${id}`;
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (res.ok) {
-                    const row = this.closest('tr');
-                    row?.classList.remove('table-warning');
-                    const badge = row.querySelector('.badge');
-                    if (badge) {
-                        badge.className = "badge bg-secondary";
-                        badge.innerText = "Read";
-                    }
-                    this.remove(); // remove the Mark as Read button
-                }
-            } catch (err) {
-                console.error("🔴 Failed to mark as read", err);
-            }
-        });
-    });
-</script>
+@section Styles {
+    <style>
+        .notification-table tr {
+            transition: background-color 0.2s ease;
+        }
+        .notification-table tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        .badge {
+            font-size: 0.85em;
+            padding: 0.35em 0.65em;
+        }
+    </style>
 }

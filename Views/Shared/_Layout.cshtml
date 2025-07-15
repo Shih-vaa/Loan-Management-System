@@ -229,7 +229,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     
-    <script>
+    @* <script>
         // Enhanced Notification System
         document.addEventListener('DOMContentLoaded', function() {
             loadNotifications();
@@ -292,13 +292,24 @@
                 const item = document.createElement("li");
                 item.className = `dropdown-item notification-item py-2 ${isRead ? '' : 'unread'}`;
                 item.innerHTML = `
-                    <a href="${link}" class="text-decoration-none d-block" data-id="${notificationId}">
-                        <div class="notification-message">${message}</div>
-                        <div class="notification-time text-muted">
-                            <small>${createdAt}</small>
-                        </div>
-                    </a>
-                `;
+    <a href="${link || '#'}" class="text-decoration-none d-block" data-id="${notificationId || ''}">
+        <div class="notification-message fw-semibold">
+            ${message || 'New notification'}
+        </div>
+        <div class="notification-time text-muted">
+            <small>${new Date(createdAt).toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            })}</small>
+        </div>
+    </a>
+`;
+
                 
                 // Mark as read when clicked if unread
                 if (!isRead) {
@@ -383,7 +394,81 @@
     }
 }
 
+    </script> *@
+
+
+
+
+
+     <!-- ✅ Add NOTIFICATION SCRIPT here (before RenderSection) -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadNotifications();
+        setInterval(loadNotifications, 20000); // Refresh every 20 sec
+        
+        // Load when dropdown opens
+        document.getElementById('notificationDropdown')?.addEventListener('shown.bs.dropdown', loadNotifications);
+    });
+
+    async function loadNotifications() {
+        const list = document.getElementById('notificationList');
+        const badge = document.getElementById('notificationBadge');
+        if (!list) return;
+
+        try {
+            list.innerHTML = `<li class="dropdown-item text-center py-3"><div class="spinner-border"></div></li>`;
+            
+            const response = await fetch('@Url.Action("GetLatest", "Notifications")');
+            const data = await response.json();
+            
+            list.innerHTML = '';
+            if (data.notifications?.length > 0) {
+                data.notifications.forEach(note => {
+                    const item = document.createElement("li");
+                    item.className = `dropdown-item notification-item py-2 ${note.isRead ? '' : 'unread'}`;
+                    item.innerHTML = `
+                        <a href="${note.link || '#'}" class="mark-as-read" data-id="${note.notificationId}">
+                            <div>${note.message}</div>
+                            <small>${new Date(note.createdAt).toLocaleString()}</small>
+                        </a>
+                    `;
+                    list.appendChild(item);
+                });
+                
+                // Add click handlers
+                document.querySelectorAll('.mark-as-read').forEach(link => {
+                    link.addEventListener('click', async (e) => {
+                        if (!link.dataset.isread) {
+                            e.preventDefault();
+                            await markNotificationAsRead(link.dataset.id);
+                            window.location.href = link.href;
+                        }
+                    });
+                });
+            }
+            
+            if (badge) {
+                badge.textContent = data.unreadCount || '';
+                badge.classList.toggle('d-none', !data.unreadCount);
+            }
+        } catch (error) {
+            list.innerHTML = `<li class="dropdown-item text-danger">Error loading</li>`;
+        }
+    }
+
+    async function markNotificationAsRead(id) {
+        await fetch(`/Notifications/MarkAsRead?id=${id}`, { method: 'POST' });
+        // Update UI immediately
+        document.querySelector(`.mark-as-read[data-id="${id}"]`)?.closest('.notification-item')?.classList.remove('unread');
+        const badge = document.getElementById('notificationBadge');
+        if (badge) {
+            const count = Math.max(0, parseInt(badge.textContent) - 1);
+            badge.textContent = count || '';
+            badge.classList.toggle('d-none', count === 0);
+        }
+    }
     </script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
