@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LoanManagementSystem.Controllers
 {
-    // NotificationsController.cs
     [Authorize]
     public class NotificationsController : Controller
     {
@@ -17,9 +16,7 @@ namespace LoanManagementSystem.Controllers
             _context = context;
         }
 
-
-
-        [ResponseCache(Duration = 30)] // Cache for 30 seconds
+        [ResponseCache(Duration = 30)]
         [HttpGet("GetLatest")]
         public async Task<IActionResult> GetLatest()
         {
@@ -28,25 +25,40 @@ namespace LoanManagementSystem.Controllers
                 return Unauthorized();
             }
 
-            var notifications = await _context.Notifications
+            // Fetch unread notifications
+            var unreadNotifications = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .ToListAsync();
+
+            // Mark them as read
+            if (unreadNotifications.Any())
+            {
+                unreadNotifications.ForEach(n => n.IsRead = true);
+                await _context.SaveChangesAsync();
+            }
+
+            // Convert CreatedAt to IST
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+
+            // Get latest 5 notifications
+            var notificationsList = await _context.Notifications
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
                 .Take(5)
-                .Select(n => new
-                {
-                    n.NotificationId,
-                    n.Message,
-                    n.IsRead,
-                    CreatedAt = n.CreatedAt.ToString("dd MMM hh:mm tt"),
-                    Link = n.Link ?? "#"
-                })
                 .ToListAsync();
 
-            var unreadCount = await _context.Notifications
-                .CountAsync(n => n.UserId == userId && !n.IsRead);
+            var notifications = notificationsList.Select(n => new
+            {
+                n.NotificationId,
+                n.Message,
+                n.IsRead,
+                n.CreatedAt,
+                Link = n.Link ?? "#"
+            });
 
-            return Json(new { notifications, unreadCount });
+            return Json(new { notifications, unreadCount = 0 });
         }
+
         // GET: /Notifications
         public async Task<IActionResult> Index()
         {
@@ -63,28 +75,14 @@ namespace LoanManagementSystem.Controllers
             return View(notifications);
         }
 
-        // POST: /Notifications/MarkAsRead
-        // [HttpPost]
-        // [ValidateAntiForgeryToken]
-        // public async Task<IActionResult> MarkAsRead(int id)
-        // {
-        //     var notification = await _context.Notifications.FindAsync(id);
-        //     if (notification == null) return NotFound();
-
-        //     notification.IsRead = true;
-        //     await _context.SaveChangesAsync();
-
-        //     return Ok();
-        // }
-
-
-
         [HttpPost]
-        [AllowAnonymous] // Or [Authorize] if needed
-        // [IgnoreAntiforgeryToken] // ✅ Skip token for AJAX
+        [Authorize]
         public async Task<IActionResult> MarkAsRead(int id)
         {
-            var notification = await _context.Notifications.FindAsync(id);
+            if (!int.TryParse(User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value, out int userId))
+                return Unauthorized();
+
+            var notification = await _context.Notifications.FirstOrDefaultAsync(n => n.NotificationId == id && n.UserId == userId);
             if (notification == null)
                 return NotFound();
 
@@ -94,11 +92,9 @@ namespace LoanManagementSystem.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(); // ✅ Return 200
+            return Ok();
         }
 
-
-        // POST: /Notifications/Delete
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -112,32 +108,8 @@ namespace LoanManagementSystem.Controllers
             return Ok();
         }
 
-        // POST: /Notifications/MarkAllAsRead
-        // [HttpPost]
-        // [ValidateAntiForgeryToken]
-        // public async Task<IActionResult> MarkAllAsRead()
-        // {
-        //     if (!int.TryParse(User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value, out int userId))
-        //     {
-        //         return Unauthorized();
-        //     }
-
-        //     var unread = await _context.Notifications
-        //         .Where(n => n.UserId == userId && !n.IsRead)
-        //         .ToListAsync();
-
-        //     foreach (var note in unread)
-        //     {
-        //         note.IsRead = true;
-        //     }
-
-        //     await _context.SaveChangesAsync();
-        //     return Ok();
-        // }
-
-
         [HttpPost]
-        [IgnoreAntiforgeryToken] // ✅ Needed for AJAX
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> MarkAllAsRead()
         {
             if (!int.TryParse(User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value, out int userId))
@@ -157,6 +129,5 @@ namespace LoanManagementSystem.Controllers
 
             return Ok(new { message = "All notifications marked as read." });
         }
-
     }
 }
