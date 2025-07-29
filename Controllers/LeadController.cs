@@ -22,11 +22,6 @@ namespace LoanManagementSystem.Controllers
 
         private readonly ILogger<LeadController> _logger;
 
-        public LeadController(ApplicationDbContext context, ILogger<LeadController> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
 
 
 
@@ -198,6 +193,8 @@ namespace LoanManagementSystem.Controllers
                             emailBody
                         );
                     }
+                    TempData["Success"] = $"Lead LMS-{lead.LeadId:D4} successfully assigned to {assignedUser.FullName} ({assignedUser.Email}).";
+                     return RedirectToAction(nameof(Index)); // Or another view
                 }
 
 

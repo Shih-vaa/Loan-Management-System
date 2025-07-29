@@ -404,12 +404,17 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         loadNotifications();
-        setInterval(loadNotifications, 20000); // Refresh every 20 sec
+        setInterval(loadNotifications, 5000); // Refresh every 20 sec
         
         // Load when dropdown opens
         document.getElementById('notificationDropdown')?.addEventListener('shown.bs.dropdown', loadNotifications);
     });
-
+ // 🔄 Real-time sync between tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'refreshNotifications') {
+            loadNotifications(); // 🔁 Fetch notifications instantly when triggered from another tab
+        }
+    });
     async function loadNotifications() {
         const list = document.getElementById('notificationList');
         const badge = document.getElementById('notificationBadge');
@@ -423,17 +428,28 @@
             
             list.innerHTML = '';
             if (data.notifications?.length > 0) {
-                data.notifications.forEach(note => {
-                    const item = document.createElement("li");
-                    item.className = `dropdown-item notification-item py-2 ${note.isRead ? '' : 'unread'}`;
-                    item.innerHTML = `
-                        <a href="${note.link || '#'}" class="mark-as-read" data-id="${note.notificationId}">
-                            <div>${note.message}</div>
-                            <small>${new Date(note.createdAt).toLocaleString()}</small>
-                        </a>
-                    `;
-                    list.appendChild(item);
-                });
+              data.notifications.forEach(note => {
+    const indiaTime = new Date(note.createdAt + 'Z').toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+
+    const item = document.createElement("li");
+    item.className = `dropdown-item notification-item py-2 ${note.isRead ? '' : 'unread'}`;
+    item.innerHTML = `
+        <a href="${note.link || '#'}" class="mark-as-read" data-id="${note.notificationId}">
+            <div>${note.message}</div>
+            <small>${indiaTime}</small>
+        </a>
+    `;
+    list.appendChild(item);
+});
+
                 
                 // Add click handlers
                 document.querySelectorAll('.mark-as-read').forEach(link => {

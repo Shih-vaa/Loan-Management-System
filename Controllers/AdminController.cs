@@ -13,10 +13,6 @@ namespace LoanManagementSystem.Controllers
         private readonly ApplicationDbContext _context;
         private readonly EmailHelper _emailHelper;
 
-        public AdminController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
         public AdminController(ApplicationDbContext context, EmailHelper emailHelper)
         {
             _context = context;
