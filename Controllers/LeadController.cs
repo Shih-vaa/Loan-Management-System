@@ -6,6 +6,7 @@ using LoanManagementSystem.Models;
 using LoanManagementSystem.Models.ViewModels;
 using LoanManagementSystem.Helpers; // ✅ For NotificationHelper
 using Microsoft.Extensions.Logging;
+using LoanManagementSystem.Services;
 
 
 namespace LoanManagementSystem.Controllers
@@ -14,6 +15,11 @@ namespace LoanManagementSystem.Controllers
     public class LeadController : Controller
     {
         private readonly ApplicationDbContext _context;
+
+
+
+
+
         private readonly ILogger<LeadController> _logger;
 
         public LeadController(ApplicationDbContext context, ILogger<LeadController> logger)
@@ -21,6 +27,28 @@ namespace LoanManagementSystem.Controllers
             _context = context;
             _logger = logger;
         }
+
+
+
+
+
+
+
+
+
+        private readonly EmailHelper _emailHelper;
+        public LeadController(ApplicationDbContext context, ILogger<LeadController> logger, EmailHelper emailHelper)
+        {
+            _context = context;
+            _logger = logger;
+            _emailHelper = emailHelper;
+        }
+
+
+
+
+
+
 
         // ✅ GET: /Lead (with optional status filter)
         public async Task<IActionResult> Index(string? status = null)
@@ -44,6 +72,10 @@ namespace LoanManagementSystem.Controllers
 
             return View(await leads.ToListAsync());
         }
+
+
+
+
 
         // ✅ GET: /Lead/Create
         [Authorize(Roles = "admin,marketing")]
@@ -73,6 +105,9 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+
+
         // ✅ GET: /Lead/Edit/{id}
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int id)
@@ -93,6 +128,8 @@ namespace LoanManagementSystem.Controllers
 
             return View(model);
         }
+
+
 
         // ✅ POST: /Lead/Edit
         [HttpPost]
@@ -148,6 +185,21 @@ namespace LoanManagementSystem.Controllers
                         await NotificationHelper.AddNotificationAsync(_context, lead.LeadGeneratorId, $"Your lead LMS-{lead.LeadId:D4} has been assigned");
                     }
                 }
+
+                if (model.AssignedTo.HasValue)
+                {
+                    var assignedUser = await _context.Users.FindAsync(model.AssignedTo.Value);
+                    if (assignedUser != null)
+                    {
+                        string emailBody = EmailHelper.LeadAssignmentTemplate(assignedUser.FullName, lead.LeadId);
+                        await _emailHelper.SendEmailAsync(
+                            assignedUser.Email!,
+                            $"New Lead Assigned: LMS-{lead.LeadId:D4}",
+                            emailBody
+                        );
+                    }
+                }
+
 
             }
 
@@ -217,6 +269,9 @@ namespace LoanManagementSystem.Controllers
             return View(lead);
         }
 
+
+
+
         // POST: Lead/Approve
         [HttpPost]
         [Authorize(Roles = "admin")]
@@ -266,15 +321,6 @@ namespace LoanManagementSystem.Controllers
             TempData["Success"] = $"Lead LMS-{leadId:D4} marked as {status}.";
             return RedirectToAction("Index");
         }
-
-
-
-
-
-
-
-
-
 
 
 

@@ -81,7 +81,7 @@ namespace LoanManagementSystem.Controllers
 
         [HttpPost]
         [AllowAnonymous] // Or [Authorize] if needed
-        [IgnoreAntiforgeryToken] // ✅ Skip token for AJAX
+        // [IgnoreAntiforgeryToken] // ✅ Skip token for AJAX
         public async Task<IActionResult> MarkAsRead(int id)
         {
             var notification = await _context.Notifications.FindAsync(id);
@@ -96,21 +96,6 @@ namespace LoanManagementSystem.Controllers
 
             return Ok(); // ✅ Return 200
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         // POST: /Notifications/Delete

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LoanManagementSystem.Data;
 using LoanManagementSystem.Models.ViewModels;
+using LoanManagementSystem.Services;
 
 namespace LoanManagementSystem.Controllers
 {
@@ -10,12 +11,17 @@ namespace LoanManagementSystem.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly EmailHelper _emailHelper;
 
         public AdminController(ApplicationDbContext context)
         {
             _context = context;
         }
-
+        public AdminController(ApplicationDbContext context, EmailHelper emailHelper)
+        {
+            _context = context;
+            _emailHelper = emailHelper;
+        }
         public async Task<IActionResult> Dashboard()
         {
             int userId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
@@ -111,46 +117,46 @@ namespace LoanManagementSystem.Controllers
 
 
 
-[Authorize(Roles = "admin")]
-public async Task<IActionResult> TeamDrilldown(string teamName)
-{
-    if (string.IsNullOrEmpty(teamName))
-        return BadRequest("Team name is required.");
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> TeamDrilldown(string teamName)
+        {
+            if (string.IsNullOrEmpty(teamName))
+                return BadRequest("Team name is required.");
 
-    var team = await _context.Teams
-        .Include(t => t.Members)
-            .ThenInclude(m => m.User)
-        .FirstOrDefaultAsync(t => t.TeamName == teamName);
+            var team = await _context.Teams
+                .Include(t => t.Members)
+                    .ThenInclude(m => m.User)
+                .FirstOrDefaultAsync(t => t.TeamName == teamName);
 
-    if (team == null) return NotFound("Team not found.");
+            if (team == null) return NotFound("Team not found.");
 
-    var memberIds = team.Members.Select(m => m.UserId).ToList();
+            var memberIds = team.Members.Select(m => m.UserId).ToList();
 
-    var leadsGenerated = await _context.Leads.CountAsync(l => memberIds.Contains(l.LeadGeneratorId));
-    var leadsAssigned = await _context.Leads.CountAsync(l => l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
-    var docsUploaded = await _context.LeadDocuments.CountAsync(d => d.UploadedBy != null && memberIds.Contains(d.UploadedBy.Value));
-    var docsVerified = await _context.LeadDocuments.CountAsync(d => d.VerifiedBy != null && memberIds.Contains(d.VerifiedBy.Value));
-    var leadsApproved = await _context.Leads.CountAsync(l => l.Status == "approved" && l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
-    var commission = await _context.Commissions
-        .Where(c => memberIds.Contains(c.UserId))
-        .SumAsync(c => (decimal?)c.Amount) ?? 0;
+            var leadsGenerated = await _context.Leads.CountAsync(l => memberIds.Contains(l.LeadGeneratorId));
+            var leadsAssigned = await _context.Leads.CountAsync(l => l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
+            var docsUploaded = await _context.LeadDocuments.CountAsync(d => d.UploadedBy != null && memberIds.Contains(d.UploadedBy.Value));
+            var docsVerified = await _context.LeadDocuments.CountAsync(d => d.VerifiedBy != null && memberIds.Contains(d.VerifiedBy.Value));
+            var leadsApproved = await _context.Leads.CountAsync(l => l.Status == "approved" && l.AssignedTo != null && memberIds.Contains(l.AssignedTo.Value));
+            var commission = await _context.Commissions
+                .Where(c => memberIds.Contains(c.UserId))
+                .SumAsync(c => (decimal?)c.Amount) ?? 0;
 
-    ViewBag.TeamName = team.TeamName;
-    ViewBag.Members = team.Members.Select(m => m.User?.FullName).ToList();
+            ViewBag.TeamName = team.TeamName;
+            ViewBag.Members = team.Members.Select(m => m.User?.FullName).ToList();
 
-    var vm = new TeamPerformanceMetrics
-    {
-        TeamName = team.TeamName,
-        TotalLeadsGenerated = leadsGenerated,
-        LeadsAssigned = leadsAssigned,
-        DocumentsUploaded = docsUploaded,
-        DocumentsVerified = docsVerified,
-        LeadsApproved = leadsApproved,
-        TotalCommission = commission
-    };
+            var vm = new TeamPerformanceMetrics
+            {
+                TeamName = team.TeamName,
+                TotalLeadsGenerated = leadsGenerated,
+                LeadsAssigned = leadsAssigned,
+                DocumentsUploaded = docsUploaded,
+                DocumentsVerified = docsVerified,
+                LeadsApproved = leadsApproved,
+                TotalCommission = commission
+            };
 
-    return View("TeamDrilldown", vm); // 👈 We'll create this view next
-}
+            return View("TeamDrilldown", vm); // 👈 We'll create this view next
+        }
 
     }
 }

@@ -3,32 +3,37 @@ using LoanManagementSystem.Models;
 
 namespace LoanManagementSystem.Helpers
 {
-public static class NotificationHelper
-{
-    public static async Task AddNotificationAsync(ApplicationDbContext context, int userId, string message, string? link = null)
+    public static class NotificationHelper
     {
-        if (string.IsNullOrWhiteSpace(message)) return;
+        // Add ILogger (if using DI) or throw exceptions
+public static async Task AddNotificationAsync(
+    ApplicationDbContext context, 
+    int userId, 
+    string message, 
+    string? link = null,
+    ILogger? logger = null) // Optional logger
+{
+    if (string.IsNullOrWhiteSpace(message)) return;
 
-        var notification = new Notification
-        {
-            UserId = userId,
-            Message = message,
-            Link=link,
-            IsRead = false,
-            CreatedAt = DateTime.UtcNow
-            
-        };
+    var notification = new Notification
+    {
+        UserId = userId,
+        Message = message,
+        Link = link,
+        IsRead = false,
+        CreatedAt = DateTime.UtcNow
+    };
 
-        try
-        {
-            context.Notifications.Add(notification);
-            await context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            // Log error (you should inject a logger in a real application)
-            Console.WriteLine($"Error adding notification: {ex.Message}");
-        }
+    try
+    {
+        context.Notifications.Add(notification);
+        await context.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+        logger?.LogError(ex, "Failed to add notification");
+        throw; // Re-throw to handle upstream
     }
 }
+    }
 }
