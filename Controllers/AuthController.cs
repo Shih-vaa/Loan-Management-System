@@ -117,18 +117,19 @@ namespace LoanManagementSystem.Controllers
             }
 
             // Generate a token (simple random string for now)
-            string token = Guid.NewGuid().ToString();
+            string rawToken = Guid.NewGuid().ToString();
+            string hashedToken = BCrypt.Net.BCrypt.HashPassword(rawToken);
+            user.ResetToken = hashedToken;
 
-            // Save token and expiry in database
-            user.ResetToken = token;
-            user.ResetTokenExpiry = DateTime.UtcNow.AddHours(1); // valid for 1 hour
+            user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(5); // valid for 5 minutes
             await _context.SaveChangesAsync();
 
             // Build reset link
-            var resetLink = Url.Action("ResetPassword", "Auth", new { token = token }, Request.Scheme);
+            var resetLink = Url.Action("ResetPassword", "Auth", new { token = rawToken }, Request.Scheme);
+
 
             // Send email
-            string body = $"Hello {user.FullName},<br/><br/>Click the link below to reset your password:<br/><a href=\"{resetLink}\">{resetLink}</a><br/><br/>This link will expire in 1 hour.";
+            string body = $"Hello {user.FullName},<br/><br/>Click the link below to reset your password:<br/><a href=\"{resetLink}\">{resetLink}</a><br/><br/>This link will expire in 5 minutes.";
 
             await _emailHelper.SendEmailAsync(user.Email, "Reset Your Password", body);
 
@@ -145,7 +146,12 @@ namespace LoanManagementSystem.Controllers
                 return BadRequest("Invalid reset token.");
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetToken == token && u.ResetTokenExpiry > DateTime.UtcNow);
+            var user = await _context.Users
+    .Where(u => u.ResetToken != null && u.ResetTokenExpiry > DateTime.UtcNow)
+    .ToListAsync();
+
+            var matchedUser = user.FirstOrDefault(u => BCrypt.Net.BCrypt.Verify(token, u.ResetToken));
+
             if (user == null)
             {
                 return BadRequest("Invalid or expired token.");
@@ -155,40 +161,48 @@ namespace LoanManagementSystem.Controllers
             return View();
         }
 
-        // 📝 POST: Reset Password
         [HttpPost]
-        [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
-        {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
-            {
-                ModelState.AddModelError("", "All fields are required.");
-                return View();
-            }
+[AllowAnonymous]
+public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
+{
+    if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+    {
+        TempData["Error"] = "All fields are required.";
+        return View();
+    }
 
-            if (newPassword != confirmPassword)
-            {
-                ModelState.AddModelError("", "Passwords do not match.");
-                ViewBag.Token = token;
-                return View();
-            }
+    if (newPassword != confirmPassword)
+    {
+        TempData["Error"] = "Passwords do not match.";
+        return View();
+    }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetToken == token && u.ResetTokenExpiry > DateTime.UtcNow);
-            if (user == null)
-            {
-                return BadRequest("Invalid or expired token.");
-            }
+    // Find users with non-expired tokens
+    var usersWithTokens = await _context.Users
+        .Where(u => u.ResetToken != null && u.ResetTokenExpiry > DateTime.UtcNow)
+        .ToListAsync();
 
-            // Update password and clear token
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-            user.ResetToken = null;
-            user.ResetTokenExpiry = null;
+    // Match the token by comparing hashed token
+    var matchedUser = usersWithTokens.FirstOrDefault(u =>
+        BCrypt.Net.BCrypt.Verify(token, u.ResetToken!));
 
-            await _context.SaveChangesAsync();
+    if (matchedUser == null)
+    {
+        TempData["Error"] = "Invalid or expired reset token.";
+        return View();
+    }
 
-            TempData["Message"] = "Password reset successful. You can now log in.";
-            return RedirectToAction("Login");
-        }
+    // ✅ Update password and clear token
+    matchedUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+    matchedUser.ResetToken = null;
+    matchedUser.ResetTokenExpiry = null;
+
+    await _context.SaveChangesAsync();
+
+    TempData["Success"] = "Password has been reset. You can now log in.";
+    return RedirectToAction("Login", "Auth");
+}
+
 
     }
 }
