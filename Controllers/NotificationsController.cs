@@ -30,12 +30,12 @@ namespace LoanManagementSystem.Controllers
                 .Where(n => n.UserId == userId && !n.IsRead)
                 .ToListAsync();
 
-            // Mark them as read
-            if (unreadNotifications.Any())
-            {
-                unreadNotifications.ForEach(n => n.IsRead = true);
-                await _context.SaveChangesAsync();
-            }
+            // // Mark them as read
+            // if (unreadNotifications.Any())
+            // {
+            //     unreadNotifications.ForEach(n => n.IsRead = true);
+            //     await _context.SaveChangesAsync();
+            // }
 
             // Convert CreatedAt to IST
             var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");

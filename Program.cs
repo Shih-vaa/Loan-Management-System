@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using LoanManagementSystem.Data;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using LoanManagementSystem.Services;
+using LoanManagementSystem.Helpers;
+using LoanManagementSystem.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddScoped<EmailHelper>();
-
+builder.Services.AddScoped<IEmailHelper, EmailHelper>();
 
 
 // Add API controllers

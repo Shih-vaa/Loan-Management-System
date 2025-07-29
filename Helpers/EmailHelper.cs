@@ -1,10 +1,11 @@
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using LoanManagementSystem.Controllers;
 
-namespace LoanManagementSystem.Services
+namespace LoanManagementSystem.Helpers
 {
-    public class EmailHelper
+    public class EmailHelper:IEmailHelper
     {
         private readonly IConfiguration _config;
 

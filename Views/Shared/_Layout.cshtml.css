@@ -46,3 +46,19 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+
+.read-link {
+  color: #6c757d !important;
+  background-color: #f1f1f1 !important;
+}
+
+.unread-link {
+  color: #212529 !important;
+  background-color: #ffffff !important;
+  font-weight: 600;
+}
+
+.notification-item:hover .read-link,
+.notification-item:hover .unread-link {
+  background-color: #e9ecef !important;
+}

@@ -26,5 +26,7 @@ namespace LoanManagementSystem.Models
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+        public string? ResetToken { get; internal set; }
+        public DateTime? ResetTokenExpiry { get; internal set; }
     }
 }

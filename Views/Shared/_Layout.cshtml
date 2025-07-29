@@ -407,7 +407,16 @@
         setInterval(loadNotifications, 5000); // Refresh every 20 sec
         
         // Load when dropdown opens
-        document.getElementById('notificationDropdown')?.addEventListener('shown.bs.dropdown', loadNotifications);
+        document.getElementById('notificationDropdown')?.addEventListener('shown.bs.dropdown', async () => {
+    await loadNotifications(); // Refresh first
+    await fetch('/Notifications/MarkAllAsRead', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' } // optional
+    });
+    // 🔁 Reload again to reflect grey style
+    setTimeout(loadNotifications, 200); // slight delay to reflect UI
+});
+
     });
  // 🔄 Real-time sync between tabs
     window.addEventListener('storage', (e) => {
@@ -440,13 +449,22 @@
     });
 
     const item = document.createElement("li");
-    item.className = `dropdown-item notification-item py-2 ${note.isRead ? '' : 'unread'}`;
-    item.innerHTML = `
-        <a href="${note.link || '#'}" class="mark-as-read" data-id="${note.notificationId}">
-            <div>${note.message}</div>
-            <small>${indiaTime}</small>
-        </a>
-    `;
+item.className = `notification-item py-2 ${note.isRead ? 'read' : 'unread'}`;
+
+
+item.setAttribute("style", `
+  background-color: ${note.isRead ? "#f1f1f1" : "#ffffff"} !important;
+  color: ${note.isRead ? "#6c757d" : "#212529"} !important;
+`);
+
+
+item.innerHTML = `
+  <a href="${note.link || '#'}" class="d-block text-decoration-none mark-as-read ${note.isRead ? 'read-link' : 'unread-link'}" data-id="${note.notificationId}">
+      <div>${note.message}</div>
+      <small>${indiaTime}</small>
+  </a>
+`;
+
     list.appendChild(item);
 });
 
