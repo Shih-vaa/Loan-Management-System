@@ -116,92 +116,121 @@ namespace LoanManagementSystem.Controllers
                 return View();
             }
 
-            // Generate a token (simple random string for now)
-            string rawToken = Guid.NewGuid().ToString();
-            string hashedToken = BCrypt.Net.BCrypt.HashPassword(rawToken);
-            user.ResetToken = hashedToken;
+            // 🔐 Generate reset token (for secure reset link)
+            string resetToken = Guid.NewGuid().ToString();
+            user.ResetToken = BCrypt.Net.BCrypt.HashPassword(resetToken); // hash for security
+            user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(15);
 
-            user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(5); // valid for 5 minutes
+            // 🔢 Generate OTP
+            string otp = new Random().Next(100000, 999999).ToString();
+            user.OtpCode = otp;
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(15);
+
             await _context.SaveChangesAsync();
 
-            // Build reset link
-            var resetLink = Url.Action("ResetPassword", "Auth", new { token = rawToken }, Request.Scheme);
+            // 📬 Send email with OTP
+            string body = $@"
+        Hello {user.FullName},<br/><br/>
+        You requested a password reset.<br/>
+        Please use the following OTP to continue:<br/>
+        <h3>{otp}</h3>
+        This OTP will expire in 15 minutes.<br/><br/>
+        If you did not request this, please ignore this email.";
 
+            await _emailHelper.SendEmailAsync(user.Email, "Your OTP for Password Reset", body);
 
-            // Send email
-            string body = $"Hello {user.FullName},<br/><br/>Click the link below to reset your password:<br/><a href=\"{resetLink}\">{resetLink}</a><br/><br/>This link will expire in 5 minutes.";
-
-            await _emailHelper.SendEmailAsync(user.Email, "Reset Your Password", body);
-
-            TempData["Message"] = "If the email exists, a reset link has been sent.";
-            return View();
+            TempData["Email"] = email;
+            TempData["Message"] = "An OTP has been sent to your email.";
+            return RedirectToAction("VerifyOtp");
         }
-        // 📝 GET: Reset Password
+
+
+
+
+
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword(string token)
+        public IActionResult VerifyOtp()
         {
-            if (string.IsNullOrEmpty(token))
-            {
-                return BadRequest("Invalid reset token.");
-            }
-
-            var user = await _context.Users
-    .Where(u => u.ResetToken != null && u.ResetTokenExpiry > DateTime.UtcNow)
-    .ToListAsync();
-
-            var matchedUser = user.FirstOrDefault(u => BCrypt.Net.BCrypt.Verify(token, u.ResetToken));
-
-            if (user == null)
-            {
-                return BadRequest("Invalid or expired token.");
-            }
-
-            ViewBag.Token = token;
             return View();
         }
 
         [HttpPost]
-[AllowAnonymous]
-public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
-{
-    if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
-    {
-        TempData["Error"] = "All fields are required.";
-        return View();
-    }
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyOtp(string email, string otp)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null || user.OtpCode != otp || user.OtpExpiry < DateTime.UtcNow)
+            {
+                TempData["Message"] = "Invalid or expired OTP.";
+                TempData["Email"] = email;
+                return RedirectToAction("VerifyOtp");
+            }
 
-    if (newPassword != confirmPassword)
-    {
-        TempData["Error"] = "Passwords do not match.";
-        return View();
-    }
+            // ✅ OTP is correct
+            TempData["ResetEmail"] = user.Email;
+            TempData["TokenVerified"] = true;
+            return RedirectToAction("ResetPassword");
+        }
 
-    // Find users with non-expired tokens
-    var usersWithTokens = await _context.Users
-        .Where(u => u.ResetToken != null && u.ResetTokenExpiry > DateTime.UtcNow)
-        .ToListAsync();
 
-    // Match the token by comparing hashed token
-    var matchedUser = usersWithTokens.FirstOrDefault(u =>
-        BCrypt.Net.BCrypt.Verify(token, u.ResetToken!));
+        // 📝 GET: Reset Password
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword()
+        {
+            if (TempData["TokenVerified"] == null || TempData["ResetEmail"] == null)
+            {
+                return RedirectToAction("ForgotPassword");
+            }
 
-    if (matchedUser == null)
-    {
-        TempData["Error"] = "Invalid or expired reset token.";
-        return View();
-    }
+            TempData.Keep("ResetEmail"); // Preserve for POST
+            return View();
+        }
 
-    // ✅ Update password and clear token
-    matchedUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-    matchedUser.ResetToken = null;
-    matchedUser.ResetTokenExpiry = null;
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(string email, string newPassword, string confirmPassword)
+        {
+            if (newPassword != confirmPassword)
+            {
+                TempData["Error"] = "Passwords do not match.";
+                TempData["ResetEmail"] = email;
+                
+            }
 
-    await _context.SaveChangesAsync();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-    TempData["Success"] = "Password has been reset. You can now log in.";
-    return RedirectToAction("Login", "Auth");
-}
+            if (user == null || user.OtpCode == null || user.OtpExpiry < DateTime.UtcNow)
+            {
+                TempData["Error"] = "Invalid or expired reset attempt.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            // ✅ Update password and clear reset info
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
+            user.OtpCode = null;
+            user.OtpExpiry = null;
+
+            await _context.SaveChangesAsync();
+
+            // ✅ Send confirmation email
+            string subject = "Your Password Has Been Changed";
+            string body = $@"
+        Hello {user.FullName},<br/><br/>
+        Your password for LMS account was successfully updated on <strong>{DateTime.Now.ToString("f")}</strong>.<br/>
+        If this wasn't you, please contact support immediately.<br/><br/>
+        Regards,<br/>
+        Loan Management System";
+
+            await _emailHelper.SendEmailAsync(user.Email, subject, body);
+
+            TempData["Message"] = "Password has been reset. Please login.";
+            return RedirectToAction("Login");
+        }
+
 
 
     }
