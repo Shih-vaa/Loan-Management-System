@@ -24,13 +24,6 @@ namespace LoanManagementSystem.Controllers
 
 
 
-
-
-
-
-
-
-
         private readonly EmailHelper _emailHelper;
         public LeadController(ApplicationDbContext context, ILogger<LeadController> logger, EmailHelper emailHelper)
         {
@@ -126,7 +119,6 @@ namespace LoanManagementSystem.Controllers
 
 
 
-        // ✅ POST: /Lead/Edit
         [HttpPost]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(EditLeadViewModel model)
@@ -136,7 +128,6 @@ namespace LoanManagementSystem.Controllers
                 ViewBag.Users = await _context.Users
                     .Where(u => u.Role == "calling" || u.Role == "office")
                     .ToListAsync();
-
                 return View(model);
             }
 
@@ -148,59 +139,55 @@ namespace LoanManagementSystem.Controllers
             lead.Status = model.Status;
             lead.AssignedTo = model.AssignedTo;
 
+            string auditDescription = null;
+
             if (isNewAssignment)
             {
-                lead.AssignedAt = DateTime.UtcNow;
-                lead.Deadline = DateTime.UtcNow.AddHours(48);
+                // ✅ Audit logging for assignment changes
+                string previousAssigneeName = null;
 
-                // // ✅ Notify assigned user
-                // await NotificationHelper.AddNotificationAsync(
-                //     _context,
-                //     model.AssignedTo.Value,
-                //     $"New Lead Assigned: LMS-{lead.LeadId:D4}"
-                // );
-
-                // // ✅ Notify original generator
-                // if (lead.LeadGeneratorId != null)
-                // {
-                //     await NotificationHelper.AddNotificationAsync(
-                //         _context,
-                //         lead.LeadGeneratorId,
-                //         $"Your lead LMS-{lead.LeadId:D4} has been assigned."
-                //     );
-                // }
-                if (model.AssignedTo.HasValue)
+                if (lead.AssignedTo.HasValue)
                 {
-                    // ✅ Notify assigned user (e.g., Neha)
-                    await NotificationHelper.AddNotificationAsync(_context, model.AssignedTo.Value, $"New Lead Assigned: LMS-{lead.LeadId:D4}");
-
-                    // ✅ Notify lead generator (e.g., Ramesh)
-                    if (lead.LeadGeneratorId != model.AssignedTo.Value)
-                    {
-                        await NotificationHelper.AddNotificationAsync(_context, lead.LeadGeneratorId, $"Your lead LMS-{lead.LeadId:D4} has been assigned");
-                    }
+                    var previousUser = await _context.Users.FindAsync(lead.AssignedTo.Value);
+                    previousAssigneeName = previousUser?.FullName ?? $"UserId {lead.AssignedTo.Value}";
                 }
 
                 if (model.AssignedTo.HasValue)
                 {
                     var assignedUser = await _context.Users.FindAsync(model.AssignedTo.Value);
+
                     if (assignedUser != null)
                     {
-                        string emailBody = EmailHelper.LeadAssignmentTemplate(assignedUser.FullName, lead.LeadId);
-                        await _emailHelper.SendEmailAsync(
-                            assignedUser.Email!,
-                            $"New Lead Assigned: LMS-{lead.LeadId:D4}",
-                            emailBody
-                        );
+                        if (previousAssigneeName == null)
+                        {
+                            auditDescription = $"Lead LMS-{lead.LeadId:D4} assigned to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
+                        }
+                        else
+                        {
+                            auditDescription = $"Lead LMS-{lead.LeadId:D4} reassigned from {previousAssigneeName} to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
+                        }
                     }
-                    TempData["Success"] = $"Lead LMS-{lead.LeadId:D4} successfully assigned to {assignedUser.FullName} ({assignedUser.Email}).";
-                     return RedirectToAction(nameof(Index)); // Or another view
+                    else
+                    {
+                        auditDescription = $"Lead LMS-{lead.LeadId:D4} reassigned.";
+                    }
+                }
+                else
+                {
+                    auditDescription = $"Lead LMS-{lead.LeadId:D4} was unassigned from {previousAssigneeName}.";
                 }
 
-
+                await AuditLogger.LogAsync(
+                    _context,
+                    HttpContext,
+                    action: "Lead Assignment Update",
+                    description: auditDescription,
+                    controller: "Lead",
+                    actionMethod: "Edit"
+                );
             }
 
-            // ✅ Auto-create commission if applicable
+            // ✅ Commission generation
             if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
             {
                 bool commissionExists = await _context.Commissions.AnyAsync(c => c.LeadId == lead.LeadId);
@@ -230,6 +217,7 @@ namespace LoanManagementSystem.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
         // ✅ GET: /Lead/Details/{id}
         public async Task<IActionResult> Details(int id)

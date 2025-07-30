@@ -53,8 +53,8 @@ namespace LoanManagementSystem.Data
                 .WithMany()
                 .HasForeignKey(l => l.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
-        
-}
+
+        }
 
 
 
@@ -66,9 +66,7 @@ namespace LoanManagementSystem.Data
         public DbSet<Commission> Commissions { get; set; }
 
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
-        // === Future modules ===
-
-        // public DbSet<AuditLog> AuditLogs { get; set; }
     }
 }
