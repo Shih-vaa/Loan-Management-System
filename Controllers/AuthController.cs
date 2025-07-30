@@ -196,7 +196,7 @@ namespace LoanManagementSystem.Controllers
             {
                 TempData["Error"] = "Passwords do not match.";
                 TempData["ResetEmail"] = email;
-                
+
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -229,6 +229,33 @@ namespace LoanManagementSystem.Controllers
 
             TempData["Message"] = "Password has been reset. Please login.";
             return RedirectToAction("Login");
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendOtp([FromBody] EmailRequest request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            // Generate new OTP
+            var otp = new Random().Next(100000, 999999).ToString();
+            user.OtpCode = otp;
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(15);
+            await _context.SaveChangesAsync();
+
+            // Send email
+            string body = $"Your new OTP is: <strong>{otp}</strong>. It is valid for 15 minutes.";
+            await _emailHelper.SendEmailAsync(user.Email, "Resent OTP for Password Reset", body);
+
+            return Ok();
+        }
+
+        public class EmailRequest
+        {
+            public string Email { get; set; }
         }
 
 
