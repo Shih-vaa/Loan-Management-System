@@ -26,21 +26,23 @@
     </form>
 </div>
 
+<div id="otpStatus" class="mt-2"></div>
+
 <script>
-    let timeLeft = 10;
+    let timeLeft = 10; // 1 minute
     let countdown;
 
-    const userEmail = "@email";
     const timerEl = document.getElementById("timer");
     const btn = document.getElementById("resendOtpBtn");
     const countdownText = document.getElementById("countdownText");
+    const statusDiv = document.getElementById("otpStatus");
 
     startCountdown();
 
     function startCountdown() {
         timeLeft = 10;
         btn.disabled = true;
-        btn.textContent = "Resend OTP";
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2 d-none" id="spinner"></span>Resend OTP`;
         countdownText.innerHTML = `You can resend OTP in <span id="timer">${timeLeft}</span> seconds`;
         countdown = setInterval(() => {
             timeLeft--;
@@ -55,23 +57,24 @@
 
     function resendOtp() {
         btn.disabled = true;
-        btn.textContent = "Resending...";
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" id="spinner"></span>Resending...`;
+        statusDiv.innerHTML = "";
 
         fetch("/Auth/ResendOtp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: userEmail })
+            body: JSON.stringify({ email: "@email" })  // use the same tempdata variable
         }).then(response => {
             if (response.ok) {
-                alert("OTP resent successfully!");
-                startCountdown(); // restart countdown
+                statusDiv.innerHTML = `<div class="text-success">✅ OTP resent successfully!</div>`;
+                startCountdown(); // restart timer
             } else {
-                alert("Failed to resend OTP. Please try again.");
+                statusDiv.innerHTML = `<div class="text-danger">❌ Failed to resend OTP. Please try again.</div>`;
                 btn.disabled = false;
                 btn.textContent = "Resend OTP";
             }
         }).catch(() => {
-            alert("Something went wrong.");
+            statusDiv.innerHTML = `<div class="text-danger">❌ Something went wrong. Please try again.</div>`;
             btn.disabled = false;
             btn.textContent = "Resend OTP";
         });

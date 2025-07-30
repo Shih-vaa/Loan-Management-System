@@ -231,27 +231,31 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction("Login");
         }
         [HttpPost]
-        [AllowAnonymous]
-        public async Task<IActionResult> ResendOtp([FromBody] EmailRequest request)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null)
-            {
-                return BadRequest("User not found");
-            }
+[AllowAnonymous]
+public async Task<IActionResult> ResendOtp([FromBody] EmailRequest request)
+{
+    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+    if (user == null)
+        return BadRequest("User not found");
 
-            // Generate new OTP
-            var otp = new Random().Next(100000, 999999).ToString();
-            user.OtpCode = otp;
-            user.OtpExpiry = DateTime.UtcNow.AddMinutes(15);
-            await _context.SaveChangesAsync();
+    // ⛔ Block if OTP was sent less than 60s ago
+    if (user.OtpExpiry != null && user.OtpCode != null && user.OtpExpiry.Value.AddMinutes(-15).AddSeconds(60) > DateTime.UtcNow)
+    {
+        return StatusCode(429, "Too many requests. Please wait before resending OTP.");
+    }
 
-            // Send email
-            string body = $"Your new OTP is: <strong>{otp}</strong>. It is valid for 15 minutes.";
-            await _emailHelper.SendEmailAsync(user.Email, "Resent OTP for Password Reset", body);
+    // ✅ Generate and Save New OTP
+    var otp = new Random().Next(100000, 999999).ToString();
+    user.OtpCode = otp;
+    user.OtpExpiry = DateTime.UtcNow.AddMinutes(15);
+    await _context.SaveChangesAsync();
 
-            return Ok();
-        }
+    string body = $"Your new OTP is: <strong>{otp}</strong>. It is valid for 15 minutes.";
+    await _emailHelper.SendEmailAsync(user.Email, "Resent OTP for Password Reset", body);
+
+    return Ok();
+}
+
 
         public class EmailRequest
         {
