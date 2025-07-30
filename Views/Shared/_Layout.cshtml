@@ -163,6 +163,13 @@
                                     </a>
                                 </li>
                             }
+                            @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Lead" asp-action="DeletedLeads">Deleted Leads</a>
+                                </li>
+                            }
+
 
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Lead" asp-action="Index">

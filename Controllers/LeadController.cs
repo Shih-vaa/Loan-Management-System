@@ -136,14 +136,17 @@ namespace LoanManagementSystem.Controllers
 
             bool isNewAssignment = model.AssignedTo.HasValue && lead.AssignedTo != model.AssignedTo;
 
+            // ✅ First capture old status BEFORE assigning the new one
+            string oldStatus = lead.Status;
+
             lead.Status = model.Status;
             lead.AssignedTo = model.AssignedTo;
 
             string auditDescription = null;
 
+            // ✅ Audit logging for assignment changes
             if (isNewAssignment)
             {
-                // ✅ Audit logging for assignment changes
                 string previousAssigneeName = null;
 
                 if (lead.AssignedTo.HasValue)
@@ -187,7 +190,7 @@ namespace LoanManagementSystem.Controllers
                 );
             }
 
-            // ✅ Commission generation
+            // ✅ Commission generation logic (unchanged)
             if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
             {
                 bool commissionExists = await _context.Commissions.AnyAsync(c => c.LeadId == lead.LeadId);
@@ -214,8 +217,22 @@ namespace LoanManagementSystem.Controllers
                 }
             }
 
+            // ✅ Status Change Audit Logging (now works correctly)
+            if (oldStatus != model.Status)
+            {
+                await AuditLogger.LogAsync(
+                    _context,
+                    HttpContext,
+                    action: "Lead Status Change",
+                    description: $"Status of LMS-{lead.LeadId:D4} changed from '{oldStatus}' to '{model.Status}'.",
+                    controller: "Lead",
+                    actionMethod: "Edit"
+                );
+            }
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+
         }
 
 
@@ -317,6 +334,53 @@ namespace LoanManagementSystem.Controllers
         {
             return loanAmount * 0.02M; // 2% commission
         }
+
+
+
+
+
+        [HttpPost]
+        [Authorize(Roles = "admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var lead = await _context.Leads.FindAsync(id);
+            if (lead == null || lead.IsDeleted)
+            {
+                return NotFound();
+            }
+
+            // Anonymize PII and soft delete
+            lead.IsDeleted = true;
+            lead.DateDeleted = DateTime.UtcNow;
+
+            await AuditLogger.LogAsync(
+                _context,
+                HttpContext,
+                action: "Lead Deletion",
+                description: $"Lead LMS-{lead.LeadId:D4} was anonymized and soft deleted.",
+                controller: "Lead",
+                actionMethod: "Delete"
+            );
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Lead LMS-{lead.LeadId:D4} has been deleted.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> DeletedLeads()
+        {
+            var deletedLeads = await _context.Leads
+                .Where(l => l.IsDeleted)
+                .OrderByDescending(l => l.DateDeleted)
+                .ToListAsync();
+
+            return View(deletedLeads);
+        }
+
 
     }
 

@@ -8,17 +8,18 @@
     <h2>Leads</h2>
 
     @* Only Admin or Marketing can create leads *@
-    @if (User.IsInRole("admin") || User.IsInRole("marketing"))
+    @if (role == "admin" || role == "marketing")
     {
         <a class="btn btn-primary mb-2" asp-controller="Lead" asp-action="Create">+ New Lead</a>
     }
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <table class="table table-bordered table-striped">
         <thead class="table-light">
@@ -30,7 +31,7 @@
                 <th>Lead Generator</th>
                 <th>Assigned To</th>
                 <th>📄 Docs</th>
-                <th style="width: 150px;">Actions</th>
+                <th style="width: 200px;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -46,36 +47,36 @@
 
                     <td>
                         @if (lead.Documents != null && lead.Documents.Any())
-{
-    var total = lead.Documents.Count;
-    var approved = lead.Documents.Count(d => d.Status == "approved");
-    var pending = lead.Documents.Count(d => d.Status == "pending" || d.Status == "uploaded");
-    var rejected = lead.Documents.Count(d => d.Status == "rejected");
+                        {
+                            var total = lead.Documents.Count;
+                            var approved = lead.Documents.Count(d => d.Status == "approved");
+                            var pending = lead.Documents.Count(d => d.Status == "pending" || d.Status == "uploaded");
+                            var rejected = lead.Documents.Count(d => d.Status == "rejected");
 
-    <span class="badge bg-success me-1">✔️ @approved</span>
-    <span class="badge bg-warning text-dark me-1">⏳ @pending</span>
-    <span class="badge bg-danger me-1">❌ @rejected</span>
-    <span class="badge bg-secondary">📄 @total</span>
-}
-else
-{
-    <span class="text-muted">No docs</span>
-}
+                            <span class="badge bg-success me-1">✔️ @approved</span>
+                            <span class="badge bg-warning text-dark me-1">⏳ @pending</span>
+                            <span class="badge bg-danger me-1">❌ @rejected</span>
+                            <span class="badge bg-secondary">📄 @total</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No docs</span>
+                        }
                     </td>
 
                     <td>
-                        <a class="btn btn-sm btn-info" asp-controller="Lead" asp-action="Details"
-                            asp-route-id="@lead.LeadId">View</a>
-                        @if (User.IsInRole("admin"))
-                        {
-                            <a class="btn btn-sm btn-warning" asp-controller="Lead" asp-action="Edit"
-                                asp-route-id="@lead.LeadId">Edit</a>
-                        }
-                        @if (User.IsInRole("admin"))
-                        {
-                            <a class="btn btn-sm btn-success" asp-action="Approve" asp-route-id="@lead.LeadId">Approve</a>
-                        }
+                        <a class="btn btn-sm btn-info" asp-controller="Lead" asp-action="Details" asp-route-id="@lead.LeadId">View</a>
 
+                        @if (role == "admin")
+                        {
+                            <a class="btn btn-sm btn-warning" asp-controller="Lead" asp-action="Edit" asp-route-id="@lead.LeadId">Edit</a>
+                            <a class="btn btn-sm btn-success" asp-controller="Lead" asp-action="Approve" asp-route-id="@lead.LeadId">Approve</a>
+                            <form asp-action="Delete" asp-route-id="@lead.LeadId" method="post"
+                                  onsubmit="return confirm('Are you sure you want to delete Lead LMS-@lead.LeadId:D4?');"
+                                  style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        }
                     </td>
                 </tr>
             }

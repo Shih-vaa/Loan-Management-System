@@ -49,6 +49,11 @@ namespace LoanManagementSystem.Models
         public DateTime? Deadline { get; set; }
 
         public virtual ICollection<LeadDocument>? Documents { get; set; }
-        
+
+
+
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DateDeleted { get; set; }
+
     }
 }

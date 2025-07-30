@@ -75,7 +75,20 @@ namespace LoanManagementSystem.Controllers
             }
 
             var lead = await _context.Leads.FindAsync(id);
+            string oldStatus = lead.Status;
+            
             lead.Status = "in_process";
+Console.WriteLine("Logging audit...");
+            // ✅ Audit Log
+            await AuditLogger.LogAsync(
+                _context,
+                HttpContext,
+                action: "Lead Status Change",
+                description: $"Status of LMS-{lead.LeadId:D4} changed from '{oldStatus}' to 'in-process' due to document upload.",
+                controller: "Calling",
+                actionMethod: "UploadDocument" 
+            );
+Console.WriteLine("Audit logged!");
 
             // Notify office team
             var officeUsers = await _context.Users
