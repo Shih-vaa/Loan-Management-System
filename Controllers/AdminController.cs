@@ -25,10 +25,22 @@ namespace LoanManagementSystem.Controllers
             // Basic metrics
             var metrics = new DashboardMetricsViewModel
             {
-                TotalLeads = await _context.Leads.CountAsync(),
-                ApprovedLeads = await _context.Leads.CountAsync(l => l.Status == "approved"),
-                PendingLeads = await _context.Leads.CountAsync(l => l.Status == "pending"),
-                TotalCustomers = await _context.Customers.CountAsync(),
+                TotalLeads = await _context.Leads
+                .Where(l => !l.IsDeleted)
+                .CountAsync(),
+
+                ApprovedLeads = await _context.Leads
+                .Where(l => !l.IsDeleted && l.Status == "approved")
+                .CountAsync(),
+
+                PendingLeads = await _context.Leads
+                .Where(l => !l.IsDeleted && l.Status == "pending")
+                .CountAsync(),
+
+                TotalCustomers = await _context.Customers
+                .Where(c => !c.IsDeleted)
+                .CountAsync(),
+
                 TotalUsers = await _context.Users.CountAsync(),
                 TotalTeams = await _context.Teams.CountAsync(),
                 TotalCommissionPaid = await _context.Commissions.Where(c => c.Status == "paid")
@@ -38,10 +50,16 @@ namespace LoanManagementSystem.Controllers
                 TotalCommission = await _context.Commissions.SumAsync(c => (decimal?)c.Amount) ?? 0,
                 TotalDocumentsUploaded = await _context.LeadDocuments.CountAsync(),
                 PendingDocuments = await _context.LeadDocuments.CountAsync(d => d.Status == "pending"),
-                UnassignedLeadsCount = await _context.Leads.CountAsync(l => l.AssignedTo == null),
+                UnassignedLeadsCount = await _context.Leads
+                .Where(l => !l.IsDeleted && l.AssignedTo == null)
+                .CountAsync(),
+
+
                 LeadStatusCounts = await _context.Leads
-                    .GroupBy(l => l.Status ?? "Unknown")
-                    .ToDictionaryAsync(g => g.Key, g => g.Count()),
+                .Where(l => !l.IsDeleted)
+                .GroupBy(l => l.Status ?? "Unknown")
+                .ToDictionaryAsync(g => g.Key, g => g.Count()),
+
             };
 
             // Team performance metrics
@@ -151,9 +169,9 @@ namespace LoanManagementSystem.Controllers
                 TotalCommission = commission
             };
 
-            return View("TeamDrilldown", vm); // 👈 We'll create this view next
+            return View("TeamDrilldown", vm); 
         }
-        
+
 
     }
 }

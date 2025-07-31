@@ -7,22 +7,60 @@
     <h2>Edit Customer</h2>
     <form asp-action="Edit">
         <input type="hidden" asp-for="CustomerId" />
-        <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <input asp-for="FullName" class="form-control" />
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Full Name*</label>
+                    <input asp-for="FullName" class="form-control" required />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input asp-for="Email" type="email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Date of Birth</label>
+                    <input asp-for="DateOfBirth" type="date" class="form-control" />
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Gender</label>
+                    <select asp-for="Gender" class="form-select">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Occupation</label>
+                    <input asp-for="Occupation" class="form-control" />
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Annual Income (₹)</label>
+                    <input asp-for="AnnualIncome" type="number" class="form-control" />
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input asp-for="Email" class="form-control" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Phone</label>
-            <input asp-for="Phone" class="form-control" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Address</label>
-            <textarea asp-for="Address" class="form-control"></textarea>
-        </div>
+        
         <button type="submit" class="btn btn-primary">Save Changes</button>
         <a asp-action="Index" class="btn btn-secondary">Cancel</a>
     </form>

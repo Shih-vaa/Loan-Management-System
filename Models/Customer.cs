@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,16 +16,37 @@ namespace LoanManagementSystem.Models
         public string FullName { get; set; }
 
         [Column("email")]
+        [EmailAddress]
         public string? Email { get; set; }
 
         [Column("phone")]
+        [Phone]
         public string? Phone { get; set; }
 
         [Column("address")]
         public string? Address { get; set; }
 
+        [Column("date_of_birth")]
+        [DataType(DataType.Date)]
+        public DateTime? DateOfBirth { get; set; }
+
+        [Column("gender")]
+        public string? Gender { get; set; } // male, female, other (based on ENUM)
+
+        [Column("occupation")]
+        public string? Occupation { get; set; }
+
+        [Column("annual_income")]
+        [DataType(DataType.Currency)]
+        public decimal? AnnualIncome { get; set; }
+
+        [Column("is_deleted")]
+        public bool IsDeleted { get; set; } = false;
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        [Column("updated_at")]
+        public DateTime? UpdatedAt { get; set; }
     }
 }

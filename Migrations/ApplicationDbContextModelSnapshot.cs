@@ -58,7 +58,7 @@ namespace LoanManagementSystem.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Commissions");
+                    b.ToTable("Commissions", (string)null);
                 });
 
             modelBuilder.Entity("LoanManagementSystem.Models.Customer", b =>
@@ -93,7 +93,7 @@ namespace LoanManagementSystem.Migrations
 
                     b.HasKey("CustomerId");
 
-                    b.ToTable("customers");
+                    b.ToTable("customers", (string)null);
                 });
 
             modelBuilder.Entity("LoanManagementSystem.Models.Lead", b =>
@@ -143,7 +143,7 @@ namespace LoanManagementSystem.Migrations
 
                     b.HasIndex("LeadGeneratorId");
 
-                    b.ToTable("Leads");
+                    b.ToTable("Leads", (string)null);
                 });
 
             modelBuilder.Entity("LoanManagementSystem.Models.LeadDocument", b =>
@@ -206,7 +206,7 @@ namespace LoanManagementSystem.Migrations
 
                     b.HasIndex("VerifiedBy");
 
-                    b.ToTable("lead_documents");
+                    b.ToTable("lead_documents", (string)null);
                 });
 
             modelBuilder.Entity("LoanManagementSystem.Models.Team", b =>
@@ -231,7 +231,7 @@ namespace LoanManagementSystem.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("teams");
+                    b.ToTable("teams", (string)null);
                 });
 
             modelBuilder.Entity("LoanManagementSystem.Models.TeamMember", b =>
@@ -248,7 +248,7 @@ namespace LoanManagementSystem.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("team_members");
+                    b.ToTable("team_members", (string)null);
                 });
 
             modelBuilder.Entity("LoanManagementSystem.Models.User", b =>
@@ -290,7 +290,7 @@ namespace LoanManagementSystem.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("LoanManagementSystem.Models.Commission", b =>
