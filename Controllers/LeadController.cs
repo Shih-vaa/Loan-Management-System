@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using LoanManagementSystem.Data;
 using LoanManagementSystem.Models;
 using LoanManagementSystem.Models.ViewModels;
-using LoanManagementSystem.Helpers; // ✅ For NotificationHelper
+using LoanManagementSystem.Helpers;
 using Microsoft.Extensions.Logging;
-
-
 
 namespace LoanManagementSystem.Controllers
 {
@@ -15,16 +13,9 @@ namespace LoanManagementSystem.Controllers
     public class LeadController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-
-
-
-
         private readonly ILogger<LeadController> _logger;
-
-
-
         private readonly EmailHelper _emailHelper;
+
         public LeadController(ApplicationDbContext context, ILogger<LeadController> logger, EmailHelper emailHelper)
         {
             _context = context;
@@ -32,13 +23,6 @@ namespace LoanManagementSystem.Controllers
             _emailHelper = emailHelper;
         }
 
-
-
-
-
-
-
-        // ✅ GET: /Lead (with optional status filter)
         public async Task<IActionResult> Index(string? status = null)
         {
             string role = HttpContext.Session.GetString("UserRole") ?? "";
@@ -48,7 +32,7 @@ namespace LoanManagementSystem.Controllers
                 .Include(l => l.Customer)
                 .Include(l => l.LeadGenerator)
                 .Include(l => l.AssignedUser)
-                .AsQueryable();
+                .Where(l => !l.IsDeleted);
 
             if (!string.IsNullOrEmpty(status))
                 leads = leads.Where(l => l.Status == status);
@@ -61,11 +45,6 @@ namespace LoanManagementSystem.Controllers
             return View(await leads.ToListAsync());
         }
 
-
-
-
-
-        // ✅ GET: /Lead/Create
         [Authorize(Roles = "admin,marketing")]
         public IActionResult Create()
         {
@@ -73,7 +52,6 @@ namespace LoanManagementSystem.Controllers
             return View();
         }
 
-        // ✅ POST: /Lead/Create
         [HttpPost]
         [Authorize(Roles = "admin,marketing")]
         public async Task<IActionResult> Create(Lead lead)
@@ -93,14 +71,11 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-
-
-        // ✅ GET: /Lead/Edit/{id}
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int id)
         {
-            var lead = await _context.Leads.FindAsync(id);
+            var lead = await _context.Leads.Where(l => l.LeadId == id && !l.IsDeleted).FirstOrDefaultAsync();
+
             if (lead == null) return NotFound();
 
             var model = new EditLeadViewModel
@@ -117,38 +92,24 @@ namespace LoanManagementSystem.Controllers
             return View(model);
         }
 
-
-
         [HttpPost]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Edit(EditLeadViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, EditLeadViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Users = await _context.Users
-                    .Where(u => u.Role == "calling" || u.Role == "office")
-                    .ToListAsync();
-                return View(model);
-            }
+            if (id != model.LeadId) return NotFound();
 
-            var lead = await _context.Leads.FindAsync(model.LeadId);
-            if (lead == null) return NotFound();
+            var lead = await _context.Leads.FindAsync(id);
+            if (lead == null || lead.IsDeleted) return NotFound();
 
-            bool isNewAssignment = model.AssignedTo.HasValue && lead.AssignedTo != model.AssignedTo;
-
-            // ✅ First capture old status BEFORE assigning the new one
-            string oldStatus = lead.Status;
+            string auditDescription = "";
+            bool isNewAssignment = lead.AssignedTo != model.AssignedTo;
 
             lead.Status = model.Status;
-            lead.AssignedTo = model.AssignedTo;
 
-            string auditDescription = null;
-
-            // ✅ Audit logging for assignment changes
             if (isNewAssignment)
             {
-                string previousAssigneeName = null;
-
+                string? previousAssigneeName = null;
                 if (lead.AssignedTo.HasValue)
                 {
                     var previousUser = await _context.Users.FindAsync(lead.AssignedTo.Value);
@@ -161,14 +122,35 @@ namespace LoanManagementSystem.Controllers
 
                     if (assignedUser != null)
                     {
-                        if (previousAssigneeName == null)
+                        lead.AssignedTo = assignedUser.UserId;
+
+                        auditDescription = previousAssigneeName == null
+                            ? $"Lead LMS-{lead.LeadId:D4} assigned to {assignedUser.FullName} (ID: {assignedUser.UserId})."
+                            : $"Lead LMS-{lead.LeadId:D4} reassigned from {previousAssigneeName} to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
+
+                        string emailBody = EmailHelper.LeadAssignmentTemplate(assignedUser.FullName, lead.LeadId);
+                        await _emailHelper.SendEmailAsync(
+                            assignedUser.Email!,
+                            $"New Lead Assigned: LMS-{lead.LeadId:D4}",
+                            emailBody
+                        );
+
+                        await NotificationHelper.AddNotificationAsync(
+                            _context,
+                            assignedUser.UserId,
+                            $"New Lead Assigned: LMS-{lead.LeadId:D4}"
+                        );
+
+                        if (lead.LeadGeneratorId != assignedUser.UserId)
                         {
-                            auditDescription = $"Lead LMS-{lead.LeadId:D4} assigned to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
+                            await NotificationHelper.AddNotificationAsync(
+                                _context,
+                                lead.LeadGeneratorId,
+                                $"Your lead LMS-{lead.LeadId:D4} has been assigned"
+                            );
                         }
-                        else
-                        {
-                            auditDescription = $"Lead LMS-{lead.LeadId:D4} reassigned from {previousAssigneeName} to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
-                        }
+
+                        TempData["Success"] = $"Lead LMS-{lead.LeadId:D4} successfully assigned to {assignedUser.FullName} ({assignedUser.Email}).";
                     }
                     else
                     {
@@ -177,6 +159,7 @@ namespace LoanManagementSystem.Controllers
                 }
                 else
                 {
+                    lead.AssignedTo = null;
                     auditDescription = $"Lead LMS-{lead.LeadId:D4} was unassigned from {previousAssigneeName}.";
                 }
 
@@ -190,7 +173,6 @@ namespace LoanManagementSystem.Controllers
                 );
             }
 
-            // ✅ Commission generation logic (unchanged)
             if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
             {
                 bool commissionExists = await _context.Commissions.AnyAsync(c => c.LeadId == lead.LeadId);
@@ -213,73 +195,46 @@ namespace LoanManagementSystem.Controllers
                         CalculatedAt = DateTime.UtcNow
                     });
 
-                    _logger.LogInformation($"💰 Commission created for Lead {lead.LeadId}: ₹{commissionAmount}");
+                    _logger.LogInformation($"Commission created for Lead {lead.LeadId}: ₹{commissionAmount}");
                 }
-            }
-
-            // ✅ Status Change Audit Logging (now works correctly)
-            if (oldStatus != model.Status)
-            {
-                await AuditLogger.LogAsync(
-                    _context,
-                    HttpContext,
-                    action: "Lead Status Change",
-                    description: $"Status of LMS-{lead.LeadId:D4} changed from '{oldStatus}' to '{model.Status}'.",
-                    controller: "Lead",
-                    actionMethod: "Edit"
-                );
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-
         }
 
-
-        // ✅ GET: /Lead/Details/{id}
         public async Task<IActionResult> Details(int id)
         {
             var lead = await _context.Leads
                 .Include(l => l.Customer)
                 .Include(l => l.LeadGenerator)
                 .Include(l => l.AssignedUser)
-                .Include(l => l.Documents!)
-                    .ThenInclude(d => d.UploadedByUser)
-                .Include(l => l.Documents!)
-                    .ThenInclude(d => d.Verifier)
-                .FirstOrDefaultAsync(l => l.LeadId == id);
+                .Include(l => l.Documents!).ThenInclude(d => d.UploadedByUser)
+                .Include(l => l.Documents!).ThenInclude(d => d.Verifier)
+                .FirstOrDefaultAsync(l => l.LeadId == id && !l.IsDeleted);
 
             return lead == null ? NotFound() : View(lead);
         }
 
-
-
-
-
-
-
-        // GET: Lead/Approve/{id}
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Approve(int id)
         {
             var lead = await _context.Leads
                 .Include(l => l.Customer)
                 .Include(l => l.AssignedUser)
-                .FirstOrDefaultAsync(l => l.LeadId == id);
+                .FirstOrDefaultAsync(l => l.LeadId == id && !l.IsDeleted);
 
-            if (lead == null) return NotFound();
-            return View(lead);
+            return lead == null ? NotFound() : View(lead);
         }
 
-
-
-
-        // POST: Lead/Approve
         [HttpPost]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Approve(int leadId, string status, string? remarks)
         {
-            var lead = await _context.Leads.FindAsync(leadId);
+            var lead = await _context.Leads
+                .Where(l => l.LeadId == leadId && !l.IsDeleted)
+                .FirstOrDefaultAsync();
+
             if (lead == null) return NotFound();
 
             if (status != "approved" && status != "disbursed")
@@ -288,7 +243,6 @@ namespace LoanManagementSystem.Controllers
             lead.Status = status;
             lead.Remarks = remarks;
 
-            // ✅ Commission logic
             if (lead.AssignedTo.HasValue)
             {
                 bool exists = await _context.Commissions.AnyAsync(c => c.LeadId == leadId);
@@ -305,12 +259,10 @@ namespace LoanManagementSystem.Controllers
                     });
                 }
 
-                // ✅ Notify assigned calling user
                 await NotificationHelper.AddNotificationAsync(_context,
                     lead.AssignedTo.Value,
                     $"Lead LMS-{leadId:D4} has been marked as {status.ToUpper()} by admin.");
 
-                // ✅ Notify marketing agent
                 if (lead.LeadGeneratorId != lead.AssignedTo.Value)
                 {
                     await NotificationHelper.AddNotificationAsync(_context,
@@ -324,35 +276,31 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction("Index");
         }
 
-
-
-
-
-
-        // ✅ Commission formula
         private decimal CalculateCommissionAmount(decimal loanAmount)
         {
-            return loanAmount * 0.02M; // 2% commission
+            return loanAmount * 0.02M;
         }
-
-
-
-
 
         [HttpPost]
         [Authorize(Roles = "admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var lead = await _context.Leads.FindAsync(id);
-            if (lead == null || lead.IsDeleted)
-            {
-                return NotFound();
-            }
+            var lead = await _context.Leads
+                .Include(l => l.Customer)
+                .FirstOrDefaultAsync(l => l.LeadId == id);
 
-            // Anonymize PII and soft delete
+            if (lead == null || lead.IsDeleted) return NotFound();
+
             lead.IsDeleted = true;
             lead.DateDeleted = DateTime.UtcNow;
+
+            if (lead.Customer != null)
+            {
+                lead.Customer.FullName = "Deleted";
+                lead.Customer.Email = null;
+                lead.Customer.Phone = null;
+            }
 
             await AuditLogger.LogAsync(
                 _context,
@@ -369,7 +317,6 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeletedLeads()
         {
@@ -380,8 +327,5 @@ namespace LoanManagementSystem.Controllers
 
             return View(deletedLeads);
         }
-
-
     }
-
 }

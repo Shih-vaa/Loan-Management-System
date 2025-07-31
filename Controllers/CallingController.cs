@@ -24,7 +24,7 @@ namespace LoanManagementSystem.Controllers
             var leads = await _context.Leads
             .Include(l => l.Customer)
             .Include(l => l.Documents) // 👈 Needed for showing rejected docs
-            .Where(l => l.AssignedTo == userId)
+            .Where(l => l.AssignedTo == userId && !l.IsDeleted)
             .ToListAsync();
 
             return View(leads);
@@ -34,7 +34,7 @@ namespace LoanManagementSystem.Controllers
         {
             var lead = await _context.Leads
                 .Include(l => l.Customer)
-                .FirstOrDefaultAsync(l => l.LeadId == id);
+                .FirstOrDefaultAsync(l => l.LeadId == id && !l.IsDeleted);
 
             if (lead == null) return NotFound();
 
@@ -76,9 +76,9 @@ namespace LoanManagementSystem.Controllers
 
             var lead = await _context.Leads.FindAsync(id);
             string oldStatus = lead.Status;
-            
+
             lead.Status = "in_process";
-Console.WriteLine("Logging audit...");
+            Console.WriteLine("Logging audit...");
             // ✅ Audit Log
             await AuditLogger.LogAsync(
                 _context,
@@ -86,9 +86,9 @@ Console.WriteLine("Logging audit...");
                 action: "Lead Status Change",
                 description: $"Status of LMS-{lead.LeadId:D4} changed from '{oldStatus}' to 'in-process' due to document upload.",
                 controller: "Calling",
-                actionMethod: "UploadDocument" 
+                actionMethod: "UploadDocument"
             );
-Console.WriteLine("Audit logged!");
+            Console.WriteLine("Audit logged!");
 
             // Notify office team
             var officeUsers = await _context.Users
@@ -115,7 +115,7 @@ Console.WriteLine("Audit logged!");
                 .Include(l => l.Customer)
                 .Include(l => l.Documents!)
                 .ThenInclude(d => d.Verifier)
-                .FirstOrDefaultAsync(l => l.LeadId == leadId && l.AssignedTo == userId);
+                .FirstOrDefaultAsync(l => l.LeadId == leadId && l.AssignedTo == userId && !l.IsDeleted);
 
             if (lead == null) return NotFound();
 
@@ -181,7 +181,8 @@ Console.WriteLine("Audit logged!");
             }
 
             // ✅ Notify office member from same team
-            var lead = await _context.Leads.FindAsync(leadId);
+var lead = await _context.Leads.FirstOrDefaultAsync(l => l.LeadId == leadId && !l.IsDeleted);
+
             if (lead != null && lead.AssignedTo.HasValue)
             {
                 var officeUsers = TeamHelper.GetOfficeMembersInSameTeam(_context, userId);

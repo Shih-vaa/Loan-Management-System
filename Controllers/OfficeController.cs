@@ -35,10 +35,14 @@ namespace LoanManagementSystem.Controllers
                 .ToList();
 
             var leads = await _context.Leads
-                .Include(l => l.Customer)
-                .Include(l => l.Documents)
-                .Where(l => l.Status == "in_process" && l.AssignedTo != null && callingUserIds.Contains(l.AssignedTo.Value))
-                .ToListAsync();
+          .Include(l => l.Customer)
+          .Include(l => l.Documents)
+          .Where(l => !l.IsDeleted &&
+                      l.Status == "in_process" &&
+                      l.AssignedTo != null &&
+                      callingUserIds.Contains(l.AssignedTo.Value))
+          .ToListAsync();
+
 
             return View(leads);
         }
