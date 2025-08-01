@@ -1,0 +1,10 @@
+@model dynamic
+@{
+    Layout = "~/Views/Shared/_EmailLayout.cshtml";
+}
+<h2>Lead Reassigned</h2>
+<p>Dear @Model.UserName,</p>
+<p>A lead previously assigned to another team member has now been reassigned to you.</p>
+<p><strong>Lead ID:</strong> #@Model.LeadId</p>
+<p>Please <a href="https://your-domain.com/leads/details/@Model.LeadId">log in</a> to review and take necessary action.</p>
+ 

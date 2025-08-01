@@ -115,5 +115,18 @@ namespace LoanManagementSystem.Helpers
 
             await SendEmailAsync(toEmail, $"Commission Paid: LMS-{leadId:D4}", body);
         }
+        public async Task SendLeadReassignmentEmailAsync(string toEmail, string userName, int leadId)
+        {
+            var model = new
+            {
+                UserName = userName,
+                LeadId = leadId
+            };
+
+            string body = await _razorRenderer.RenderViewToStringAsync("Emails/LeadReassignment", model);
+
+            await SendEmailAsync(toEmail, "Lead Reassigned", body);
+        }
+
     }
 }

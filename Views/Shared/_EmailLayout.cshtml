@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Management System</title>
+    <title>@ViewBag.Title - Loan Management System</title>
     <style type="text/css">
         /* Base Styles */
         body {
@@ -89,8 +89,8 @@
             margin: 15px 0;
         }
         
-        /* Responsive */
-        @media only screen and (max-width: 600px) {
+        /* Media Query - properly formatted for MVC */
+        @@media only screen and (max-width: 600px) {
             .email-container {
                 margin: 0;
                 border-radius: 0;
@@ -113,7 +113,7 @@
         </div>
         
         <div class="email-footer">
-            <p>© @DateTime.Now.Year Loan Management System. All rights reserved.</p>
+            <p>&copy; @DateTime.Now.Year Loan Management System. All rights reserved.</p>
             <p>
                 <a href="#">Privacy Policy</a> | 
                 <a href="#">Terms of Service</a> | 
