@@ -14,9 +14,9 @@ namespace LoanManagementSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<LeadController> _logger;
-        private readonly EmailHelper _emailHelper;
+        private readonly IEmailHelper _emailHelper;
 
-        public LeadController(ApplicationDbContext context, ILogger<LeadController> logger, EmailHelper emailHelper)
+        public LeadController(ApplicationDbContext context, ILogger<LeadController> logger, IEmailHelper emailHelper)
         {
             _context = context;
             _logger = logger;
@@ -128,12 +128,12 @@ namespace LoanManagementSystem.Controllers
                             ? $"Lead LMS-{lead.LeadId:D4} assigned to {assignedUser.FullName} (ID: {assignedUser.UserId})."
                             : $"Lead LMS-{lead.LeadId:D4} reassigned from {previousAssigneeName} to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
 
-                        string emailBody = EmailHelper.LeadAssignmentTemplate(assignedUser.FullName, lead.LeadId);
-                        await _emailHelper.SendEmailAsync(
+                        await _emailHelper.SendLeadAssignmentEmailAsync(
                             assignedUser.Email!,
-                            $"New Lead Assigned: LMS-{lead.LeadId:D4}",
-                            emailBody
+                            assignedUser.FullName,
+                            lead.LeadId
                         );
+
 
                         await NotificationHelper.AddNotificationAsync(
                             _context,

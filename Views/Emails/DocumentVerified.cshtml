@@ -1,0 +1,12 @@
+@model LoanManagementSystem.ViewModels.DocumentVerifiedViewModel
+
+<h2>📄 Document Verified</h2>
+<p>Hi @Model.UserName,</p>
+<p>Your document for lead <strong>LMS-@Model.LeadId.ToString("D4")</strong> has been <strong>@Model.Status</strong> by the office team.</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.Remarks))
+{
+    <p><strong>Remarks:</strong> @Model.Remarks</p>
+}
+
+<p>Please review and take appropriate action if needed.</p>

@@ -1,24 +1,29 @@
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using LoanManagementSystem.Data;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using LoanManagementSystem.Helpers;
-using LoanManagementSystem.Controllers;
+using LoanManagementSystem.Services;
+using Microsoft.AspNetCore.Mvc.Infrastructure; 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔌 Add services
+// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
-builder.Services.AddScoped<EmailHelper>();
+builder.Services.AddScoped<IEmailHelper, EmailHelper>();
+builder.Services.AddSingleton<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddControllers();
 builder.Services.AddScoped<IEmailHelper, EmailHelper>();
 
 
-// Add API controllers
-builder.Services.AddControllers(); // Add this line
 
+
+// Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -28,6 +33,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
+// Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -37,7 +43,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-// 🌐 Configure middleware
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -46,21 +52,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/error/{0}");
-
 app.UseSession();
 
-app.MapControllers(); // This maps attribute-routed API controllers
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// 🚀 Add this Chrome auto-launch code (macOS specific)
+// Development-only Chrome auto-launch
 if (app.Environment.IsDevelopment())
 {
     app.Lifetime.ApplicationStarted.Register(() =>
@@ -69,10 +72,8 @@ if (app.Environment.IsDevelopment())
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                // Wait for server to be ready
                 Task.Delay(2000).Wait();
-
-                // Try multiple ways to open Chrome
+                
                 var chromePaths = new[]
                 {
                     "/Applications/Google Chrome.app",
@@ -93,10 +94,6 @@ if (app.Environment.IsDevelopment())
         }
         catch { /* Silent fail - don't break app if browser doesn't open */ }
     });
-    
 }
-
-
-
 
 app.Run();

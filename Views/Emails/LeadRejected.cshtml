@@ -1,0 +1,12 @@
+@model LoanManagementSystem.ViewModels.LeadRejectedViewModel
+
+<h2>❌ Lead Rejected</h2>
+<p>Hello @Model.UserName,</p>
+<p>Unfortunately, your lead <strong>LMS-@Model.LeadId.ToString("D4")</strong> has been <strong>rejected</strong>.</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.Reason))
+{
+    <p><strong>Reason:</strong> @Model.Reason</p>
+}
+
+<p>Please log in to the Loan Management System for more details or to take further action.</p>

@@ -1,0 +1,8 @@
+@model dynamic
+@{
+    Layout = "_EmailLayout"; // Optional if you have a layout
+}
+<h2>New Lead Assigned</h2>
+<p>Dear @Model.UserName,</p>
+<p>You have been assigned a new lead with ID <strong>#@Model.LeadId</strong>.</p>
+<p>Please <a href="https://your-domain.com/leads/details/@Model.LeadId">log in</a> to the Loan Management System to proceed.</p>

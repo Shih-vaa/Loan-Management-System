@@ -1,0 +1,10 @@
+@model LoanManagementSystem.ViewModels.CommissionPaidViewModel
+
+<h2>💰 Commission Paid</h2>
+<p>Hello @Model.UserName,</p>
+<p>Your commission for lead <strong>LMS-@Model.LeadId.ToString("D4")</strong> has been marked as <strong>Paid</strong>.</p>
+
+<p><strong>Amount:</strong> ₹@Model.Amount.ToString("N2")</p>
+<p><strong>Paid On:</strong> @Model.PaidDate.ToString("dd MMM yyyy")</p>
+
+<p>Thank you for your contribution!</p>
