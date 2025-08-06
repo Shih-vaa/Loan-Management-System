@@ -1,6 +1,6 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http;
 
 namespace LoanManagementSystem.Models
 {
@@ -31,7 +31,7 @@ namespace LoanManagementSystem.Models
         public DateTime? DateOfBirth { get; set; }
 
         [Column("gender")]
-        public string? Gender { get; set; } // male, female, other (based on ENUM)
+        public string? Gender { get; set; }
 
         [Column("occupation")]
         public string? Occupation { get; set; }
@@ -48,5 +48,13 @@ namespace LoanManagementSystem.Models
 
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
+
+        [Column("passport_photo_path")]
+        public string? PassportPhotoPath { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Passport Photo")]
+        public IFormFile PassportPhotoFile { get; set; }
+ 
     }
 }

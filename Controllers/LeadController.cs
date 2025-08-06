@@ -107,88 +107,88 @@ namespace LoanManagementSystem.Controllers
 
             lead.Status = model.Status;
 
-           if (isNewAssignment)
-{
-    string? previousAssigneeName = null;
-    int? previousAssigneeId = null;
-
-    if (lead.AssignedTo.HasValue)
-    {
-        var previousUser = await _context.Users.FindAsync(lead.AssignedTo.Value);
-        previousAssigneeName = previousUser?.FullName ?? $"UserId {lead.AssignedTo.Value}";
-        previousAssigneeId = previousUser?.UserId;
-    }
-
-    if (model.AssignedTo.HasValue)
-    {
-        var assignedUser = await _context.Users.FindAsync(model.AssignedTo.Value);
-
-        if (assignedUser != null)
-        {
-            lead.AssignedTo = assignedUser.UserId;
-
-            bool isReassignment = previousAssigneeId.HasValue;
-
-            auditDescription = isReassignment
-                ? $"Lead LMS-{lead.LeadId:D4} reassigned from {previousAssigneeName} to {assignedUser.FullName} (ID: {assignedUser.UserId})."
-                : $"Lead LMS-{lead.LeadId:D4} assigned to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
-
-            // Send appropriate email
-            if (isReassignment)
+            if (isNewAssignment)
             {
-                await _emailHelper.SendLeadReassignmentEmailAsync(
-                    assignedUser.Email!,
-                    assignedUser.FullName,
-                    lead.LeadId
-                );
-            }
-            else
-            {
-                await _emailHelper.SendLeadAssignmentEmailAsync(
-                    assignedUser.Email!,
-                    assignedUser.FullName,
-                    lead.LeadId
-                );
-            }
+                string? previousAssigneeName = null;
+                int? previousAssigneeId = null;
 
-            // Notifications
-            await NotificationHelper.AddNotificationAsync(
-                _context,
-                assignedUser.UserId,
-                $"New Lead Assigned: LMS-{lead.LeadId:D4}"
-            );
+                if (lead.AssignedTo.HasValue)
+                {
+                    var previousUser = await _context.Users.FindAsync(lead.AssignedTo.Value);
+                    previousAssigneeName = previousUser?.FullName ?? $"UserId {lead.AssignedTo.Value}";
+                    previousAssigneeId = previousUser?.UserId;
+                }
 
-            if (lead.LeadGeneratorId != assignedUser.UserId)
-            {
-                await NotificationHelper.AddNotificationAsync(
+                if (model.AssignedTo.HasValue)
+                {
+                    var assignedUser = await _context.Users.FindAsync(model.AssignedTo.Value);
+
+                    if (assignedUser != null)
+                    {
+                        lead.AssignedTo = assignedUser.UserId;
+
+                        bool isReassignment = previousAssigneeId.HasValue;
+
+                        auditDescription = isReassignment
+                            ? $"Lead LMS-{lead.LeadId:D4} reassigned from {previousAssigneeName} to {assignedUser.FullName} (ID: {assignedUser.UserId})."
+                            : $"Lead LMS-{lead.LeadId:D4} assigned to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
+
+                        // Send appropriate email
+                        if (isReassignment)
+                        {
+                            await _emailHelper.SendLeadReassignmentEmailAsync(
+                                assignedUser.Email!,
+                                assignedUser.FullName,
+                                lead.LeadId
+                            );
+                        }
+                        else
+                        {
+                            await _emailHelper.SendLeadAssignmentEmailAsync(
+                                assignedUser.Email!,
+                                assignedUser.FullName,
+                                lead.LeadId
+                            );
+                        }
+
+                        // Notifications
+                        await NotificationHelper.AddNotificationAsync(
+                            _context,
+                            assignedUser.UserId,
+                            $"New Lead Assigned: LMS-{lead.LeadId:D4}"
+                        );
+
+                        if (lead.LeadGeneratorId != assignedUser.UserId)
+                        {
+                            await NotificationHelper.AddNotificationAsync(
+                                _context,
+                                lead.LeadGeneratorId,
+                                $"Your lead LMS-{lead.LeadId:D4} has been assigned"
+                            );
+                        }
+
+                        TempData["Success"] = $"Lead LMS-{lead.LeadId:D4} successfully {(isReassignment ? "reassigned" : "assigned")} to {assignedUser.FullName} ({assignedUser.Email}).";
+                    }
+                    else
+                    {
+                        auditDescription = $"Lead LMS-{lead.LeadId:D4} reassigned.";
+                    }
+                }
+                else
+                {
+                    lead.AssignedTo = null;
+                    auditDescription = $"Lead LMS-{lead.LeadId:D4} was unassigned from {previousAssigneeName}.";
+                }
+
+                await AuditLogger.LogAsync(
                     _context,
-                    lead.LeadGeneratorId,
-                    $"Your lead LMS-{lead.LeadId:D4} has been assigned"
+                    HttpContext,
+                    action: "Lead Assignment Update",
+                    description: auditDescription,
+                    controller: "Lead",
+                    actionMethod: "Edit"
                 );
             }
-
-            TempData["Success"] = $"Lead LMS-{lead.LeadId:D4} successfully {(isReassignment ? "reassigned" : "assigned")} to {assignedUser.FullName} ({assignedUser.Email}).";
-        }
-        else
-        {
-            auditDescription = $"Lead LMS-{lead.LeadId:D4} reassigned.";
-        }
-    }
-    else
-    {
-        lead.AssignedTo = null;
-        auditDescription = $"Lead LMS-{lead.LeadId:D4} was unassigned from {previousAssigneeName}.";
-    }
-
-    await AuditLogger.LogAsync(
-        _context,
-        HttpContext,
-        action: "Lead Assignment Update",
-        description: auditDescription,
-        controller: "Lead",
-        actionMethod: "Edit"
-    );
-}
 
 
             if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
@@ -345,5 +345,72 @@ namespace LoanManagementSystem.Controllers
 
             return View(deletedLeads);
         }
+        [HttpPost]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Reject(int leadId, string remarks)
+        {
+            var lead = await _context.Leads
+                .Include(l => l.AssignedUser)
+                .Where(l => l.LeadId == leadId && !l.IsDeleted)
+                .FirstOrDefaultAsync();
+
+            if (lead == null) return NotFound();
+
+            lead.Status = "rejected";
+            lead.Remarks = remarks;
+            Console.WriteLine("lead.AssignedTo: " + lead.AssignedTo);
+
+            // Send rejection email to assigned user
+            if (lead.AssignedTo.HasValue && lead.AssignedUser != null)
+            {Console.WriteLine("🚀 Inside rejection email block!");
+
+                Console.WriteLine("🚀 About to send rejection email to: " + lead.AssignedUser.Email);
+                try
+                {
+                    await _emailHelper.SendLeadRejectedEmailAsync(
+                        lead.AssignedUser.Email!,
+                        lead.AssignedUser.FullName,
+                        lead.LeadId,
+                        remarks
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("❌ Email sending failed: " + ex.Message);
+                }
+
+                Console.WriteLine("✅ Email sent (or at least attempted).");
+            }
+
+            // Notify assigned user
+            if (lead.AssignedTo.HasValue)
+            {
+                await NotificationHelper.AddNotificationAsync(_context,
+                    lead.AssignedTo.Value,
+                    $"Lead LMS-{leadId:D4} has been rejected by admin.");
+            }
+
+            // Notify lead generator (if different)
+            if (lead.LeadGeneratorId != lead.AssignedTo)
+            {
+                await NotificationHelper.AddNotificationAsync(_context,
+                    lead.LeadGeneratorId,
+                    $"Your lead LMS-{leadId:D4} has been rejected by admin.");
+            }
+
+            await AuditLogger.LogAsync(
+                _context,
+                HttpContext,
+                action: "Lead Rejection",
+                description: $"Lead LMS-{lead.LeadId:D4} was rejected.",
+                controller: "Lead",
+                actionMethod: "Reject"
+            );
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Lead LMS-{leadId:D4} has been rejected.";
+            return RedirectToAction("Index");
+        }
+
     }
 }

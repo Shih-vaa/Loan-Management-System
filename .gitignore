@@ -45,4 +45,5 @@ msbuild.wrn
 
 # prevent app passwords secret from being committed
 appsettings.json
-
+uploads
+images

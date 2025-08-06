@@ -8,47 +8,64 @@
     <div class="card">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6">
-                    <dl class="row">
-                        <dt class="col-sm-4">Full Name</dt>
-                        <dd class="col-sm-8">@Model.FullName</dd>
-
-                        <dt class="col-sm-4">Email</dt>
-                        <dd class="col-sm-8">@Model.Email</dd>
-
-                        <dt class="col-sm-4">Phone</dt>
-                        <dd class="col-sm-8">@Model.Phone</dd>
-
-                        <dt class="col-sm-4">Date of Birth</dt>
-                        <dd class="col-sm-8">@(Model.DateOfBirth?.ToShortDateString() ?? "N/A")</dd>
-                    </dl>
+                <div class="col-md-4 text-center">
+                    @if (!string.IsNullOrEmpty(Model.PassportPhotoPath))
+                    {
+                        <div class="mb-3">
+                            <img src="@Url.Content(Model.PassportPhotoPath)" alt="Customer Photo" class="img-thumbnail"
+                                style="max-width: 200px;" onerror="this.style.display='none'" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No photo available</div>
+                    }
                 </div>
-                <div class="col-md-6">
-                    <dl class="row">
-                        <dt class="col-sm-4">Gender</dt>
-                        <dd class="col-sm-8">@Model.Gender</dd>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Full Name</dt>
+                                <dd class="col-sm-8">@Model.FullName</dd>
 
-                        <dt class="col-sm-4">Occupation</dt>
-                        <dd class="col-sm-8">@Model.Occupation</dd>
+                                <dt class="col-sm-4">Email</dt>
+                                <dd class="col-sm-8">@Model.Email</dd>
 
-                        <dt class="col-sm-4">Annual Income</dt>
-                        <dd class="col-sm-8">@(Model.AnnualIncome?.ToString("C") ?? "N/A")</dd>
+                                <dt class="col-sm-4">Phone</dt>
+                                <dd class="col-sm-8">@Model.Phone</dd>
 
-                        <dt class="col-sm-4">Created At</dt>
-                        <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("g")</dd>
-                    </dl>
-                </div>
-            </div>
-            
-            <div class="row mt-3">
-                <div class="col-12">
-                    <dt>Address</dt>
-                    <dd>@Model.Address</dd>
+                                <dt class="col-sm-4">Date of Birth</dt>
+                                <dd class="col-sm-8">@(Model.DateOfBirth?.ToShortDateString() ?? "N/A")</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Gender</dt>
+                                <dd class="col-sm-8">@Model.Gender</dd>
+
+                                <dt class="col-sm-4">Occupation</dt>
+                                <dd class="col-sm-8">@Model.Occupation</dd>
+
+                                <dt class="col-sm-4">Annual Income</dt>
+                                <dd class="col-sm-8">@(Model.AnnualIncome?.ToString("C") ?? "N/A")</dd>
+
+                                <dt class="col-sm-4">Created At</dt>
+                                <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("g")</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <dt>Address</dt>
+                            <dd>@Model.Address</dd>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="mt-3">
         <a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-warning">Edit</a>
         <a asp-action="Index" class="btn btn-secondary">Back</a>

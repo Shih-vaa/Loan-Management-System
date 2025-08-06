@@ -5,37 +5,42 @@
 
 <div class="container mt-4">
     <h2>Edit Customer</h2>
-    <form asp-action="Edit">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
         <input type="hidden" asp-for="CustomerId" />
+        <input type="hidden" asp-for="PassportPhotoPath" />
+        <input type="hidden" asp-for="CreatedAt" />
+        
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label">Full Name*</label>
+                    <label asp-for="FullName" class="form-label">Full Name*</label>
                     <input asp-for="FullName" class="form-control" required />
                     <span asp-validation-for="FullName" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
+                    <label asp-for="Email" class="form-label">Email</label>
                     <input asp-for="Email" type="email" class="form-control" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Phone</label>
+                    <label asp-for="Phone" class="form-label">Phone</label>
                     <input asp-for="Phone" class="form-control" />
                     <span asp-validation-for="Phone" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Date of Birth</label>
+                    <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
                     <input asp-for="DateOfBirth" type="date" class="form-control" />
                 </div>
             </div>
             
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label class="form-label">Gender</label>
+                    <label asp-for="Gender" class="form-label">Gender</label>
                     <select asp-for="Gender" class="form-select">
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
@@ -45,23 +50,58 @@
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Occupation</label>
+                    <label asp-for="Occupation" class="form-label">Occupation</label>
                     <input asp-for="Occupation" class="form-control" />
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Annual Income (₹)</label>
+                    <label asp-for="AnnualIncome" class="form-label">Annual Income (₹)</label>
                     <input asp-for="AnnualIncome" type="number" class="form-control" />
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Address</label>
+                    <label asp-for="Address" class="form-label">Address</label>
                     <textarea asp-for="Address" class="form-control" rows="3"></textarea>
                 </div>
             </div>
         </div>
-        
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label asp-for="PassportPhotoFile" class="form-label">Passport Photo</label>
+                    <input asp-for="PassportPhotoFile" type="file" class="form-control" accept="image/*" />
+                    <span asp-validation-for="PassportPhotoFile" class="text-danger"></span>
+                    <small class="text-muted">Leave empty to keep current photo</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                @if (!string.IsNullOrEmpty(Model.PassportPhotoPath))
+                {
+                    <div class="current-photo">
+                        <label class="form-label">Current Photo</label>
+                        <div class="mt-2">
+                            <img src="@Model.PassportPhotoPath" alt="Current Photo" 
+                                 style="max-width: 200px; max-height: 200px;" class="img-thumbnail" />
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="removePhoto" name="removePhoto" value="true">
+                                <label class="form-check-label" for="removePhoto">
+                                    Remove current photo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
