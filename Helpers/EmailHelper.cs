@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using LoanManagementSystem.Models;
 using LoanManagementSystem.Services;
 using LoanManagementSystem.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -126,6 +127,32 @@ namespace LoanManagementSystem.Helpers
             string body = await _razorRenderer.RenderViewToStringAsync("Emails/LeadReassignment", model);
 
             await SendEmailAsync(toEmail, "Lead Reassigned", body);
+        }
+        public async Task SendLeadRemovedEmailAsync(string removedUserEmail, string removedUserName, int leadId)
+        {
+            var model = new
+            {
+                UserName = removedUserName,
+                LeadId = leadId
+            };
+
+            string body = await _razorRenderer.RenderViewToStringAsync("Emails/LeadRemoved", model);
+            string subject = $"Lead LMS-{leadId:D4} Removed";
+
+            await SendEmailAsync(removedUserEmail, subject, body);
+        }
+        public async Task SendLeadDeletedEmailAsync(string toEmail, string userName, int leadId, string message)
+        {
+            var model = new
+            {
+                UserName = userName,
+                LeadId = leadId,
+                Message = message
+            };
+
+            string body = await _razorRenderer.RenderViewToStringAsync("Emails/LeadDeleted", model);
+
+            await SendEmailAsync(toEmail, $"Lead Deleted: LMS-{leadId:D4}", body);
         }
 
     }

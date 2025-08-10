@@ -16,12 +16,25 @@ namespace LoanManagementSystem.Controllers
         private readonly ILogger<LeadController> _logger;
         private readonly IEmailHelper _emailHelper;
 
+
+
+
         public LeadController(ApplicationDbContext context, ILogger<LeadController> logger, IEmailHelper emailHelper)
         {
             _context = context;
             _logger = logger;
             _emailHelper = emailHelper;
         }
+
+
+
+
+
+
+
+
+
+
 
         public async Task<IActionResult> Index(string? status = null)
         {
@@ -52,6 +65,21 @@ namespace LoanManagementSystem.Controllers
             return View();
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         [HttpPost]
         [Authorize(Roles = "admin,marketing")]
         public async Task<IActionResult> Create(Lead lead)
@@ -70,6 +98,22 @@ namespace LoanManagementSystem.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int id)
@@ -92,6 +136,17 @@ namespace LoanManagementSystem.Controllers
             return View(model);
         }
 
+
+
+
+
+
+
+
+
+
+
+
         [HttpPost]
         [Authorize(Roles = "admin")]
         [ValidateAntiForgeryToken]
@@ -111,12 +166,14 @@ namespace LoanManagementSystem.Controllers
             {
                 string? previousAssigneeName = null;
                 int? previousAssigneeId = null;
+                string? previousAssigneeEmail = null;
 
                 if (lead.AssignedTo.HasValue)
                 {
                     var previousUser = await _context.Users.FindAsync(lead.AssignedTo.Value);
                     previousAssigneeName = previousUser?.FullName ?? $"UserId {lead.AssignedTo.Value}";
                     previousAssigneeId = previousUser?.UserId;
+                    previousAssigneeEmail = previousUser?.Email;
                 }
 
                 if (model.AssignedTo.HasValue)
@@ -133,7 +190,7 @@ namespace LoanManagementSystem.Controllers
                             ? $"Lead LMS-{lead.LeadId:D4} reassigned from {previousAssigneeName} to {assignedUser.FullName} (ID: {assignedUser.UserId})."
                             : $"Lead LMS-{lead.LeadId:D4} assigned to {assignedUser.FullName} (ID: {assignedUser.UserId}).";
 
-                        // Send appropriate email
+                        // Send email to NEW assignee
                         if (isReassignment)
                         {
                             await _emailHelper.SendLeadReassignmentEmailAsync(
@@ -141,6 +198,26 @@ namespace LoanManagementSystem.Controllers
                                 assignedUser.FullName,
                                 lead.LeadId
                             );
+
+                            // ✅ Send email to OLD assignee (removed from lead)
+                            if (!string.IsNullOrEmpty(previousAssigneeEmail))
+                            {
+                                await _emailHelper.SendLeadRemovedEmailAsync(
+                                    previousAssigneeEmail,
+                                    previousAssigneeName ?? "User",
+                                    lead.LeadId
+                                );
+
+                                // ✅ Notify previous assignee about lead removal (AFTER email is sent)
+                                if (previousAssigneeId.HasValue)
+                                {
+                                    await NotificationHelper.AddNotificationAsync(
+                                        _context,
+                                        previousAssigneeId.Value,
+                                        $"Lead LMS-{lead.LeadId:D4} has been reassigned to another member."
+                                    );
+                                }
+                            }
                         }
                         else
                         {
@@ -190,7 +267,6 @@ namespace LoanManagementSystem.Controllers
                 );
             }
 
-
             if ((model.Status == "approved" || model.Status == "disbursed") && model.AssignedTo.HasValue)
             {
                 bool commissionExists = await _context.Commissions.AnyAsync(c => c.LeadId == lead.LeadId);
@@ -221,6 +297,16 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+
+
+
+
+
+
+
+
+
         public async Task<IActionResult> Details(int id)
         {
             var lead = await _context.Leads
@@ -234,6 +320,14 @@ namespace LoanManagementSystem.Controllers
             return lead == null ? NotFound() : View(lead);
         }
 
+
+
+
+
+
+
+
+
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Approve(int id)
         {
@@ -244,6 +338,21 @@ namespace LoanManagementSystem.Controllers
 
             return lead == null ? NotFound() : View(lead);
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         [HttpPost]
         [Authorize(Roles = "admin")]
@@ -294,10 +403,26 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction("Index");
         }
 
+
+
+
+
+
+
         private decimal CalculateCommissionAmount(decimal loanAmount)
         {
             return loanAmount * 0.02M;
         }
+
+
+
+
+
+
+
+
+
+
 
         [HttpPost]
         [Authorize(Roles = "admin")]
@@ -306,10 +431,15 @@ namespace LoanManagementSystem.Controllers
         {
             var lead = await _context.Leads
                 .Include(l => l.Customer)
+                .Include(l => l.AssignedUser)
+                .Include(l => l.LeadGenerator)
                 .FirstOrDefaultAsync(l => l.LeadId == id);
 
             if (lead == null || lead.IsDeleted) return NotFound();
 
+            var leadNumber = $"LMS-{lead.LeadId:D4}";
+
+            // Soft delete
             lead.IsDeleted = true;
             lead.DateDeleted = DateTime.UtcNow;
 
@@ -324,16 +454,75 @@ namespace LoanManagementSystem.Controllers
                 _context,
                 HttpContext,
                 action: "Lead Deletion",
-                description: $"Lead LMS-{lead.LeadId:D4} was anonymized and soft deleted.",
+                description: $"Lead {leadNumber} was anonymized and soft deleted.",
                 controller: "Lead",
                 actionMethod: "Delete"
             );
+            // ✅ Send email notifications 
+            try
+            {
+                // Notify previously assigned user (if exists)
+                if (lead.AssignedTo.HasValue && !string.IsNullOrEmpty(lead.AssignedUser?.Email))
+                {
+                    await _emailHelper.SendLeadDeletedEmailAsync(
+                        lead.AssignedUser.Email!,
+                        lead.AssignedUser.FullName,
+                        lead.LeadId,
+                        "previously assigned to you has been deleted from the system."
+                    );
 
+                    // ✅ Notify previously assigned user
+                    await NotificationHelper.AddNotificationAsync(
+                        _context,
+                        lead.AssignedTo.Value,
+                        $"Lead LMS-{lead.LeadId:D4} previously assigned to you has been deleted."
+                    );
+                }
+
+                // ✅ Notify lead generator (if not admin and not the same as assigned user)
+                if (lead.LeadGenerator != null &&
+                    lead.LeadGenerator.Role != "admin" &&
+                    lead.LeadGenerator.UserId != lead.AssignedTo &&
+                    !string.IsNullOrEmpty(lead.LeadGenerator.Email))
+                {
+                    // Only send email if not already sent (if assigned user == lead generator)
+                    if (lead.LeadGenerator.Email != lead.AssignedUser?.Email)
+                    {
+                        await _emailHelper.SendLeadDeletedEmailAsync(
+                            lead.LeadGenerator.Email!,
+                            lead.LeadGenerator.FullName,
+                            lead.LeadId,
+                            "that you generated has been deleted from the system."
+                        );
+                    }
+
+                    await NotificationHelper.AddNotificationAsync(
+                        _context,
+                        lead.LeadGenerator.UserId,
+                        $"Lead LMS-{lead.LeadId:D4} that you generated has been deleted."
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to send lead deletion emails/notifications for {leadNumber}");
+                // Continue execution since notifications are non-critical
+            }
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Lead LMS-{lead.LeadId:D4} has been deleted.";
+            TempData["Success"] = $"Lead {leadNumber} has been deleted.";
             return RedirectToAction(nameof(Index));
         }
+
+
+
+
+
+
+
+
+
+
 
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeletedLeads()
@@ -345,6 +534,16 @@ namespace LoanManagementSystem.Controllers
 
             return View(deletedLeads);
         }
+
+
+
+
+
+
+
+
+
+
         [HttpPost]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Reject(int leadId, string remarks)
@@ -362,7 +561,8 @@ namespace LoanManagementSystem.Controllers
 
             // Send rejection email to assigned user
             if (lead.AssignedTo.HasValue && lead.AssignedUser != null)
-            {Console.WriteLine("🚀 Inside rejection email block!");
+            {
+                Console.WriteLine("🚀 Inside rejection email block!");
 
                 Console.WriteLine("🚀 About to send rejection email to: " + lead.AssignedUser.Email);
                 try

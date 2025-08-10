@@ -1,0 +1,10 @@
+@model dynamic
+@{
+    Layout = "~/Views/Shared/_EmailLayout.cshtml";
+}
+<h2>Lead No Longer Assigned to You</h2>
+<p>Dear @Model.UserName,</p>
+<p>The lead <strong>#@Model.LeadId</strong> has been reassigned to another team member.</p>
+<p>You are no longer responsible for this lead.</p>
+
+<p>If this was done in error, please contact the admin.</p>

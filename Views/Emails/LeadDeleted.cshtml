@@ -1,0 +1,8 @@
+@model dynamic
+@{
+    Layout = "~/Views/Shared/_EmailLayout.cshtml";
+}
+<h2>Lead Deleted</h2>
+<p>Dear @Model.UserName,</p>
+<p>The lead <strong>#@Model.LeadId</strong> @Model.Message</p>
+<p>If you believe this was done in error, please contact your admin.</p>
