@@ -19,76 +19,66 @@ namespace LoanManagementSystem.Controllers
             _emailHelper = emailHelper;
         }
         public async Task<IActionResult> Dashboard()
+{
+    int userId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
+
+    // Basic metrics
+    var metrics = new DashboardMetricsViewModel
+    {
+        TotalLeads = await _context.Leads.Where(l => !l.IsDeleted).CountAsync(),
+        ApprovedLeads = await _context.Leads.Where(l => !l.IsDeleted && l.Status == "approved").CountAsync(),
+        PendingLeads = await _context.Leads.Where(l => !l.IsDeleted && l.Status == "pending").CountAsync(),
+        TotalCustomers = await _context.Customers.Where(c => !c.IsDeleted).CountAsync(),
+        TotalUsers = await _context.Users.CountAsync(),
+        TotalTeams = await _context.Teams.CountAsync(),
+        TotalCommissionPaid = await _context.Commissions.Where(c => c.Status == "paid").SumAsync(c => (decimal?)c.Amount) ?? 0,
+        TotalCommissionPending = await _context.Commissions.Where(c => c.Status == "pending").SumAsync(c => (decimal?)c.Amount) ?? 0,
+        TotalCommission = await _context.Commissions.SumAsync(c => (decimal?)c.Amount) ?? 0,
+        TotalDocumentsUploaded = await _context.LeadDocuments.CountAsync(),
+        PendingDocuments = await _context.LeadDocuments.CountAsync(d => d.Status == "pending"),
+        UnassignedLeadsCount = await _context.Leads.Where(l => !l.IsDeleted && l.AssignedTo == null).CountAsync(),
+        LeadStatusCounts = await _context.Leads.Where(l => !l.IsDeleted)
+            .GroupBy(l => l.Status ?? "Unknown")
+            .ToDictionaryAsync(g => g.Key, g => g.Count()),
+    };
+
+    // Team performance metrics
+    var teams = await _context.Teams.Include(t => t.Members).ToListAsync();
+    var teamPerformances = new List<TeamPerformanceMetrics>();
+
+    foreach (var team in teams)
+    {
+        var teamUserIds = team.Members.Select(m => m.UserId).ToList();
+
+        teamPerformances.Add(new TeamPerformanceMetrics
         {
-            int userId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
+            TeamName = team.TeamName,
+            TotalLeadsGenerated = await _context.Leads.CountAsync(l => teamUserIds.Contains(l.LeadGeneratorId)),
+            LeadsAssigned = await _context.Leads.CountAsync(l => l.AssignedTo != null && teamUserIds.Contains((int)l.AssignedTo)),
+            DocumentsUploaded = await _context.LeadDocuments.CountAsync(d => d.UploadedBy.HasValue && teamUserIds.Contains(d.UploadedBy.Value)),
+            DocumentsVerified = await _context.LeadDocuments.CountAsync(d => d.VerifiedBy.HasValue && teamUserIds.Contains(d.VerifiedBy.Value)),
+            LeadsApproved = await _context.Leads.CountAsync(l => l.Status == "approved" && l.AssignedTo != null && teamUserIds.Contains((int)l.AssignedTo)),
+            TotalCommission = await _context.Commissions
+                .Where(c => teamUserIds.Contains(c.UserId))
+                .SumAsync(c => (decimal?)c.Amount) ?? 0
+        });
+    }
 
-            // Basic metrics
-            var metrics = new DashboardMetricsViewModel
-            {
-                TotalLeads = await _context.Leads
-                .Where(l => !l.IsDeleted)
-                .CountAsync(),
+    metrics.TeamPerformances = teamPerformances;
 
-                ApprovedLeads = await _context.Leads
-                .Where(l => !l.IsDeleted && l.Status == "approved")
-                .CountAsync(),
+    // 📩 Load recent messages for Messages widget
+    var recentMessages = await _context.Messages
+        .Include(m => m.Sender)
+        .Where(m => m.RecipientId == userId)
+        .OrderByDescending(m => m.CreatedAt)
+        .Take(5)
+        .ToListAsync();
 
-                PendingLeads = await _context.Leads
-                .Where(l => !l.IsDeleted && l.Status == "pending")
-                .CountAsync(),
+    ViewBag.RecentMessages = recentMessages;
 
-                TotalCustomers = await _context.Customers
-                .Where(c => !c.IsDeleted)
-                .CountAsync(),
+    return View(metrics);
+}
 
-                TotalUsers = await _context.Users.CountAsync(),
-                TotalTeams = await _context.Teams.CountAsync(),
-                TotalCommissionPaid = await _context.Commissions.Where(c => c.Status == "paid")
-                    .SumAsync(c => (decimal?)c.Amount) ?? 0,
-                TotalCommissionPending = await _context.Commissions.Where(c => c.Status == "pending")
-                    .SumAsync(c => (decimal?)c.Amount) ?? 0,
-                TotalCommission = await _context.Commissions.SumAsync(c => (decimal?)c.Amount) ?? 0,
-                TotalDocumentsUploaded = await _context.LeadDocuments.CountAsync(),
-                PendingDocuments = await _context.LeadDocuments.CountAsync(d => d.Status == "pending"),
-                UnassignedLeadsCount = await _context.Leads
-                .Where(l => !l.IsDeleted && l.AssignedTo == null)
-                .CountAsync(),
-
-
-                LeadStatusCounts = await _context.Leads
-                .Where(l => !l.IsDeleted)
-                .GroupBy(l => l.Status ?? "Unknown")
-                .ToDictionaryAsync(g => g.Key, g => g.Count()),
-
-            };
-
-            // Team performance metrics
-            var teams = await _context.Teams.Include(t => t.Members).ToListAsync();
-
-            var teamPerformances = new List<TeamPerformanceMetrics>();
-
-            foreach (var team in teams)
-            {
-                var teamUserIds = team.Members.Select(m => m.UserId).ToList();
-
-                teamPerformances.Add(new TeamPerformanceMetrics
-                {
-                    TeamName = team.TeamName,
-                    TotalLeadsGenerated = await _context.Leads.CountAsync(l => teamUserIds.Contains(l.LeadGeneratorId)),
-                    LeadsAssigned = await _context.Leads.CountAsync(l => l.AssignedTo != null && teamUserIds.Contains((int)l.AssignedTo)),
-                    DocumentsUploaded = await _context.LeadDocuments.CountAsync(d => d.UploadedBy.HasValue && teamUserIds.Contains(d.UploadedBy.Value)),
-                    DocumentsVerified = await _context.LeadDocuments.CountAsync(d => d.VerifiedBy.HasValue && teamUserIds.Contains(d.VerifiedBy.Value)),
-                    LeadsApproved = await _context.Leads.CountAsync(l => l.Status == "approved" && l.AssignedTo != null && teamUserIds.Contains((int)l.AssignedTo)),
-                    TotalCommission = await _context.Commissions
-                        .Where(c => teamUserIds.Contains(c.UserId))
-                        .SumAsync(c => (decimal?)c.Amount) ?? 0
-                });
-            }
-
-            metrics.TeamPerformances = teamPerformances;
-
-            return View(metrics);
-        }
         [HttpGet]
         [Authorize(Roles = "admin")]
         public IActionResult ExportMetrics()

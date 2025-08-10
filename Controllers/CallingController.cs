@@ -26,7 +26,13 @@ namespace LoanManagementSystem.Controllers
             .Include(l => l.Documents) // 👈 Needed for showing rejected docs
             .Where(l => l.AssignedTo == userId && !l.IsDeleted)
             .ToListAsync();
-
+            
+            ViewBag.RecentMessages = await _context.Messages
+                .Include(m => m.Sender)
+                .Where(m => m.RecipientId == userId)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(5)
+                .ToListAsync();
             return View(leads);
         }
 
@@ -181,7 +187,7 @@ namespace LoanManagementSystem.Controllers
             }
 
             // ✅ Notify office member from same team
-var lead = await _context.Leads.FirstOrDefaultAsync(l => l.LeadId == leadId && !l.IsDeleted);
+            var lead = await _context.Leads.FirstOrDefaultAsync(l => l.LeadId == leadId && !l.IsDeleted);
 
             if (lead != null && lead.AssignedTo.HasValue)
             {

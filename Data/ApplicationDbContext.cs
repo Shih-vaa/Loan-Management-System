@@ -68,5 +68,7 @@ namespace LoanManagementSystem.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
 
+        public DbSet<Message> Messages { get; set; }
+
     }
 }

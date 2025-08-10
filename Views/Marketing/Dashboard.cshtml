@@ -4,6 +4,7 @@
     var teammates = ViewBag.Teammates as List<LoanManagementSystem.Models.TeamMember>;
     int currentUserId = int.Parse(User.Claims.First(c => c.Type == "UserId").Value);
 }
+@await Html.PartialAsync("_MessagesWidget", (IEnumerable<LoanManagementSystem.Models.Message>)ViewBag.RecentMessages)
 
 <div class="container mt-4">
     <h2>Welcome, @ViewBag.Name!</h2>

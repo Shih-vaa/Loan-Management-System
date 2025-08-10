@@ -174,5 +174,83 @@ namespace LoanManagementSystem.Controllers
 
             return RedirectToAction("Members", new { id = teamId });
         }
+
+
+
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var team = await _context.Teams.FindAsync(id);
+            if (team == null) return NotFound();
+            if (await _context.TeamMembers.AnyAsync(m => m.TeamId == id))
+            {
+                TempData["Error"] = "Cannot delete a team that has members assigned.";
+                return RedirectToAction("Index");
+            }
+            if (await _context.TeamMembers.AnyAsync(m => m.TeamId == id))
+            {
+                TempData["Error"] = "Cannot delete a team that has members assigned.";
+                return RedirectToAction("Index");
+            }
+
+            var hasLeads = await _context.Leads.AnyAsync(l => l.AssignedTo != null &&
+                _context.TeamMembers.Any(tm => tm.TeamId == id && tm.UserId == l.AssignedTo));
+
+            if (hasLeads)
+            {
+                TempData["Error"] = "Cannot delete a team with active leads.";
+                return RedirectToAction("Index");
+            }
+
+            _context.Teams.Remove(team);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Team deleted successfully.";
+            return RedirectToAction("Index");
+        }
+
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> View(int id)
+        {
+            var team = await _context.Teams
+                .Include(t => t.Members)
+                    .ThenInclude(m => m.User)
+                .FirstOrDefaultAsync(t => t.TeamId == id);
+
+            if (team == null)
+                return NotFound();
+
+            // Collect stats for each member
+            var memberStats = new List<MemberLeadStatsViewModel>();
+
+            foreach (var member in team.Members)
+            {
+                var userId = member.UserId;
+
+                memberStats.Add(new MemberLeadStatsViewModel
+                {
+                    UserId = userId,
+                    FullName = member.User.FullName,
+                    Role = member.User.Role,
+                    LeadsGenerated = await _context.Leads.CountAsync(l => l.LeadGeneratorId == userId),
+                    LeadsAssigned = await _context.Leads.CountAsync(l => l.AssignedTo == userId),
+                    LeadsApproved = await _context.Leads.CountAsync(l => l.AssignedTo == userId && l.Status == "approved"),
+                    DocumentsUploaded = await _context.LeadDocuments.CountAsync(d => d.UploadedBy == userId),
+                    DocumentsVerified = await _context.LeadDocuments.CountAsync(d => d.VerifiedBy == userId)
+                });
+            }
+
+            var vm = new TeamDetailsViewModel
+            {
+                TeamName = team.TeamName,
+                Members = memberStats
+            };
+
+            return View(vm);
+        }
+
+
     }
+
+
 }

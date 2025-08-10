@@ -1,0 +1,25 @@
+@model IEnumerable<LoanManagementSystem.Models.Message>
+
+<div class="card mb-4">
+    <div class="card-header">
+        📩 Recent Messages
+        <a href="@Url.Action("Index", "Messages")" class="float-end">View All</a>
+    </div>
+    <ul class="list-group list-group-flush">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var msg in Model)
+            {
+                <li class="list-group-item">
+                    <strong>@msg.Sender.FullName</strong>: @msg.Subject
+                    <br />
+                    <small class="text-muted">@msg.CreatedAt.ToString("g")</small>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="list-group-item text-muted">No messages</li>
+        }
+    </ul>
+</div>

@@ -46,5 +46,7 @@
 
             </tr>
         }
+
     </tbody>
 </table>
+@await Html.PartialAsync("_MessagesWidget", (IEnumerable<LoanManagementSystem.Models.Message>)ViewBag.RecentMessages)

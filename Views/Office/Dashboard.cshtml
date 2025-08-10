@@ -7,6 +7,7 @@
 @{
     ViewData["Title"] = "Verification Dashboard";
 }
+@await Html.PartialAsync("_MessagesWidget", (IEnumerable<LoanManagementSystem.Models.Message>)ViewBag.RecentMessages)
 
 <div class="container mt-4">
     <h2>📁 Verification Queue</h2>

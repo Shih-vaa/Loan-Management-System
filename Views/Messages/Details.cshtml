@@ -1,0 +1,18 @@
+@model LoanManagementSystem.Models.Message
+@{
+    ViewData["Title"] = "Message Details";
+}
+
+<div class="container mt-4">
+    <h2>@Model.Subject</h2>
+
+    <p><strong>From:</strong> @Model.Sender?.FullName (@Model.Sender?.Email)</p>
+    <p><strong>To:</strong> @Model.Recipient?.FullName (@Model.Recipient?.Email)</p>
+    <p><strong>Date:</strong> @Model.CreatedAt.ToString("f")</p>
+
+    <hr />
+    <p>@Model.Body</p>
+    <hr />
+
+    <a asp-action="Index" class="btn btn-secondary">Back to Inbox</a>
+</div>

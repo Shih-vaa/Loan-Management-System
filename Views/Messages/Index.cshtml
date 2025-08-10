@@ -1,0 +1,42 @@
+@model IEnumerable<LoanManagementSystem.Models.Message>
+@{
+    ViewData["Title"] = "Inbox";
+}
+
+<div class="container mt-4">
+    <h2>Inbox</h2>
+    <a asp-action="Create" class="btn btn-primary mb-3">Compose Message</a>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No messages found.</div>
+    }
+    else
+    {
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var msg in Model)
+                {
+                    <tr class="@(msg.IsRead ? "" : "fw-bold")">
+                        <td>@msg.Sender?.FullName</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@msg.MessageId">
+                                @msg.Subject
+                            </a>
+                        </td>
+                        <td>@msg.CreatedAt.ToString("g")</td>
+                        <td>@(msg.IsRead ? "Read" : "Unread")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

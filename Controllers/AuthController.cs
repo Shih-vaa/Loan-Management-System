@@ -22,61 +22,61 @@ namespace LoanManagementSystem.Controllers
             _context = context;
             _emailHelper = emailHelper;
         }
-       // 📝 Get: Login
-[HttpGet]
-[AllowAnonymous]
-public IActionResult Login()
-{
-    if (User.Identity?.IsAuthenticated == true)
-    {
-        return RedirectToAction("Dashboard", "Admin");
-    }
-    return View();
-}
+        // 📝 Get: Login
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Login()
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Dashboard", "Admin");
+            }
+            return View();
+        }
 
-[HttpPost]
-[AllowAnonymous]
-public async Task<IActionResult> Login(string email, string password)
-{
-    if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-    {
-        ViewBag.Error = "Email and password are required.";
-        return View();
-    }
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login(string email, string password)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            {
+                ViewBag.Error = "Email and password are required.";
+                return View();
+            }
 
-    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-    // 🔴 MISPLACED "Login Failed" Log — fix this block:
-    if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-    {
-        await AuditLogger.LogAsync(
-            _context, HttpContext,
-            action: "Login Failed",
-            description: $" Failed login attempt for email: {user.Email}.",
-            controller: "Auth",
-            actionMethod: "Login",
-                userIdOverride: user.UserId,
-    roleOverride: user.Role
-        );
+            // 🔴 MISPLACED "Login Failed" Log — fix this block:
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            {
+                await AuditLogger.LogAsync(
+                    _context, HttpContext,
+                    action: "Login Failed",
+                    description: $" Failed login attempt for email: {email}.",
+                    controller: "Auth",
+                    actionMethod: "Login",
+                        userIdOverride: user?.UserId,
+            roleOverride: user?.Role
+                );
 
-        ViewBag.Error = "Invalid credentials.";
-        return View();
-    }
+                ViewBag.Error = "Invalid credentials.";
+                return View();
+            }
 
-    // ✅ Valid credentials — Log successful login
-  await AuditLogger.LogAsync(
-    _context, HttpContext,
-    action: "Login Success",
-    description: $"User {user.Email} logged in successfully.",
-    controller: "Auth",
-    actionMethod: "Login",
-    userIdOverride: user.UserId,
-    roleOverride: user.Role
-);
+            // ✅ Valid credentials — Log successful login
+            await AuditLogger.LogAsync(
+              _context, HttpContext,
+              action: "Login Success",
+              description: $"User {user.Email} logged in successfully.",
+              controller: "Auth",
+              actionMethod: "Login",
+              userIdOverride: user.UserId,
+              roleOverride: user.Role
+          );
 
 
-    // 🧠 Set Claims
-    var claims = new List<Claim>
+            // 🧠 Set Claims
+            var claims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, user.FullName),
         new Claim(ClaimTypes.Email, user.Email),
@@ -84,58 +84,58 @@ public async Task<IActionResult> Login(string email, string password)
         new Claim("UserId", user.UserId.ToString())
     };
 
-    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-    var principal = new ClaimsPrincipal(identity);
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
 
-    // 🔐 Sign in
-    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            // 🔐 Sign in
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-    // 💾 Set Session
-    HttpContext.Session.SetString("UserName", user.FullName);
-    HttpContext.Session.SetString("UserRole", user.Role);
+            // 💾 Set Session
+            HttpContext.Session.SetString("UserName", user.FullName);
+            HttpContext.Session.SetString("UserRole", user.Role);
 
-    // 🔁 Redirect by role
-    return user.Role switch
-    {
-        "admin" => RedirectToAction("Dashboard", "Admin"),
-        "marketing" => RedirectToAction("Dashboard", "Marketing"),
-        "calling" => RedirectToAction("Dashboard", "Calling"),
-        "office" => RedirectToAction("Dashboard", "Office"),
-        _ => RedirectToAction("AccessDenied", "Auth")
-    };
-}
+            // 🔁 Redirect by role
+            return user.Role switch
+            {
+                "admin" => RedirectToAction("Dashboard", "Admin"),
+                "marketing" => RedirectToAction("Dashboard", "Marketing"),
+                "calling" => RedirectToAction("Dashboard", "Calling"),
+                "office" => RedirectToAction("Dashboard", "Office"),
+                _ => RedirectToAction("AccessDenied", "Auth")
+            };
+        }
 
-[Authorize]
-public async Task<IActionResult> Logout()
-{
-    await AuditLogger.LogAsync(
-        _context, HttpContext,
-        action: "Logout",
-        description: $"User logged out.",
-        controller: "Auth",
-        actionMethod: "Logout"
-    );
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await AuditLogger.LogAsync(
+                _context, HttpContext,
+                action: "Logout",
+                description: $"User logged out.",
+                controller: "Auth",
+                actionMethod: "Logout"
+            );
 
-    // 🧹 Clear Session and SignOut
-    HttpContext.Session.Clear();
-    await HttpContext.SignOutAsync();
-    return RedirectToAction("Login");
-}
+            // 🧹 Clear Session and SignOut
+            HttpContext.Session.Clear();
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("Login");
+        }
 
-// ✅ FIX METHOD NAME (remove "Async" from action name)
-[Authorize]
-public async Task<IActionResult> AccessDenied()
-{
-    await AuditLogger.LogAsync(
-        _context, HttpContext,
-        action: "Access Denied",
-        description: $"Unauthorized access attempt.",
-        controller: "Auth",
-        actionMethod: "AccessDenied"
-    );
+        // ✅ FIX METHOD NAME (remove "Async" from action name)
+        [Authorize]
+        public async Task<IActionResult> AccessDenied()
+        {
+            await AuditLogger.LogAsync(
+                _context, HttpContext,
+                action: "Access Denied",
+                description: $"Unauthorized access attempt.",
+                controller: "Auth",
+                actionMethod: "AccessDenied"
+            );
 
-    return View("AccessDenied");
-}
+            return View("AccessDenied");
+        }
 
         // 📝 Get: Forgot Password 
         [HttpGet]
@@ -236,11 +236,10 @@ public async Task<IActionResult> AccessDenied()
             {
                 TempData["Error"] = "Passwords do not match.";
                 TempData["ResetEmail"] = email;
-
+                return View();
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
             if (user == null || user.OtpCode == null || user.OtpExpiry < DateTime.UtcNow)
             {
                 TempData["Error"] = "Invalid or expired reset attempt.";
@@ -254,14 +253,21 @@ public async Task<IActionResult> AccessDenied()
             user.OtpCode = null;
             user.OtpExpiry = null;
 
-            await _context.SaveChangesAsync();
+            _context.Entry(user).State = EntityState.Modified; // Force change tracking
+            var rowsAffected = await _context.SaveChangesAsync();
+
+            if (rowsAffected == 0)
+            {
+                TempData["Error"] = "Failed to update password. Please try again.";
+                return View();
+            }
 
             // ✅ Send confirmation email
             string subject = "Your Password Has Been Changed";
             string body = $@"
         Hello {user.FullName},<br/><br/>
-        Your password for LMS account was successfully updated on <strong>{DateTime.Now.ToString("f")}</strong>.<br/>
-        If this wasn't you, please contact support immediately.<br/><br/>
+        Your password was updated on <strong>{DateTime.Now.ToString("f")}</strong>.<br/>
+        If this wasn't you, contact support immediately.<br/><br/>
         Regards,<br/>
         Loan Management System";
 
@@ -270,6 +276,10 @@ public async Task<IActionResult> AccessDenied()
             TempData["Message"] = "Password has been reset. Please login.";
             return RedirectToAction("Login");
         }
+
+
+
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> ResendOtp([FromBody] EmailRequest request)

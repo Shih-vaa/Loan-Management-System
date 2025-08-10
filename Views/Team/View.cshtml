@@ -1,0 +1,36 @@
+@model TeamDetailsViewModel
+@{
+    ViewData["Title"] = $"Team: {Model.TeamName}";
+}
+
+<h2>@Model.TeamName - Members</h2>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Leads Generated</th>
+            <th>Leads Assigned</th>
+            <th>Leads Approved</th>
+            <th>Documents Uploaded</th>
+            <th>Documents Verified</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var member in Model.Members)
+        {
+            <tr>
+                <td>@member.FullName</td>
+                <td>@member.Role</td>
+                <td>@member.LeadsGenerated</td>
+                <td>@member.LeadsAssigned</td>
+                <td>@member.LeadsApproved</td>
+                <td>@member.DocumentsUploaded</td>
+                <td>@member.DocumentsVerified</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">Back to Teams</a>

@@ -1,4 +1,6 @@
-﻿@inject LoanManagementSystem.Data.ApplicationDbContext _context
+﻿
+
+@inject LoanManagementSystem.Data.ApplicationDbContext _context
 @{
     int userId = User.Identity?.IsAuthenticated == true
     ? int.Parse(User.Claims.First(c => c.Type == "UserId").Value)
@@ -22,17 +24,83 @@
 
     <style>
         /* Improved fixed layout */
-        body {
-            padding-top: 56px;
-            padding-bottom: 60px;
-            min-height: 100vh;
-        }
+@* body {
+    padding-top: 56px;
+    padding-bottom: 60px;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #00ccff, #ffffff, #ff6666, #ccff99);
+    background-size: 300% 300%;
+    animation: gradientFlow 5s linear infinite;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+    will-change: background-position;
+}
 
+        @@keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        25% { background-position: 100% 50%; } /* Right */
+        50% { background-position: 100% 100%; } /* Bottom-Right */
+        75% { background-position: 0% 100%; } /* Bottom-Left */
+        100% { background-position: 0% 50%; } /* Reset */
+        } *@
+
+
+
+@@import url('https://fonts.googleapis.com/css?family=Lato:300,700,300italic');
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 110vh;
+  font-family: "Open Sans", Arial, sans-serif;
+  
+  /* Gradient setup */
+  background: linear-gradient(to right, 
+    #00ccff, 
+    #ffffff, 
+    #ff6666, 
+    #ccff99, 
+    #00ccff);
+  background-size: 600%;
+  background-position: 0 0;
+  
+  /* Animation */
+  animation: gradients 20s infinite;
+  animation-timing-function: ease;
+}
+
+@@keyframes gradients {
+  0%   { background-position: 0% 0%; }
+  25%  { background-position: 50% 0%; }
+  50%  { background-position: 90% 0%; }
+  60%  { background-position: 60% 0%; }
+  75%  { background-position: 40% 0%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* Optional: Add content styling */
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+header, footer {
+  background: #2c3e50 !important; /* Dark navy */
+  color: white !important;
+  border-bottom: 1px solid #34495e; /* Slightly darker border */
+}
         header {
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1030;
+
         }
 
         footer {
@@ -512,8 +580,10 @@ item.innerHTML = `
             badge.textContent = count || '';
             badge.classList.toggle('d-none', count === 0);
         }
-    }
-    </script>
+    }</script>
+
+
+
 
 
     @await RenderSectionAsync("Scripts", required: false)
