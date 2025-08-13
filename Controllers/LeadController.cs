@@ -439,29 +439,37 @@ namespace LoanManagementSystem.Controllers
 
             var leadNumber = $"LMS-{lead.LeadId:D4}";
 
-            // Soft delete
+            // Soft delete lead
             lead.IsDeleted = true;
             lead.DateDeleted = DateTime.UtcNow;
 
+        
             if (lead.Customer != null)
             {
-                lead.Customer.FullName = "Deleted";
-                lead.Customer.Email = null;
-                lead.Customer.Phone = null;
+                bool hasOtherActiveLeads = await _context.Leads
+                    .AnyAsync(l => l.CustomerId == lead.Customer.CustomerId && !l.IsDeleted && l.LeadId != lead.LeadId);
+
+                if (!hasOtherActiveLeads)
+                {
+                    lead.Customer.IsDeleted = true;
+                }
             }
 
+
+            // Audit log
             await AuditLogger.LogAsync(
                 _context,
                 HttpContext,
                 action: "Lead Deletion",
-                description: $"Lead {leadNumber} was anonymized and soft deleted.",
+                description: $"Lead {leadNumber} was soft deleted.",
                 controller: "Lead",
                 actionMethod: "Delete"
             );
-            // ✅ Send email notifications 
+
+            // ✅ Email + Notification logic
             try
             {
-                // Notify previously assigned user (if exists)
+                // Notify previously assigned user
                 if (lead.AssignedTo.HasValue && !string.IsNullOrEmpty(lead.AssignedUser?.Email))
                 {
                     await _emailHelper.SendLeadDeletedEmailAsync(
@@ -471,35 +479,31 @@ namespace LoanManagementSystem.Controllers
                         "previously assigned to you has been deleted from the system."
                     );
 
-                    // ✅ Notify previously assigned user
                     await NotificationHelper.AddNotificationAsync(
                         _context,
                         lead.AssignedTo.Value,
-                        $"Lead LMS-{lead.LeadId:D4} previously assigned to you has been deleted."
+                        $"Lead {leadNumber} previously assigned to you has been deleted."
                     );
                 }
 
-                // ✅ Notify lead generator (if not admin and not the same as assigned user)
+                // Notify lead generator (if not admin and not same as assigned user)
                 if (lead.LeadGenerator != null &&
-                    lead.LeadGenerator.Role != "admin" &&
+                    !string.Equals(lead.LeadGenerator.Role, "admin", StringComparison.OrdinalIgnoreCase) &&
                     lead.LeadGenerator.UserId != lead.AssignedTo &&
-                    !string.IsNullOrEmpty(lead.LeadGenerator.Email))
+                    !string.IsNullOrEmpty(lead.LeadGenerator.Email) &&
+                    lead.LeadGenerator.Email != lead.AssignedUser?.Email)
                 {
-                    // Only send email if not already sent (if assigned user == lead generator)
-                    if (lead.LeadGenerator.Email != lead.AssignedUser?.Email)
-                    {
-                        await _emailHelper.SendLeadDeletedEmailAsync(
-                            lead.LeadGenerator.Email!,
-                            lead.LeadGenerator.FullName,
-                            lead.LeadId,
-                            "that you generated has been deleted from the system."
-                        );
-                    }
+                    await _emailHelper.SendLeadDeletedEmailAsync(
+                        lead.LeadGenerator.Email!,
+                        lead.LeadGenerator.FullName,
+                        lead.LeadId,
+                        "that you generated has been deleted from the system."
+                    );
 
                     await NotificationHelper.AddNotificationAsync(
                         _context,
                         lead.LeadGenerator.UserId,
-                        $"Lead LMS-{lead.LeadId:D4} that you generated has been deleted."
+                        $"Lead {leadNumber} that you generated has been deleted."
                     );
                 }
             }
@@ -508,6 +512,7 @@ namespace LoanManagementSystem.Controllers
                 _logger.LogError(ex, $"Failed to send lead deletion emails/notifications for {leadNumber}");
                 // Continue execution since notifications are non-critical
             }
+
             await _context.SaveChangesAsync();
 
             TempData["Success"] = $"Lead {leadNumber} has been deleted.";
@@ -524,10 +529,14 @@ namespace LoanManagementSystem.Controllers
 
 
 
+
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeletedLeads()
         {
             var deletedLeads = await _context.Leads
+                .Include(l => l.Customer)
+                .Include(l => l.AssignedUser)
+                .Include(l => l.LeadGenerator)
                 .Where(l => l.IsDeleted)
                 .OrderByDescending(l => l.DateDeleted)
                 .ToListAsync();

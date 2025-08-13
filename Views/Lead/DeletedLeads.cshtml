@@ -1,28 +1,29 @@
 @model IEnumerable<LoanManagementSystem.Models.Lead>
-@{
-    ViewData["Title"] = "Deleted Leads";
-}
 
 <h2>Deleted Leads</h2>
 
-<table class="table table-bordered table-striped">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>Lead ID</th>
-            <th>Deleted On</th>
-
-            <th>Status</th>
+            <th>Customer</th>
+            <th>Assigned User</th>
+            <th>Lead Generator</th>
+            <th>Date Deleted</th>
+            <th>Status Before Deletion</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var lead in Model)
-        {
-            <tr>
-                <td>LMS-@lead.LeadId.ToString("D4")</td>
-                <td>@(lead.DateDeleted?.ToLocalTime().ToString("g") ?? "N/A")</td>
-
-                <td>@lead.Status</td>
-            </tr>
-        }
+    @foreach (var lead in Model)
+    {
+        <tr>
+            <td>@lead.LeadId</td>
+            <td>@lead.Customer.FullName (@lead.Customer.Email)</td>
+            <td>@lead.AssignedUser?.FullName</td>
+            <td>@lead.LeadGenerator?.FullName</td>
+            <td>@lead.DateDeleted?.ToString("dd-MMM-yyyy HH:mm")</td>
+            <td>@lead.Status</td>
+        </tr>
+    }
     </tbody>
 </table>

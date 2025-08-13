@@ -28,30 +28,31 @@ body {
     padding-top: 56px;
     padding-bottom: 60px;
     min-height: 100vh;
-background: linear-gradient(
-  115deg,
-  /* Monochrome Base (Trust) */
-  #f8fafc 0%,      /* Soft white */
-  #f1f5f9 12%,     /* Cool gray tint */
-  
-  /* Banking Blue (Stability) */
-  #e0f2fe 25%,     /* Light sky blue */
-  #47687a 37%,     /* Soft azure */
-
-  
-  /* Deep Professional (Authority) */
-  #515255 75%,     /* Royal blue */
-  #56565c 88%,     /* Navy */
-  
-  /* Dark Anchor (Luxury) */
-  rgb(0, 0, 0) 100%     /* Dark blue-black */
-);
-    background-size: 300% 300%;
-    animation: gradientFlow 12s ease infinite;
-    color: #333; /* Better contrast for text */
+    
+    /* Professional Financial Gradient */
+    background: linear-gradient(
+        152deg,
+        /* Clean Base */
+        #FFFFFF 0%,       /* Pure white for clarity */
+        #cfe7ff 15%,     /* Slightly tinted white */
+        
+        /* Trust Blue Gradient */
+        #3e92f2 30%,     /* Very light blue */
+        #98c4f3 45%,     /* Soft blue */
+        
+        /* Premium Accent */
+        #FFF8EB 60%,     /* Warm white (hint of gold) */
+        #FEF3C7 70%,     /* Soft gold */
+        
+        /* Professional Depth */
+        #90af1e 100%    /* Trust navy */
+    );
+    
+    background-size: 200% 200%;
+    animation: subtleFlow 20s ease infinite;
 }
 
-@@keyframes gradientFlow {
+@@keyframes subtleFlow {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
@@ -64,38 +65,6 @@ background: linear-gradient(
 
 
 
-
-@* @@import url('https://fonts.googleapis.com/css?family=Lato:300,700,300italic');
-
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  font-family: "Open Sans", Arial, sans-serif;
-  
-  /* Gradient setup */
-  background: linear-gradient(to right, 
-    #00ccff, 
-    #ffffff, 
-    #ff6666, 
-    #ccff99, 
-    #00ccff);
-  background-size: 600%;
-  background-position: 0 0;
-  
-  /* Animation */
-  animation: gradients 20s infinite;
-  animation-timing-function: ease;
-}
-
-@@keyframes gradients {
-  0%   { background-position: 0% 0%; }
-  25%  { background-position: 50% 0%; }
-  50%  { background-position: 90% 0%; }
-  60%  { background-position: 60% 0%; }
-  75%  { background-position: 40% 0%; }
-  100% { background-position: 0% 0%; }
-} *@
 
 /* Optional: Add content styling */
 .wrapper {

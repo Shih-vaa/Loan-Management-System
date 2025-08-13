@@ -33,7 +33,7 @@
         <dd class="col-sm-9">@Model.AssignedUser?.FullName</dd>
     </dl>
 
-    @if (!isMarketing)  // ✅ Marketing role skips everything below
+    @if (!isMarketing) // ✅ Marketing role skips everything below
     {
         <hr />
         <h4>📄 Uploaded Documents</h4>
@@ -111,7 +111,7 @@
         }
         else
         {
-            <p class="text-muted">No documents uploaded yet.</p>
+            <p>No documents uploaded yet.</p>
         }
 
         @if (isAdmin || canUploadDocs)
@@ -146,3 +146,77 @@
         <a class="btn btn-secondary" href="/Lead/Index">← Back to Leads</a>
     </div>
 </div>
+<style>
+    .container {
+        max-width: 800px;
+        margin: auto;
+        color: rgb(108, 107, 107);
+        transition: all 0.8s ease;
+        transform: translateZ(0);
+        /* Hardware acceleration */
+        will-change: transform, background;
+        /* Optimize for animation */
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .container:hover {
+        color: rgb(255, 255, 255);
+        background: linear-gradient(90deg,
+                rgb(0, 0, 0),
+                rgb(34, 32, 142),
+                rgb(0, 0, 0));
+        background-size: 200% 200%;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        border-radius: 80px;
+
+        /* Animation effects */
+        animation: gradientFlow 3s ease infinite,
+            pulseShadow 1.5s ease infinite alternate,
+            gentleFloat 4s ease-in-out infinite;
+
+        /* 3D transform effect */
+        transform: perspective(500px) translateZ(20px);
+        box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+    }
+
+    @@keyframes gradientFlow {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    @@keyframes pulseShadow {
+        0% {
+            box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3);
+        }
+
+        100% {
+            box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5);
+        }
+    }
+
+    @@keyframes gentleFloat {
+
+        0%,
+        100% {
+            transform: perspective(500px) translateZ(10px);
+        }
+
+        50% {
+            transform: perspective(500px) translateZ(20px);
+        }
+    }
+
+    dl.row dt {
+        font-weight: bold;
+    }
+</style>

@@ -1,25 +1,182 @@
-@model IEnumerable<LoanManagementSystem.Models.Message>
+@model List<LoanManagementSystem.Models.Message>
 
-<div class="card mb-4">
-    <div class="card-header">
-        📩 Recent Messages
-        <a href="@Url.Action("Index", "Messages")" class="float-end">View All</a>
+<div class="card mb-3 message-card">
+    <div class="card-header message-header">
+        <strong>📨 Recent Messages</strong>
+        <a asp-controller="Messages" asp-action="Index" class="float-end small view-all-link">View All →</a>
     </div>
-    <ul class="list-group list-group-flush">
-        @if (Model != null && Model.Any())
+    <ul class="list-group list-group-flush message-list">
+        @if (!Model.Any())
         {
-            @foreach (var msg in Model)
-            {
-                <li class="list-group-item">
-                    <strong>@msg.Sender.FullName</strong>: @msg.Subject
-                    <br />
-                    <small class="text-muted">@msg.CreatedAt.ToString("g")</small>
-                </li>
-            }
+            <li class="list-group-item text-muted no-messages">✨ No messages yet</li>
         }
         else
         {
-            <li class="list-group-item text-muted">No messages</li>
+            @foreach (var msg in Model)
+            {
+                <li class="list-group-item message-item">
+                    <div class="message-content">
+                        <strong class="sender-name">@msg.Sender.FullName:</strong> 
+                        <span class="message-subject">@msg.Subject</span>
+                        <br />
+                        <small class="text-muted message-time">🕒 @msg.CreatedAt.ToString("g")</small>
+                    </div>
+                    <div class="message-hover-effect"></div>
+                </li>
+            }
         }
     </ul>
 </div>
+
+<style>
+    .message-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.5s ease;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        transform: translateZ(0);
+    }
+
+    .message-card:hover {
+        transform: translateY(-5px) perspective(500px) translateZ(10px);
+        box-shadow: 0 15px 30px rgba(34, 32, 142, 0.15);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .message-header {
+        background: linear-gradient(90deg, #22208e 0%, #3a38a8 100%);
+        color: white;
+        font-size: 1.1rem;
+        padding: 15px 20px;
+        border-bottom: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .message-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent);
+        transition: 0.6s;
+    }
+
+    .message-header:hover::after {
+        left: 100%;
+    }
+
+    .view-all-link {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: normal;
+    }
+
+    .view-all-link:hover {
+        color: white;
+        transform: translateX(3px);
+    }
+
+    .message-list {
+        border-radius: 0 0 15px 15px;
+    }
+
+    .message-item {
+        position: relative;
+        padding: 15px 20px;
+        border-left: none;
+        border-right: none;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        background-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .message-item:nth-child(odd) {
+        background-color: rgba(248, 249, 250, 0.7);
+    }
+
+    .message-item:hover {
+        background-color: white;
+        transform: translateX(5px);
+    }
+
+    .message-item:hover .message-hover-effect {
+        width: 5px;
+        opacity: 1;
+        background: linear-gradient(to bottom, #22208e, #3a38a8);
+    }
+
+    .message-hover-effect {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 0;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .sender-name {
+        color: #22208e;
+        transition: all 0.3s ease;
+    }
+
+    .message-item:hover .sender-name {
+        color: #3a38a8;
+        text-shadow: 0 0 5px rgba(58, 56, 168, 0.2);
+    }
+
+    .message-subject {
+        transition: all 0.3s ease;
+    }
+
+    .message-item:hover .message-subject {
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .message-time {
+        transition: all 0.3s ease;
+    }
+
+    .message-item:hover .message-time {
+        color: #6c757d !important;
+    }
+
+    .no-messages {
+        text-align: center;
+        padding: 20px;
+        font-style: italic;
+        transition: all 0.5s ease;
+    }
+
+    .message-card:hover .no-messages {
+        transform: scale(1.05);
+        color: #22208e !important;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    .message-card:hover .message-item:nth-child(odd) {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .message-card:hover .message-item:nth-child(even) {
+        animation: float 3s ease-in-out infinite 0.5s;
+    }
+</style>

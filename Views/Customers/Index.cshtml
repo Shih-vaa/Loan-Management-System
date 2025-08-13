@@ -19,9 +19,7 @@
                         <th>Photo</th>
                         <th>Name</th>
                         <th>Contact</th>
-                        @* <th>Occupation</th>
-                        <th>Income</th>
-                        <th>Created</th> *@
+
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -52,9 +50,6 @@
                                 <div>@item.Email</div>
                                 <small class="text-muted">@item.Phone</small>
                             </td>
-                            @* <td>@item.Occupation</td>
-                            <td>@(item.AnnualIncome?.ToString("C") ?? "N/A")</td>
-                            <td>@item.CreatedAt.ToShortDateString()</td> *@
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <a asp-action="Edit" asp-route-id="@item.CustomerId" class="btn btn-outline-primary"
