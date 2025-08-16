@@ -3,53 +3,353 @@
     ViewData["Title"] = "Documents for Lead";
     int? leadId = ViewBag.LeadId as int?;
 }
-<h3>
-    @if (leadId.HasValue)
-    {
-        <text>📄 Uploaded Documents for Lead @leadId</text>
-    }
-    else
-    {
-        <text>📄 All Uploaded Documents</text>
-    }
-</h3>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Type</th>
-            <th>File</th>
-            <th>Uploaded By</th>
-            <th>Status</th>
-            <th>Uploaded At</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
+<style>
+    /* ===== Universal Container ===== */
+    .universal-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        color: white;
+        background: linear-gradient(90deg, 
+            rgb(0, 0, 0), 
+            rgb(34, 32, 142), 
+            rgb(0, 0, 0));
+        background-size: 200% 200%;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        border-radius: 30px;
+        animation: gradientFlow 3s ease infinite, 
+                   pulseShadow 1.5s ease infinite alternate,
+                   gentleFloat 4s ease-in-out infinite;
+        transform: perspective(500px) translateZ(20px);
+        box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* ===== Header ===== */
+    .page-header {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+    }
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+    }
+
+    /* ===== Table Styling (Desktop) ===== */
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 1.5rem 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .custom-table thead {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+    }
+    .custom-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        position: relative;
+    }
+    .custom-table th:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.3);
+    }
+    .custom-table td {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .custom-table tr:hover td {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* ===== Card Layout (Mobile) ===== */
+    .document-cards {
+        display: none;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    .document-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .document-card-row {
+        display: flex;
+        margin-bottom: 1rem;
+        align-items: flex-start;
+    }
+    .document-card-label {
+        font-weight: 600;
+        color: #f48129;
+        min-width: 130px;
+        padding-right: 1rem;
+    }
+    .document-card-value {
+        flex: 1;
+        word-break: break-word;
+    }
+
+    /* ===== Status Badges ===== */
+    .badge-custom {
+        padding: 0.35rem 0.65rem;
+        border-radius: 50rem;
+        font-weight: 500;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: white;
+    }
+    .status-approved {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+    .status-pending {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+    .status-rejected {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+    .status-uploaded {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+
+    /* ===== Buttons ===== */
+    .btn-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .btn-danger-custom {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+    }
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ===== Document Link ===== */
+    .document-link {
+        color: #a78bfa;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .document-link:hover {
+        color: #6a11cb;
+        text-decoration: underline;
+    }
+
+    /* ===== Animations ===== */
+    @@keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    @@keyframes pulseShadow {
+        0% { box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3); }
+        100% { box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5); }
+    }
+    @@keyframes gentleFloat {
+        0%, 100% { transform: perspective(500px) translateZ(10px); }
+        50% { transform: perspective(500px) translateZ(20px); }
+    }
+
+    /* ===== Responsive Design ===== */
+    @@media (max-width: 768px) {
+        .universal-container {
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 20px;
+        }
+        .custom-table {
+            display: none;
+        }
+        .document-cards {
+            display: flex;
+        }
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="universal-container">
+    <h2 class="page-header">
+        <i class="bi bi-file-earmark-text"></i> 
+        @if (leadId.HasValue)
+        {
+            <text>Uploaded Documents for Lead @leadId</text>
+        }
+        else
+        {
+            <text>All Uploaded Documents</text>
+        }
+    </h2>
+
+    <!-- Desktop Table View -->
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>File</th>
+                <th>Uploaded By</th>
+                <th>Status</th>
+                <th>Uploaded At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var doc in Model)
+            {
+                <tr>
+                    <td>@doc.DocumentType</td>
+                    <td><a href="@doc.FilePath" target="_blank" class="document-link">@doc.FileName</a></td>
+                    <td>@doc.UploadedByUser?.FullName</td>
+                    <td>
+                        <span class="badge-custom status-@doc.Status.ToLower()">
+                            @switch (doc.Status.ToLower())
+                            {
+                                case "approved":
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    break;
+                                case "pending":
+                                    <i class="bi bi-hourglass-split"></i>
+                                    break;
+                                case "rejected":
+                                    <i class="bi bi-x-circle-fill"></i>
+                                    break;
+                                default:
+                                    <i class="bi bi-upload"></i>
+                                    break;
+                            }
+                            @doc.Status
+                        </span>
+                    </td>
+                    <td>@doc.UploadedAt.ToString("g")</td>
+                    <td>
+                        <form asp-action="Delete" method="post" asp-controller="LeadDocuments" 
+                              onsubmit="return confirm('Are you sure you want to delete this document?');">
+                            <input type="hidden" name="id" value="@doc.DocId" />
+                            <button type="submit" class="btn-custom btn-danger-custom">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Mobile Card View -->
+    <div class="document-cards">
         @foreach (var doc in Model)
         {
-            <tr>
-                <td>@doc.DocumentType</td>
-                <td><a href="@doc.FilePath" target="_blank">@doc.FileName</a></td>
-                <td>@doc.UploadedByUser?.FullName</td>
-                <td>@doc.Status</td>
-                <td>@doc.UploadedAt.ToString("g")</td>
-                <td>
-                    <form asp-action="Delete" method="post" asp-controller="LeadDocuments">
-                        <input type="hidden" name="id" value="@doc.DocId" />
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </form>
-                </td>
-            </tr>
+            <div class="document-card">
+                <div class="document-card-row">
+                    <div class="document-card-label">Type:</div>
+                    <div class="document-card-value">@doc.DocumentType</div>
+                </div>
+                <div class="document-card-row">
+                    <div class="document-card-label">File:</div>
+                    <div class="document-card-value">
+                        <a href="@doc.FilePath" target="_blank" class="document-link">@doc.FileName</a>
+                    </div>
+                </div>
+                <div class="document-card-row">
+                    <div class="document-card-label">Uploaded By:</div>
+                    <div class="document-card-value">@doc.UploadedByUser?.FullName</div>
+                </div>
+                <div class="document-card-row">
+                    <div class="document-card-label">Status:</div>
+                    <div class="document-card-value">
+                        <span class="badge-custom status-@doc.Status.ToLower()">
+                            @switch (doc.Status.ToLower())
+                            {
+                                case "approved":
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    break;
+                                case "pending":
+                                    <i class="bi bi-hourglass-split"></i>
+                                    break;
+                                case "rejected":
+                                    <i class="bi bi-x-circle-fill"></i>
+                                    break;
+                                default:
+                                    <i class="bi bi-upload"></i>
+                                    break;
+                            }
+                            @doc.Status
+                        </span>
+                    </div>
+                </div>
+                <div class="document-card-row">
+                    <div class="document-card-label">Uploaded At:</div>
+                    <div class="document-card-value">@doc.UploadedAt.ToString("g")</div>
+                </div>
+                <div class="document-card-row">
+                    <div class="document-card-label">Actions:</div>
+                    <div class="document-card-value">
+                        <form asp-action="Delete" method="post" asp-controller="LeadDocuments" 
+                              onsubmit="return confirm('Are you sure you want to delete this document?');">
+                            <input type="hidden" name="id" value="@doc.DocId" />
+                            <button type="submit" class="btn-custom btn-danger-custom">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    </div>
 
-@if (leadId.HasValue)
-{
-    <a class="btn btn-secondary" href="/Lead/Details/@leadId">← Back to Lead</a>
-}
-else
-{
-    <a class="btn btn-secondary" href="/Admin/Dashboard">← Back to Dashboard</a>
-}
+    <div class="mt-4">
+        @if (leadId.HasValue)
+        {
+            <a class="btn-custom btn-secondary-custom" href="/Lead/Details/@leadId">
+                <i class="bi bi-arrow-left"></i> Back to Lead
+            </a>
+        }
+        else
+        {
+            <a class="btn-custom btn-secondary-custom" href="/Admin/Dashboard">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        }
+    </div>
+</div>

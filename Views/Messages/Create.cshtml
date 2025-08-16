@@ -4,61 +4,34 @@
 }
 
 <style>
-    /* Main Container Styles */
+    /* Main Container - Permanent Effects */
     .universal-container {
         max-width: 800px;
         margin: 2rem auto;
         padding: 2.5rem;
-        background: transparent
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: rgb(108, 107, 107);
-        transition: all 0.8s ease;
-        transform: translateZ(0);
-        will-change: transform, background, color;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Hover Effects with White Text */
-    .universal-container:hover {
-        color: white !important; /* Force white text on all elements */
+        color: white;
         background: linear-gradient(90deg, 
             rgb(0, 0, 0), 
             rgb(34, 32, 142), 
-            rgb(0, 0, 0)) !important;
+            rgb(0, 0, 0));
         background-size: 200% 200%;
         font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-        border-radius: 80px;
+        border-radius: 30px;
         animation: gradientFlow 3s ease infinite, 
                    pulseShadow 1.5s ease infinite alternate,
                    gentleFloat 4s ease-in-out infinite;
         transform: perspective(500px) translateZ(20px);
         box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    
-
-    /* Force white text on all child elements during hover */
-    .universal-container:hover * {
-        color: white 
-    }
-.form-control-custom:hover .input{
-color: black; !important
-}
-    /* Special handling for form placeholders */
-    .universal-container:hover ::placeholder {
-        color: rgba(255, 255, 255, 0.7) !important;
-    }
-
-    /* Form Elements */
+    /* Header - Permanent Underline */
     .form-header {
-        color: #2c3e50;
+        color: white;
         margin-bottom: 1.8rem;
         font-weight: 600;
         position: relative;
         padding-bottom: 12px;
-        transition: color 0.3s ease;
     }
 
     .form-header::after {
@@ -72,35 +45,35 @@ color: black; !important
         border-radius: 3px;
     }
 
+    /* Form Elements */
     .form-label {
         font-weight: 500;
-        color: #34495e;
+        color: #f48129;
         margin-bottom: 0.6rem;
         display: block;
-        transition: color 0.3s ease;
     }
 
     .form-control-custom {
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 8px;
         padding: 0.8rem 1rem;
+        color: white;
         transition: all 0.3s ease;
         width: 100%;
         margin-bottom: 1.5rem;
-        color: #495057;
     }
 
     .form-control-custom:focus {
-        background: white;
-        border-color: #2575fc;
-        box-shadow: 0 0 0 0.25rem rgba(37, 117, 252, 0.15);
-        color: #495057;
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #6a11cb;
+        box-shadow: 0 0 0 0.25rem rgba(106, 17, 203, 0.25);
+        outline: none;
     }
 
     select.form-control-custom {
         appearance: none;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23ffffff' stroke='%236a11cb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
         background-repeat: no-repeat;
         background-position: right 0.75rem center;
         background-size: 16px 12px;
@@ -109,6 +82,12 @@ color: black; !important
     textarea.form-control-custom {
         min-height: 180px;
         resize: vertical;
+    }
+
+    /* Placeholder Styling */
+    ::placeholder {
+        color: rgba(255, 255, 255, 0.7) !important;
+        opacity: 1;
     }
 
     /* Buttons */
@@ -125,27 +104,25 @@ color: black; !important
         transition: all 0.3s ease;
         border: none;
         cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .btn-primary-custom {
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
         color: white;
     }
 
-    .btn-primary-custom:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
-    }
-
     .btn-secondary-custom {
-        background: rgba(108, 117, 125, 0.1);
-        border: 1px solid rgba(108, 117, 125, 0.2);
-        color: #6c757d;
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
     }
 
-    .btn-secondary-custom:hover {
-        background: rgba(108, 117, 125, 0.2);
-        color: #495057;
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     /* Animations */
@@ -170,6 +147,7 @@ color: black; !important
         .universal-container {
             padding: 1.8rem;
             margin: 1rem;
+            border-radius: 20px;
         }
         
         .form-header {

@@ -3,34 +3,223 @@
     ViewData["Title"] = "Create Customer";
 }
 
-<div class="container mt-4">
-    <h2>Add New Customer</h2>
+<style>
+    /* Main Container - Permanent Effects */
+    .universal-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        color: white;
+        background: linear-gradient(90deg, 
+            rgb(0, 0, 0), 
+            rgb(34, 32, 142), 
+            rgb(0, 0, 0));
+        background-size: 200% 200%;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        border-radius: 30px;
+        animation: gradientFlow 3s ease infinite, 
+                   pulseShadow 1.5s ease infinite alternate,
+                   gentleFloat 4s ease-in-out infinite;
+        transform: perspective(500px) translateZ(20px);
+        box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Header - Permanent Underline */
+    .page-header {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+    }
+
+    /* Form Elements */
+    .form-label {
+        font-weight: 500;
+        color: #f48129;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control-custom {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form-control-custom:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #6a11cb;
+        box-shadow: 0 0 0 0.25rem rgba(106, 17, 203, 0.25);
+        outline: none;
+    }
+
+    select.form-control-custom {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23ffffff' stroke='%236a11cb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+    }
+
+    textarea.form-control-custom {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        padding: 0.7rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Button Container */
+    .button-container {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+    }
+
+    /* Validation Messages */
+    .text-danger {
+        color: #ff6b6b !important;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Animations */
+    @@keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @@keyframes pulseShadow {
+        0% { box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3); }
+        100% { box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5); }
+    }
+
+    @@keyframes gentleFloat {
+        0%, 100% { transform: perspective(500px) translateZ(10px); }
+        50% { transform: perspective(500px) translateZ(20px); }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .universal-container {
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 20px;
+        }
+
+        .row > [class*="col-"] {
+            width: 100%;
+        }
+
+        .button-container {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-custom {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control-custom {
+            padding: 0.7rem;
+        }
+    }
+
+    /* File Input Customization */
+    .form-control-custom[type="file"] {
+        padding: 0.5rem;
+    }
+
+    .form-control-custom[type="file"]::file-selector-button {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-right: 1rem;
+    }
+
+    .form-control-custom[type="file"]::file-selector-button:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+</style>
+
+<div class="universal-container">
+    <h2 class="page-header">Create Customer</h2>
+    
     <form asp-action="Create" method="post" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
                     <label asp-for="FullName" class="form-label">Full Name*</label>
-                    <input asp-for="FullName" class="form-control" required />
+                    <input asp-for="FullName" class="form-control-custom" required />
                     <span asp-validation-for="FullName" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label">Email</label>
-                    <input asp-for="Email" type="email" class="form-control" />
+                    <input asp-for="Email" type="email" class="form-control-custom" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
                     <label asp-for="Phone" class="form-label">Phone</label>
-                    <input asp-for="Phone" class="form-control" />
+                    <input asp-for="Phone" class="form-control-custom" />
                     <span asp-validation-for="Phone" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
                     <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
-                    <input asp-for="DateOfBirth" type="date" class="form-control" />
+                    <input asp-for="DateOfBirth" type="date" class="form-control-custom" />
                     <span asp-validation-for="DateOfBirth" class="text-danger"></span>
                 </div>
             </div>
@@ -38,7 +227,7 @@
             <div class="col-md-6">
                 <div class="mb-3">
                     <label asp-for="Gender" class="form-label">Gender</label>
-                    <select asp-for="Gender" class="form-select">
+                    <select asp-for="Gender" class="form-control-custom">
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -49,33 +238,37 @@
                 
                 <div class="mb-3">
                     <label asp-for="Occupation" class="form-label">Occupation</label>
-                    <input asp-for="Occupation" class="form-control" />
+                    <input asp-for="Occupation" class="form-control-custom" />
                     <span asp-validation-for="Occupation" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
                     <label asp-for="AnnualIncome" class="form-label">Annual Income (₹)</label>
-                    <input asp-for="AnnualIncome" type="number" step="0.01" class="form-control" />
+                    <input asp-for="AnnualIncome" type="number" step="0.01" class="form-control-custom" />
                     <span asp-validation-for="AnnualIncome" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
                     <label asp-for="Address" class="form-label">Address</label>
-                    <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                    <textarea asp-for="Address" class="form-control-custom" rows="3"></textarea>
                     <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
                 
                 <div class="mb-3">
                     <label asp-for="PassportPhotoFile" class="form-label">Passport Photo</label>
-                    <input asp-for="PassportPhotoFile" type="file" class="form-control" accept="image/*" />
+                    <input asp-for="PassportPhotoFile" type="file" class="form-control-custom" accept="image/*" />
                     <span asp-validation-for="PassportPhotoFile" class="text-danger"></span>
                 </div>
             </div>
         </div>
-        
-        <div class="form-group mt-4">
-            <button type="submit" class="btn btn-primary">Create</button>
-            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+        <div class="button-container">
+            <button type="submit" class="btn-custom btn-primary-custom">
+                <i class="bi bi-save"></i> Create
+            </button>
+            <a asp-action="Index" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-arrow-left"></i> Cancel
+            </a>
         </div>
     </form>
 </div>

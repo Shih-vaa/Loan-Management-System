@@ -1,18 +1,87 @@
 @model LoanManagementSystem.Models.Message
+
 @{
     ViewData["Title"] = "Message Details";
 }
 
-<div class="container mt-4">
-    <h2>@Model.Subject</h2>
+<style>
+/* ===== Universal Container ===== */
+.universal-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(90deg, #0f0c29, #302b63, #24243e);
+    color: white;
+    border-radius: 20px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
 
-    <p><strong>From:</strong> @Model.Sender?.FullName (@Model.Sender?.Email)</p>
-    <p><strong>To:</strong> @Model.Recipient?.FullName (@Model.Recipient?.Email)</p>
-    <p><strong>Date:</strong> @Model.CreatedAt.ToString("f")</p>
+/* ===== Header ===== */
+.page-header {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+.page-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+}
 
-    <hr />
-    <p>@Model.Body</p>
-    <hr />
+/* ===== Buttons ===== */
+.btn-custom {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+}
+.btn-primary-custom { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+.btn-primary-custom:hover { background: linear-gradient(135deg, #00a8e0, #005bcc); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn-secondary-custom { background: linear-gradient(135deg, #6b7280, #4b5563); }
+.btn-secondary-custom:hover { background: linear-gradient(135deg, #4b5563, #374151); transform: translateY(-2px); }
 
-    <a asp-action="Index" class="btn btn-secondary">Back to Inbox</a>
+/* ===== Card Styling ===== */
+.message-card {
+    background: rgba(255,255,255,0.05);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+.message-card div {
+    margin-bottom: 0.8rem;
+}
+.message-card strong {
+    color: #9dc9ff;
+}
+</style>
+
+<div class="universal-container">
+    <h2 class="page-header">Message Details</h2>
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-secondary-custom"><i class="bi bi-arrow-left"></i> Back to Inbox</a>
+    </div>
+
+    <div class="message-card">
+        <div><strong>From:</strong> @Model.Sender?.FullName</div>
+        <div><strong>To:</strong> @Model.Recipient?.FullName</div>
+        <div><strong>Subject:</strong> @Model.Subject</div>
+        <div><strong>Date:</strong> @Model.CreatedAt.ToString("g")</div>
+        <div><strong>Status:</strong> @(Model.IsRead ? "Read" : "Unread")</div>
+        <div><strong>Message:</strong></div>
+        <div>@Model.Body</div>
+    </div>
 </div>

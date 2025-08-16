@@ -4,25 +4,203 @@
     var role = Context.Session.GetString("UserRole");
 }
 
-<div class="container mt-4">
-    <h2>Leads</h2>
+<style>
+/* ===== Universal Container ===== */
+.universal-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    color: white;
+    background: linear-gradient(90deg, rgb(0, 0, 0), rgb(34, 32, 142), rgb(0, 0, 0));
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    border-radius: 30px;
+    animation: gradientFlow 3s ease infinite, pulseShadow 1.5s ease infinite alternate, gentleFloat 4s ease-in-out infinite;
+    transform: perspective(500px) translateZ(20px);
+    box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
 
-    @* Only Admin or Marketing can create leads *@
+/* ===== Header ===== */
+.page-header {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 5px;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+}
+.page-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+}
+
+/* ===== New Lead Button ===== */
+.new-lead-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+}
+.btn-primary-custom {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+.btn-primary-custom:hover {
+    background: linear-gradient(135deg, #00a8e0, #005bcc);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Table Styling ===== */
+.custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1.5rem 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.custom-table thead {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+}
+.custom-table th, .custom-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+
+/* ===== Badges ===== */
+.badge-custom {
+    padding: 0.35rem 0.65rem;
+    border-radius: 50rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-right: 0.3rem;
+    color: white;
+}
+.bg-success-custom { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.bg-warning-custom { background: linear-gradient(135deg, #f39c12, #e67e22); }
+.bg-danger-custom { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.bg-secondary-custom { background: linear-gradient(135deg, #6b7280, #4b5563); }
+
+/* ===== Action Buttons ===== */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.btn-custom {
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: fit-content;
+    transition: all 0.3s ease;
+}
+.btn-info-custom { background: linear-gradient(135deg, #17a2b8, #138496); }
+.btn-warning-custom { background: linear-gradient(135deg, #f39c12, #e67e22); }
+.btn-success-custom { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.btn-danger-custom { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.btn-custom:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+/* ===== Alerts ===== */
+.alert-custom {
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ===== Responsive Card Layout for Mobile ===== */
+@@media (max-width: 992px) {
+    .custom-table, .custom-table thead, .custom-table tbody, .custom-table tr, .custom-table th, .custom-table td {
+        display: block;
+        width: 100%;
+    }
+    .custom-table thead { display: none; }
+    .custom-table tr {
+        margin-bottom: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .custom-table td {
+        border: none;
+        padding: 0.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .custom-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #9dc9ff;
+        margin-right: 0.5rem;
+    }
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    .btn-custom { width: 100%; justify-content: center; }
+}
+
+/* ===== Animations ===== */
+@@keyframes gradientFlow { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+@@keyframes pulseShadow { 0%{box-shadow:0 5px 15px rgba(34,32,142,0.3)}100%{box-shadow:0 15px 30px rgba(34,32,142,0.5)} }
+@@keyframes gentleFloat { 0%,100%{transform:perspective(500px) translateZ(10px)}50%{transform:perspective(500px) translateZ(20px)} }
+</style>
+
+<div class="universal-container">
+    <h2 class="page-header">Leads Management</h2>
+
     @if (role == "admin" || role == "marketing")
     {
-        <a class="btn btn-primary mb-2" asp-controller="Lead" asp-action="Create">+ New Lead</a>
+        <div class="new-lead-wrapper">
+            <a class="btn-primary-custom" asp-controller="Lead" asp-action="Create">
+                <i class="bi bi-plus-circle"></i> New Lead
+            </a>
+        </div>
     }
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert-custom">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
         </div>
     }
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-light">
+    <table class="custom-table">
+        <thead>
             <tr>
                 <th>ID</th>
                 <th>Customer</th>
@@ -31,21 +209,20 @@
                 <th>Lead Generator</th>
                 <th>Assigned To</th>
                 <th>📄 Docs</th>
-                <th style="width: 200px;">Actions</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var lead in Model)
             {
                 <tr>
-                    <td>@lead.LeadId</td>
-                    <td>@lead.Customer?.FullName</td>
-                    <td>₹@lead.LoanAmount.ToString("N2")</td>
-                    <td>@lead.Status</td>
-                    <td>@lead.LeadGenerator?.FullName</td>
-                    <td>@lead.AssignedUser?.FullName</td>
-
-                    <td>
+                    <td data-label="ID">LMS-@lead.LeadId.ToString("D4")</td>
+                    <td data-label="Customer">@lead.Customer?.FullName</td>
+                    <td data-label="Amount">₹@lead.LoanAmount.ToString("N2")</td>
+                    <td data-label="Status">@lead.Status</td>
+                    <td data-label="Lead Generator">@lead.LeadGenerator?.FullName</td>
+                    <td data-label="Assigned To">@lead.AssignedUser?.FullName</td>
+                    <td data-label="Docs">
                         @if (lead.Documents != null && lead.Documents.Any())
                         {
                             var total = lead.Documents.Count;
@@ -53,30 +230,35 @@
                             var pending = lead.Documents.Count(d => d.Status == "pending" || d.Status == "uploaded");
                             var rejected = lead.Documents.Count(d => d.Status == "rejected");
 
-                            <span class="badge bg-success me-1">✔️ @approved</span>
-                            <span class="badge bg-warning text-dark me-1">⏳ @pending</span>
-                            <span class="badge bg-danger me-1">❌ @rejected</span>
-                            <span class="badge bg-secondary">📄 @total</span>
+                            <span class="badge-custom bg-success-custom">✔️ @approved</span>
+                            <span class="badge-custom bg-warning-custom">⏳ @pending</span>
+                            <span class="badge-custom bg-danger-custom">❌ @rejected</span>
+                            <span class="badge-custom bg-secondary-custom">📄 @total</span>
                         }
-                        else
-                        {
-                            <span class="text-muted">No docs</span>
-                        }
+                        else { <span>No docs</span>; }
                     </td>
-
-                    <td>
-                        <a class="btn btn-sm btn-info" asp-controller="Lead" asp-action="Details" asp-route-id="@lead.LeadId">View</a>
-
-                        @if (role == "admin")
-                        {
-                            <a class="btn btn-sm btn-warning" asp-controller="Lead" asp-action="Edit" asp-route-id="@lead.LeadId">Edit</a>
-                            <a class="btn btn-sm btn-success" asp-controller="Lead" asp-action="Approve" asp-route-id="@lead.LeadId">Approve</a>
-                            <form asp-action="Delete" asp-route-id="@lead.LeadId" method="post"
-                                  onsubmit="return confirm('Are you sure you want to delete Lead LMS-@lead.LeadId:D4?');"
-                                  style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                        }
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <a class="btn-custom btn-info-custom" asp-controller="Lead" asp-action="Details" asp-route-id="@lead.LeadId">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            @if (role == "admin")
+                            {
+                                <a class="btn-custom btn-warning-custom" asp-controller="Lead" asp-action="Edit" asp-route-id="@lead.LeadId">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a class="btn-custom btn-success-custom" asp-controller="Lead" asp-action="Approve" asp-route-id="@lead.LeadId">
+                                    <i class="bi bi-check-lg"></i> Approve
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@lead.LeadId" method="post" 
+                                      onsubmit="return confirm('Are you sure?');" 
+                                      style="display:inline;">
+                                    <button type="submit" class="btn-custom btn-danger-custom">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            }
+                        </div>
                     </td>
                 </tr>
             }

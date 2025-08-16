@@ -91,25 +91,29 @@ namespace LoanManagementSystem.Controllers
 
 
 
-        // GET: /Team/Members/{id}
-        public async Task<IActionResult> Members(int id)
-        {
-            var team = await _context.Teams
-                .Include(t => t.Members!)
-                .ThenInclude(m => m.User)
-                .FirstOrDefaultAsync(t => t.TeamId == id);
 
-            if (team == null) return NotFound();
+public async Task<IActionResult> Members(int id)
+{
+    var team = await _context.Teams
+        .Include(t => t.Members!)
+        .ThenInclude(m => m.User)
+        .FirstOrDefaultAsync(t => t.TeamId == id);
 
-            var currentUserIds = team.Members.Select(m => m.UserId).ToList();
-            ViewBag.AllUsers = await _context.Users
-                .Where(u => !currentUserIds.Contains(u.UserId))
-                .ToListAsync();
+    if (team == null) return NotFound();
 
-            return View(team);
-        }
+    var currentUserIds = team.Members.Select(m => m.UserId).ToList();
+    var availableUsers = await _context.Users
+        .Where(u => !currentUserIds.Contains(u.UserId))
+        .ToListAsync();
 
+    // Create a dictionary of user roles
+    var userRoles = availableUsers.ToDictionary(u => u.UserId, u => u.Role);
 
+    ViewBag.AllUsers = availableUsers;
+    ViewBag.UserRoles = userRoles; // Pass the roles dictionary to the view
+
+    return View(team);
+}
 
 
 
@@ -124,6 +128,28 @@ namespace LoanManagementSystem.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> AddMember(int teamId, int userId, bool canManageLeads = false, bool canUploadDocs = false, bool canVerifyDocs = false)
         {
+            // Get the user to check their role
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction("Members", new { id = teamId });
+            }
+
+            // Set default permissions based on role
+            if (user.Role == "OfficeAgent")
+            {
+                canManageLeads = true;
+                canUploadDocs = true;
+                canVerifyDocs = true;
+            }
+            else if (user.Role == "MarketingAgent" || user.Role == "CallingAgent")
+            {
+                canManageLeads = false;
+                canUploadDocs = true;
+                canVerifyDocs = false;
+            }
+
             // Prevent duplicates
             bool alreadyMember = await _context.TeamMembers.AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
             if (alreadyMember)

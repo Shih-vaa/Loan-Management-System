@@ -22,9 +22,29 @@ namespace LoanManagementSystem.Controllers
             _hostEnvironment = hostEnvironment;
         }
 
+        // Show active customers only for non-admins; all for admin
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Customers.ToListAsync());
+            var customers = _context.Customers.AsQueryable();
+
+            if (!User.IsInRole("admin"))
+            {
+                customers = customers.Where(c => !c.IsDeleted);
+            }
+
+            return View(await customers.ToListAsync());
+        }
+
+        // Separate page for deleted customers
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> DeletedCustomers()
+        {
+            var deletedCustomers = await _context.Customers
+                .Where(c => c.IsDeleted)
+                .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
+                .ToListAsync();
+
+            return View(deletedCustomers);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -39,10 +59,9 @@ namespace LoanManagementSystem.Controllers
 
         public IActionResult Create()
         {
-            // Initialize a new Customer with default values
             var customer = new Customer
             {
-                DateOfBirth = DateTime.Now.AddYears(-18) // Default to 18 years ago
+                DateOfBirth = DateTime.Now.AddYears(-18) // Default age: 18 years
             };
             return View(customer);
         }
@@ -55,13 +74,13 @@ namespace LoanManagementSystem.Controllers
             {
                 try
                 {
-                    // Handle file upload
                     if (customer.PassportPhotoFile != null && customer.PassportPhotoFile.Length > 0)
                     {
                         customer.PassportPhotoPath = await SaveImage(customer.PassportPhotoFile);
                     }
 
                     customer.CreatedAt = DateTime.Now;
+                    customer.IsDeleted = false;
                     _context.Add(customer);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -71,8 +90,6 @@ namespace LoanManagementSystem.Controllers
                     ModelState.AddModelError("", "Error saving customer: " + ex.Message);
                 }
             }
-
-            // If we got this far, something failed; redisplay form
             return View(customer);
         }
 
@@ -86,74 +103,74 @@ namespace LoanManagementSystem.Controllers
             return View(customer);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CustomerId,FullName,Email,Phone,Address,DateOfBirth,Gender,Occupation,AnnualIncome,PassportPhotoFile,PassportPhotoPath,CreatedAt")] Customer customer, bool removePhoto = false)
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(
+    int id,
+    [Bind("CustomerId,FullName,Email,Phone,Address,DateOfBirth,Gender,Occupation,AnnualIncome,PassportPhotoFile,PassportPhotoPath,CreatedAt")] Customer customer,
+    bool removePhoto = false)
+{
+    if (id != customer.CustomerId) return NotFound();
+
+    var existingCustomer = await _context.Customers.FindAsync(id);
+    if (existingCustomer == null) return NotFound();
+
+    // Photo requirement check
+    if ((string.IsNullOrEmpty(existingCustomer.PassportPhotoPath) || removePhoto) 
+        && (customer.PassportPhotoFile == null || customer.PassportPhotoFile.Length == 0))
+    {
+        ModelState.AddModelError("PassportPhotoFile", "Passport photo is required if none exists.");
+    }
+
+    if (ModelState.IsValid)
+    {
+        try
         {
-            if (id != customer.CustomerId)
+            if (removePhoto && !string.IsNullOrEmpty(existingCustomer.PassportPhotoPath))
+            {
+                DeleteImage(existingCustomer.PassportPhotoPath);
+                existingCustomer.PassportPhotoPath = null;
+            }
+
+            if (customer.PassportPhotoFile != null && customer.PassportPhotoFile.Length > 0)
+            {
+                if (!string.IsNullOrEmpty(existingCustomer.PassportPhotoPath))
+                {
+                    DeleteImage(existingCustomer.PassportPhotoPath);
+                }
+                existingCustomer.PassportPhotoPath = await SaveImage(customer.PassportPhotoFile);
+            }
+
+            existingCustomer.FullName = customer.FullName;
+            existingCustomer.Email = customer.Email;
+            existingCustomer.Phone = customer.Phone;
+            existingCustomer.Address = customer.Address;
+            existingCustomer.DateOfBirth = customer.DateOfBirth;
+            existingCustomer.Gender = customer.Gender;
+            existingCustomer.Occupation = customer.Occupation;
+            existingCustomer.AnnualIncome = customer.AnnualIncome;
+            existingCustomer.UpdatedAt = DateTime.Now;
+
+            _context.Update(existingCustomer);
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CustomerExists(customer.CustomerId))
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
+            else
             {
-                try
-                {
-                    var existingCustomer = await _context.Customers.FindAsync(id);
-
-                    // Handle photo removal
-                    if (removePhoto && !string.IsNullOrEmpty(existingCustomer.PassportPhotoPath))
-                    {
-                        DeleteImage(existingCustomer.PassportPhotoPath);
-                        existingCustomer.PassportPhotoPath = null;
-                    }
-
-                    // Handle new photo upload
-                    if (customer.PassportPhotoFile != null && customer.PassportPhotoFile.Length > 0)
-                    {
-                        // Delete old image if exists
-                        if (!string.IsNullOrEmpty(existingCustomer.PassportPhotoPath))
-                        {
-                            DeleteImage(existingCustomer.PassportPhotoPath);
-                        }
-                        // Save new image
-                        existingCustomer.PassportPhotoPath = await SaveImage(customer.PassportPhotoFile);
-                    }
-
-                    // Update other fields
-                    existingCustomer.FullName = customer.FullName;
-                    existingCustomer.Email = customer.Email;
-                    existingCustomer.Phone = customer.Phone;
-                    existingCustomer.Address = customer.Address;
-                    existingCustomer.DateOfBirth = customer.DateOfBirth;
-                    existingCustomer.Gender = customer.Gender;
-                    existingCustomer.Occupation = customer.Occupation;
-                    existingCustomer.AnnualIncome = customer.AnnualIncome;
-                    existingCustomer.UpdatedAt = DateTime.Now;
-
-                    _context.Update(existingCustomer);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CustomerExists(customer.CustomerId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                throw;
             }
-            return View(customer);
         }
+        return RedirectToAction(nameof(Index));
+    }
 
-        private bool CustomerExists(int customerId)
-        {
-            throw new NotImplementedException();
-        }
+    return View(customer);
+}
+
 
         public async Task<IActionResult> Delete(int? id)
         {
@@ -172,17 +189,18 @@ namespace LoanManagementSystem.Controllers
             var customer = await _context.Customers.FindAsync(id);
             if (customer != null)
             {
-                // Delete associated photo if it exists
-                if (!string.IsNullOrEmpty(customer.PassportPhotoPath))
-                {
-                    DeleteImage(customer.PassportPhotoPath);
-                }
+                // Soft delete instead of permanent deletion
+                customer.IsDeleted = true;
+                customer.UpdatedAt = DateTime.Now;
 
-                _context.Customers.Remove(customer);
                 await _context.SaveChangesAsync();
             }
-
             return RedirectToAction(nameof(Index));
+        }
+
+        private bool CustomerExists(int customerId)
+        {
+            return _context.Customers.Any(e => e.CustomerId == customerId);
         }
 
         private async Task<string> SaveImage(IFormFile imageFile)
@@ -193,7 +211,6 @@ namespace LoanManagementSystem.Controllers
             fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
             string path = Path.Combine(wwwRootPath + "/images/customers/", fileName);
 
-            // Create directory if it doesn't exist
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var fileStream = new FileStream(path, FileMode.Create))

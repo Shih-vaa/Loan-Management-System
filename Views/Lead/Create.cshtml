@@ -3,38 +3,149 @@
     ViewData["Title"] = "New Lead";
 }
 
-<div class="container mt-4">
+<style>
+/* ===== Container ===== */
+.form-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(90deg, rgb(0, 0, 0), rgb(34, 32, 142), rgb(0, 0, 0));
+    color: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(34, 32, 142, 0.4);
+    backdrop-filter: blur(6px);
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    animation: gradientFlow 3s ease infinite, gentleFloat 4s ease-in-out infinite;
+}
+
+/* ===== Header ===== */
+.form-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+.form-container h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+}
+
+/* ===== Form Controls ===== */
+.form-container label {
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+    display: block;
+}
+.form-container select,
+.form-container input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255,255,255,0.05);
+    color: white;
+    margin-bottom: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+.form-container input:focus,
+.form-container select:focus {
+    border-color: #6a11cb;
+    background: rgba(255,255,255,0.1);
+}
+
+/* ===== Buttons ===== */
+.btn-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+/* Primary Button */
+.btn-primary-custom {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+.btn-primary-custom:hover {
+    background: linear-gradient(135deg, #5a0ebd, #1f63d6);
+    transform: translateY(-2px);
+}
+
+/* Secondary Button */
+.btn-secondary-custom {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+.btn-secondary-custom:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-2px);
+}
+
+/* Button Spacing */
+.button-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    margin-top: 1rem;
+}
+
+/* ===== Animations ===== */
+@@keyframes gradientFlow { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+@@keyframes gentleFloat { 0%,100%{transform:translateZ(10px)}50%{transform:translateZ(20px)} }
+
+/* ===== Mobile ===== */
+@@media (max-width: 576px) {
+    .form-container { padding: 1.5rem; }
+    .button-group { flex-direction: column; }
+    .btn-custom { width: 100%; justify-content: center; }
+}
+</style>
+
+<div class="form-container">
     <h2>Add New Lead</h2>
     <form method="post">
-        <div class="mb-3">
-            <label class="form-label">Customer</label>
-            <select asp-for="CustomerId" class="form-control" required>
-                <option value="">-- Select Customer --</option>
-                @foreach (var customer in ViewBag.Customers)
-                {
-                    <option value="@customer.CustomerId">@customer.FullName</option>
-                }
-            </select>
-        </div>
+        <label asp-for="CustomerId">Customer</label>
+        <select asp-for="CustomerId" required>
+            <option value="">-- Select Customer --</option>
+            @foreach (var customer in ViewBag.Customers)
+            {
+                <option value="@customer.CustomerId">@customer.FullName</option>
+            }
+        </select>
 
-        <div class="mb-3">
-            <label class="form-label">Loan Amount</label>
-            <input asp-for="LoanAmount" class="form-control" required />
-        </div>
+        <label asp-for="LoanAmount">Loan Amount</label>
+        <input asp-for="LoanAmount" type="number" step="0.01" required />
 
-        <div class="mb-3">
-            <label class="form-label">Loan Type</label>
-            <select asp-for="LoanType" class="form-control" required>
-                <option value="">-- Select Type --</option>
-                <option>Home Loan</option>
-                <option>Personal Loan</option>
-                <option>Vehicle Loan</option>
-                <option>Education Loan</option>
-                <option>Business Loan</option>
-            </select>
-        </div>
+        <label asp-for="LoanType">Loan Type</label>
+        <select asp-for="LoanType" required>
+            <option value="">-- Select Type --</option>
+            <option>Home Loan</option>
+            <option>Personal Loan</option>
+            <option>Vehicle Loan</option>
+            <option>Education Loan</option>
+            <option>Business Loan</option>
+        </select>
 
-        <button type="submit" class="btn btn-primary">Create</button>
-        <a href="/Lead/Index" class="btn btn-secondary ms-2">Cancel</a>
+        <div class="button-group">
+            <button type="submit" class="btn-custom btn-primary-custom">
+                <i class="bi bi-check-circle"></i> Create
+            </button>
+            <a href="/Lead/Index" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
     </form>
 </div>

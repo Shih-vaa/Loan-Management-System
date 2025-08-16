@@ -3,71 +3,244 @@
     ViewData["Title"] = "Customer Details";
 }
 
-<div class="container mt-4">
-    <h2>Customer Details</h2>
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 text-center">
-                    @if (!string.IsNullOrEmpty(Model.PassportPhotoPath))
-                    {
-                        <div class="mb-3">
-                            <img src="@Url.Content(Model.PassportPhotoPath)" alt="Customer Photo" class="img-thumbnail"
-                                style="max-width: 200px;" onerror="this.style.display='none'" />
+<style>
+    /* Main Container Styles - Permanent Effects */
+    .universal-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        color: white;
+        background: linear-gradient(90deg, 
+            rgb(0, 0, 0), 
+            rgb(34, 32, 142), 
+            rgb(0, 0, 0));
+        background-size: 200% 200%;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        border-radius: 30px;
+        animation: gradientFlow 3s ease infinite, 
+                   pulseShadow 1.5s ease infinite alternate,
+                   gentleFloat 4s ease-in-out infinite;
+        transform: perspective(500px) translateZ(20px);
+        box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Glass Card - Permanent */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        backdrop-filter: blur(5px);
+        padding: 1.5rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Header - Permanent Underline */
+    .page-header {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+    }
+
+    /* Profile Image - Permanent Effects */
+    .profile-img {
+        border: 2px solid rgba(167, 139, 250, 0.6);
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(167, 139, 250, 0.3);
+        transform: scale(1.02);
+        max-width: 200px;
+        transition: all 0.3s ease;
+    }
+
+    .profile-img:hover {
+        transform: scale(1.05);
+    }
+
+    /* Detail Fields */
+    .detail-field {
+        margin-bottom: 1rem;
+        padding: 0.8rem;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .detail-field:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .detail-label {
+        font-weight: bold;
+        color: #f48129;
+        font-size: 0.85rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: white;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        padding: 0.7rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        margin-right: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+        color: white;
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Animations */
+    @@keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @@keyframes pulseShadow {
+        0% { box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3); }
+        100% { box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5); }
+    }
+
+    @@keyframes gentleFloat {
+        0%, 100% { transform: perspective(500px) translateZ(10px); }
+        50% { transform: perspective(500px) translateZ(20px); }
+    }
+
+    /* Responsive Mobile View */
+    @@media (max-width: 767px) {
+        .universal-container {
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 20px;
+        }
+        
+        .row > .col-md-4,
+        .row > .col-md-8 {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .detail-field {
+            margin-bottom: 0.8rem;
+            text-align: left;
+        }
+        
+        .mt-4 {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-custom {
+            width: 100%;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .profile-img {
+            max-width: 150px;
+        }
+    }
+</style>
+
+<div class="universal-container">
+    <h2 class="page-header">Customer Details</h2>
+
+    <div class="glass-card">
+        <div class="row">
+            <div class="col-md-4 text-center">
+                @if (!string.IsNullOrEmpty(Model.PassportPhotoPath))
+                {
+                    <img src="@Url.Content(Model.PassportPhotoPath)" alt="Customer Photo" class="img-thumbnail profile-img"
+                        onerror="this.style.display='none'" />
+                }
+                else
+                {
+                    <div >No photo available</div>
+                }
+            </div>
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <div class="detail-label">Full Name</div>
+                            <div class="detail-value">@Model.FullName</div>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="text-muted">No photo available</div>
-                    }
+                        <div class="detail-field">
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value">@Model.Email</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-label">Phone</div>
+                            <div class="detail-value">@Model.Phone</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-label">Date of Birth</div>
+                            <div class="detail-value">@(Model.DateOfBirth?.ToShortDateString() ?? "N/A")</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <div class="detail-label">Gender</div>
+                            <div class="detail-value">@Model.Gender</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-label">Occupation</div>
+                            <div class="detail-value">@Model.Occupation</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-label">Annual Income</div>
+                            <div class="detail-value">@(Model.AnnualIncome?.ToString("C") ?? "N/A")</div>
+                        </div>
+                        <div class="detail-field">
+                            <div class="detail-label">Created At</div>
+                            <div class="detail-value">@Model.CreatedAt.ToLocalTime().ToString("g")</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-8">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <dl class="row">
-                                <dt class="col-sm-4">Full Name</dt>
-                                <dd class="col-sm-8">@Model.FullName</dd>
-
-                                <dt class="col-sm-4">Email</dt>
-                                <dd class="col-sm-8">@Model.Email</dd>
-
-                                <dt class="col-sm-4">Phone</dt>
-                                <dd class="col-sm-8">@Model.Phone</dd>
-
-                                <dt class="col-sm-4">Date of Birth</dt>
-                                <dd class="col-sm-8">@(Model.DateOfBirth?.ToShortDateString() ?? "N/A")</dd>
-                            </dl>
-                        </div>
-                        <div class="col-md-6">
-                            <dl class="row">
-                                <dt class="col-sm-4">Gender</dt>
-                                <dd class="col-sm-8">@Model.Gender</dd>
-
-                                <dt class="col-sm-4">Occupation</dt>
-                                <dd class="col-sm-8">@Model.Occupation</dd>
-
-                                <dt class="col-sm-4">Annual Income</dt>
-                                <dd class="col-sm-8">@(Model.AnnualIncome?.ToString("C") ?? "N/A")</dd>
-
-                                <dt class="col-sm-4">Created At</dt>
-                                <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("g")</dd>
-                            </dl>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <dt>Address</dt>
-                            <dd>@Model.Address</dd>
-                        </div>
-                    </div>
+                <div class="detail-field mt-3">
+                    <div class="detail-label">Address</div>
+                    <div class="detail-value">@Model.Address</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="mt-3">
-        <a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-warning">Edit</a>
-        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    <div class="mt-4">
+        <a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn-custom btn-edit">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+        <a asp-action="Index" class="btn-custom btn-back">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
     </div>
 </div>

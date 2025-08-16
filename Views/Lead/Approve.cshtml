@@ -3,27 +3,210 @@
     ViewData["Title"] = "Final Approval";
 }
 
-<div class="container mt-4">
-    <h2>✔️ Final Approval - LMS-@Model.LeadId.ToString("D4")</h2>
-    <hr />
+<style>
+    /* Main Container - Permanent Effects */
+    .universal-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        color: white;
+        background: linear-gradient(90deg, 
+            rgb(0, 0, 0), 
+            rgb(34, 32, 142), 
+            rgb(0, 0, 0));
+        background-size: 200% 200%;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        border-radius: 30px;
+        animation: gradientFlow 3s ease infinite, 
+                   pulseShadow 1.5s ease infinite alternate,
+                   gentleFloat 4s ease-in-out infinite;
+        transform: perspective(500px) translateZ(20px);
+        box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
 
-    <dl class="row">
-        <dt class="col-sm-3">Customer</dt>
-        <dd class="col-sm-9">@Model.Customer?.FullName</dd>
+    /* Header - Permanent Underline */
+    .page-header {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+    }
 
-        <dt class="col-sm-3">Loan Amount</dt>
-        <dd class="col-sm-9">₹@Model.LoanAmount.ToString("N0")</dd>
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+    }
 
-        <dt class="col-sm-3">Assigned To</dt>
-        <dd class="col-sm-9">@Model.AssignedUser?.FullName</dd>
+    /* Detail List Styling */
+    .detail-list {
+        width: 100%;
+    }
+
+    .detail-list dt {
+        font-weight: 500;
+        color: #f48129;
+        padding: 0.8rem 0 0.3rem 0;
+        width: 180px;
+    }
+
+    .detail-list dd {
+        padding: 0.8rem 0 0.3rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Form Elements */
+    .form-control-custom {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form-control-custom:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #6a11cb;
+        box-shadow: 0 0 0 0.25rem rgba(106, 17, 203, 0.25);
+        outline: none;
+    }
+
+    select.form-control-custom {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23ffffff' stroke='%236a11cb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+    }
+
+    textarea.form-control-custom {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        padding: 0.7rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Button Container */
+    .button-container {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+    }
+
+    /* Divider */
+    .divider {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        margin: 1.5rem 0;
+    }
+
+    /* Animations */
+    @@keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @@keyframes pulseShadow {
+        0% { box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3); }
+        100% { box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5); }
+    }
+
+    @@keyframes gentleFloat {
+        0%, 100% { transform: perspective(500px) translateZ(10px); }
+        50% { transform: perspective(500px) translateZ(20px); }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .universal-container {
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 20px;
+        }
+
+        .detail-list dt {
+            width: 100%;
+            padding-bottom: 0.2rem;
+        }
+
+        .detail-list dd {
+            padding-top: 0.2rem;
+            padding-bottom: 0.8rem;
+        }
+
+        .button-container {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-custom {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="universal-container">
+    <h2 class="page-header">
+        <i class="bi bi-check-circle"></i> Final Approval - LMS-@Model.LeadId.ToString("D4")
+    </h2>
+    
+    <dl class="detail-list">
+        <dt>Customer</dt>
+        <dd>@Model.Customer?.FullName</dd>
+
+        <dt>Loan Amount</dt>
+        <dd>₹@Model.LoanAmount.ToString("N0")</dd>
+
+        <dt>Assigned To</dt>
+        <dd>@Model.AssignedUser?.FullName</dd>
     </dl>
+
+    <div class="divider"></div>
 
     <form method="post" asp-action="Approve">
         <input type="hidden" name="leadId" value="@Model.LeadId" />
 
         <div class="mb-3">
             <label class="form-label">New Status</label>
-            <select name="status" class="form-select" required>
+            <select name="status" class="form-control-custom" required>
                 <option value="approved">Approved</option>
                 <option value="disbursed">Disbursed</option>
             </select>
@@ -31,10 +214,16 @@
 
         <div class="mb-3">
             <label class="form-label">Remarks (optional)</label>
-            <textarea name="remarks" class="form-control" rows="3"></textarea>
+            <textarea name="remarks" class="form-control-custom" rows="3"></textarea>
         </div>
 
-        <button type="submit" class="btn btn-success">Confirm Approval</button>
-        <a href="/Lead/Index" class="btn btn-secondary ms-2">Cancel</a>
+        <div class="button-container">
+            <button type="submit" class="btn-custom btn-primary-custom">
+                <i class="bi bi-check-lg"></i> Confirm Approval
+            </button>
+            <a href="/Lead/Index" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-x-lg"></i> Cancel
+            </a>
+        </div>
     </form>
 </div>

@@ -9,105 +9,383 @@
     var isOffice = User.IsInRole("office");
 }
 
-<div class="container mt-4">
-    <h2>Lead Details</h2>
-    <hr />
+<style>
+    /* Main Container - Permanent Effects */
+    .universal-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        color: white;
+        background: linear-gradient(90deg, 
+            rgb(0, 0, 0), 
+            rgb(34, 32, 142), 
+            rgb(0, 0, 0));
+        background-size: 200% 200%;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        border-radius: 30px;
+        animation: gradientFlow 3s ease infinite, 
+                   pulseShadow 1.5s ease infinite alternate,
+                   gentleFloat 4s ease-in-out infinite;
+        transform: perspective(500px) translateZ(20px);
+        box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
 
-    <dl class="row">
-        <dt class="col-sm-3">Lead ID</dt>
-        <dd class="col-sm-9">LMS-@Model.LeadId.ToString("D4")</dd>
+    /* Header - Permanent Underline */
+    .page-header {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+    }
 
-        <dt class="col-sm-3">Customer</dt>
-        <dd class="col-sm-9">@Model.Customer?.FullName</dd>
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+    }
 
-        <dt class="col-sm-3">Loan Type</dt>
-        <dd class="col-sm-9">@Model.LoanType</dd>
+    /* Detail List Styling */
+    .detail-list {
+        width: 100%;
+    }
 
-        <dt class="col-sm-3">Amount</dt>
-        <dd class="col-sm-9">₹@Model.LoanAmount.ToString("N2")</dd>
+    .detail-list dt {
+        font-weight: 500;
+        color: #f48129;
+        padding: 0.8rem 0 0.3rem 0;
+        width: 180px;
+    }
 
-        <dt class="col-sm-3">Status</dt>
-        <dd class="col-sm-9">@Model.Status</dd>
+    .detail-list dd {
+        padding: 0.8rem 0 0.3rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        <dt class="col-sm-3">Assigned To</dt>
-        <dd class="col-sm-9">@Model.AssignedUser?.FullName</dd>
+    /* Table Styling */
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .custom-table thead {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+    }
+
+    .custom-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        position: relative;
+    }
+
+    .custom-table th:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .custom-table td {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Status Badges */
+    .badge-custom {
+        padding: 0.35rem 0.65rem;
+        border-radius: 50rem;
+        font-weight: 500;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        color: white;
+    }
+
+    .bg-success-custom {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+
+    .bg-danger-custom {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+
+    .bg-warning-custom {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+
+    /* Buttons */
+    .btn-custom {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .btn-success-custom {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        color: white;
+    }
+
+    .btn-danger-custom {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Form Elements */
+    .form-control-custom {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form-control-custom:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #6a11cb;
+        box-shadow: 0 0 0 0.25rem rgba(106, 17, 203, 0.25);
+        outline: none;
+    }
+
+    select.form-control-custom {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23ffffff' stroke='%236a11cb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+    }
+
+    /* Document Link */
+    .document-link {
+        color: #a78bfa;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .document-link:hover {
+        color: #6a11cb;
+        text-decoration: underline;
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-size: 1.4rem;
+        margin: 1.5rem 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Divider */
+    .divider {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        margin: 1.5rem 0;
+    }
+
+    /* Animations */
+    @@keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @@keyframes pulseShadow {
+        0% { box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3); }
+        100% { box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5); }
+    }
+
+    @@keyframes gentleFloat {
+        0%, 100% { transform: perspective(500px) translateZ(10px); }
+        50% { transform: perspective(500px) translateZ(20px); }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .universal-container {
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 20px;
+        }
+
+        .detail-list dt {
+            width: 100%;
+            padding-bottom: 0.2rem;
+        }
+
+        .detail-list dd {
+            padding-top: 0.2rem;
+            padding-bottom: 0.8rem;
+        }
+
+        .custom-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .btn-custom {
+            width: 100%;
+            margin: 0.2rem 0;
+            text-align: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+
+    /* Action Buttons Container */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+</style>
+
+<div class="universal-container">
+    <h2 class="page-header">Lead Details</h2>
+    
+    <dl class="detail-list">
+        <dt>Lead ID</dt>
+        <dd>LMS-@Model.LeadId.ToString("D4")</dd>
+
+        <dt>Customer</dt>
+        <dd>@Model.Customer?.FullName</dd>
+
+        <dt>Loan Type</dt>
+        <dd>@Model.LoanType</dd>
+
+        <dt>Amount</dt>
+        <dd>₹@Model.LoanAmount.ToString("N2")</dd>
+
+        <dt>Status</dt>
+        <dd>@Model.Status</dd>
+
+        <dt>Assigned To</dt>
+        <dd>@Model.AssignedUser?.FullName</dd>
     </dl>
 
-    @if (!isMarketing) // ✅ Marketing role skips everything below
+    @if (!isMarketing)
     {
-        <hr />
-        <h4>📄 Uploaded Documents</h4>
+        <div class="divider"></div>
+        
+        <h4 class="section-header">
+            <i class="bi bi-file-earmark-text"></i> Uploaded Documents
+        </h4>
 
         @if (Model.Documents != null && Model.Documents.Any())
         {
-            <table class="table table-sm table-bordered mt-3">
-                <thead class="table-light">
-                    <tr>
-                        <th>Type</th>
-                        <th>File</th>
-                        <th>Status</th>
-                        <th>Uploaded By</th>
-                        <th>Uploaded At</th>
-                        <th>Verified By</th>
-                        <th>Verified At</th>
-                        <th>Remarks</th>
-                        @if (isAdmin || isOffice)
-                        {
-                            <th>Action</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var doc in Model.Documents)
-                    {
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
                         <tr>
-                            <td>@doc.DocumentType</td>
-                            <td><a href="@doc.FilePath" target="_blank">@doc.FileName</a></td>
-                            <td>
-                                @switch (doc.Status)
-                                {
-                                    case "approved":
-                                        <span class="badge bg-success">✔️ Approved</span>
-                                        break;
-                                    case "rejected":
-                                        <span class="badge bg-danger">❌ Rejected</span>
-                                        break;
-                                    default:
-                                        <span class="badge bg-warning text-dark">⏳ Pending</span>
-                                        break;
-                                }
-                            </td>
-                            <td>@doc.UploadedByUser?.FullName</td>
-                            <td>@doc.UploadedAt.ToString("g")</td>
-                            <td>@doc.Verifier?.FullName</td>
-                            <td>@doc.VerifiedAt?.ToString("g")</td>
-                            <td>@doc.Remarks</td>
-
+                            <th>Type</th>
+                            <th>File</th>
+                            <th>Status</th>
+                            <th>Uploaded By</th>
+                            <th>Uploaded At</th>
                             @if (isAdmin || isOffice)
                             {
-                                <td>
-                                    @if (doc.Status != "approved")
-                                    {
-                                        <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
-                                            <input type="hidden" name="id" value="@doc.DocId" />
-                                            <input type="hidden" name="status" value="approved" />
-                                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                                        </form>
-                                    }
-                                    @if (doc.Status != "rejected")
-                                    {
-                                        <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
-                                            <input type="hidden" name="id" value="@doc.DocId" />
-                                            <input type="hidden" name="status" value="rejected" />
-                                            <button type="submit" class="btn btn-sm btn-danger">Reject</button>
-                                        </form>
-                                    }
-                                </td>
+                                <th>Actions</th>
                             }
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in Model.Documents)
+                        {
+                            <tr>
+                                <td>@doc.DocumentType</td>
+                                <td><a href="@doc.FilePath" target="_blank" class="document-link">@doc.FileName</a></td>
+                                <td>
+                                    @switch (doc.Status)
+                                    {
+                                        case "approved":
+                                            <span class="badge-custom bg-success-custom">✔️ Approved</span>
+                                            break;
+                                        case "rejected":
+                                            <span class="badge-custom bg-danger-custom">❌ Rejected</span>
+                                            break;
+                                        default:
+                                            <span class="badge-custom bg-warning-custom">⏳ Pending</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@doc.UploadedByUser?.FullName</td>
+                                <td>@doc.UploadedAt.ToString("g")</td>
+                                @if (isAdmin || isOffice)
+                                {
+                                    <td>
+                                        <div class="action-buttons">
+                                            @if (doc.Status != "approved")
+                                            {
+                                                <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@doc.DocId" />
+                                                    <input type="hidden" name="status" value="approved" />
+                                                    <button type="submit" class="btn-custom btn-success-custom btn-sm">Approve</button>
+                                                </form>
+                                            }
+                                            @if (doc.Status != "rejected")
+                                            {
+                                                <form asp-controller="LeadDocuments" asp-action="Verify" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@doc.DocId" />
+                                                    <input type="hidden" name="status" value="rejected" />
+                                                    <button type="submit" class="btn-custom btn-danger-custom btn-sm">Reject</button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
         else
         {
@@ -116,14 +394,18 @@
 
         @if (isAdmin || canUploadDocs)
         {
-            <hr />
-            <h4>📎 Upload New Document</h4>
+            <div class="divider"></div>
+            
+            <h4 class="section-header">
+                <i class="bi bi-cloud-arrow-up"></i> Upload New Document
+            </h4>
+            
             <form method="post" enctype="multipart/form-data" asp-controller="LeadDocuments" asp-action="Create">
                 <input type="hidden" name="leadId" value="@Model.LeadId" />
 
                 <div class="mb-3">
                     <label class="form-label">Document Type</label>
-                    <select name="documentType" class="form-control" required>
+                    <select name="documentType" class="form-control-custom" required>
                         <option value="">-- Select --</option>
                         <option value="Aadhaar">Aadhaar</option>
                         <option value="PAN">PAN</option>
@@ -134,89 +416,17 @@
 
                 <div class="mb-3">
                     <label class="form-label">File</label>
-                    <input type="file" name="file" class="form-control" required />
+                    <input type="file" name="file" class="form-control-custom" required />
                 </div>
 
-                <button type="submit" class="btn btn-primary">Upload</button>
+                <button type="submit" class="btn-custom btn-primary-custom">Upload Document</button>
             </form>
         }
     }
 
     <div class="mt-4">
-        <a class="btn btn-secondary" href="/Lead/Index">← Back to Leads</a>
+        <a href="/Lead/Index" class="btn-custom btn-secondary-custom">
+            <i class="bi bi-arrow-left"></i> Back to Leads
+        </a>
     </div>
 </div>
-<style>
-    .container {
-        max-width: 800px;
-        margin: auto;
-        color: rgb(108, 107, 107);
-        transition: all 0.8s ease;
-        transform: translateZ(0);
-        /* Hardware acceleration */
-        will-change: transform, background;
-        /* Optimize for animation */
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-    }
-
-    .container:hover {
-        color: rgb(255, 255, 255);
-        background: linear-gradient(90deg,
-                rgb(0, 0, 0),
-                rgb(34, 32, 142),
-                rgb(0, 0, 0));
-        background-size: 200% 200%;
-        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-        border-radius: 80px;
-
-        /* Animation effects */
-        animation: gradientFlow 3s ease infinite,
-            pulseShadow 1.5s ease infinite alternate,
-            gentleFloat 4s ease-in-out infinite;
-
-        /* 3D transform effect */
-        transform: perspective(500px) translateZ(20px);
-        box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
-    }
-
-    @@keyframes gradientFlow {
-        0% {
-            background-position: 0% 50%;
-        }
-
-        50% {
-            background-position: 100% 50%;
-        }
-
-        100% {
-            background-position: 0% 50%;
-        }
-    }
-
-    @@keyframes pulseShadow {
-        0% {
-            box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3);
-        }
-
-        100% {
-            box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5);
-        }
-    }
-
-    @@keyframes gentleFloat {
-
-        0%,
-        100% {
-            transform: perspective(500px) translateZ(10px);
-        }
-
-        50% {
-            transform: perspective(500px) translateZ(20px);
-        }
-    }
-
-    dl.row dt {
-        font-weight: bold;
-    }
-</style>

@@ -10,7 +10,7 @@
             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #333333;
-            background-color: #f7f7f7;
+            background-color: #f8f9fa;
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
@@ -22,43 +22,95 @@
             max-width: 600px;
             margin: 20px auto;
             background: #ffffff;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
         }
         
         /* Header */
         .email-header {
-            background: linear-gradient(135deg, #4a6bff, #2a56e6);
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: white;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .email-header::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .email-header::after {
+            content: "";
+            position: absolute;
+            bottom: -80px;
+            left: -30px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
         }
         
         .email-header h1 {
             margin: 0;
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 26px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+        
+        .email-logo {
+            height: 50px;
+            margin-bottom: 15px;
         }
         
         /* Content */
         .email-content {
-            padding: 30px;
+            padding: 35px 40px;
+            background: #ffffff;
+        }
+        
+        .content-block {
+            margin-bottom: 25px;
         }
         
         /* Footer */
         .email-footer {
-            background: #f5f5f5;
-            padding: 20px;
+            background: #f8f9fa;
+            padding: 25px;
             text-align: center;
-            font-size: 12px;
-            color: #777777;
-            border-top: 1px solid #eaeaea;
+            font-size: 13px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
         }
         
-        .email-footer a {
-            color: #4a6bff;
+        .email-footer p {
+            margin: 5px 0;
+        }
+        
+        .footer-links {
+            margin: 15px 0;
+        }
+        
+        .footer-links a {
+            color: #6c757d;
             text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: #2575fc;
         }
         
         /* Typography */
@@ -67,12 +119,19 @@
             margin-top: 0;
         }
         
+        h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
         p {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            color: #495057;
         }
         
         a {
-            color: #4a6bff;
+            color: #2575fc;
             text-decoration: none;
             font-weight: 500;
         }
@@ -80,24 +139,52 @@
         /* Buttons */
         .btn {
             display: inline-block;
-            padding: 12px 24px;
-            background: #4a6bff;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: white !important;
-            border-radius: 4px;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            margin: 15px 0;
+            margin: 20px 0;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(37, 117, 252, 0.2);
         }
         
-        /* Media Query - properly formatted for MVC */
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 117, 252, 0.3);
+        }
+        
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+            margin: 25px 0;
+        }
+        
+        /* Media Query */
         @@media only screen and (max-width: 600px) {
             .email-container {
                 margin: 0;
                 border-radius: 0;
             }
             
+            .email-header {
+                padding: 25px 20px;
+            }
+            
             .email-content {
-                padding: 20px;
+                padding: 25px 20px;
+            }
+            
+            .email-footer {
+                padding: 20px 15px;
+            }
+            
+            .btn {
+                display: block;
+                width: 100%;
             }
         }
     </style>
@@ -105,20 +192,34 @@
 <body>
     <div class="email-container">
         <div class="email-header">
+            <!-- Replace with your logo if available -->
+            <div class="email-logo">
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="white" stroke="white" stroke-width="2"/>
+                    <path d="M12 16V16.01M12 8V12" stroke="#2575fc" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
             <h1>Loan Management System</h1>
         </div>
         
         <div class="email-content">
             @RenderBody()
+            
+            <div class="divider"></div>
+            
+            <p style="color: #6c757d; font-size: 14px;">
+                If you have any questions, please don't hesitate to contact our support team.
+            </p>
         </div>
         
         <div class="email-footer">
-            <p>&copy; @DateTime.Now.Year Loan Management System. All rights reserved.</p>
-            <p>
-                <a href="#">Privacy Policy</a> | 
-                <a href="#">Terms of Service</a> | 
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
                 <a href="#">Contact Us</a>
-            </p>
+            </div>
+            <p>&copy; @DateTime.Now.Year Loan Management System. All rights reserved.</p>
+            <p>123 Financial Street, Banking City, BC 12345</p>
         </div>
     </div>
 </body>
