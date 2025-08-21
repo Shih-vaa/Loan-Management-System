@@ -7,12 +7,13 @@
     margin: 2rem auto;
     padding: 2rem;
     background: linear-gradient(90deg, rgb(0, 0, 0), rgb(34, 32, 142), rgb(0, 0, 0));
+    background-size: 300% 300%; /* 🔹 Needed for gradient swing */
     color: white;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(34, 32, 142, 0.3);
     backdrop-filter: blur(5px);
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    animation: gradientFlow 3s ease infinite, gentleFloat 4s ease-in-out infinite;
+    animation: gradientFlow 8s ease infinite, pulse 5s ease-in-out infinite;
 }
 
 /* ===== Header ===== */
@@ -57,12 +58,19 @@
 
 .custom-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.08);
-    transform: translateY(0);
 }
 
 /* ===== Animations ===== */
-@@keyframes gradientFlow { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
-@@keyframes gentleFloat { 0%,100%{transform:translateZ(10px)}50%{transform:translateZ(20px)} }
+@@keyframes gradientFlow {
+    0% { background-position: 0% 50% }
+    50% { background-position: 100% 50% }
+    100% { background-position: 0% 50% }
+}
+
+@@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
 
 /* ===== Mobile ===== */
 @@media (max-width: 992px) {

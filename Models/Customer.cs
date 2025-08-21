@@ -54,7 +54,7 @@ namespace LoanManagementSystem.Models
 
         [NotMapped]
         [Display(Name = "Passport Photo")]
-        public IFormFile PassportPhotoFile { get; set; }
+        public IFormFile? PassportPhotoFile { get; set; }
  
     }
 }

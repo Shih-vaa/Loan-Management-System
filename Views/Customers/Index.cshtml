@@ -257,6 +257,7 @@
         <table class="custom-table">
             <thead>
                 <tr>
+                    <th>Photo</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
@@ -268,6 +269,9 @@
                 @foreach (var customer in Model)
                 {
                     <tr style="@(customer.IsDeleted ? "opacity: 0.8;" : "")">
+                        <td>
+                            
+                        </td>
                         <td>@customer.FullName</td>
                         <td>@customer.Email</td>
                         <td>@customer.Phone</td>
@@ -282,6 +286,7 @@
                             }
                         </td>
                         <td>
+                            
                             <div class="action-buttons">
                                 <a asp-action="Details" asp-route-id="@customer.CustomerId"
                                     class="btn-custom btn-info-custom" title="View">

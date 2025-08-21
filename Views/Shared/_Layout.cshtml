@@ -29,27 +29,20 @@ body {
     padding-bottom: 60px;
     min-height: 100vh;
     
-    /* Professional Financial Gradient */
+    /* Financial + Professional Gradient Base */
     background: linear-gradient(
         152deg,
-        /* Clean Base */
-        #FFFFFF 0%,       /* Pure white for clarity */
-        #cfe7ff 15%,     /* Slightly tinted white */
-        
-        /* Trust Blue Gradient */
-        #3e92f2 30%,     /* Very light blue */
-        #98c4f3 45%,     /* Soft blue */
-        
-        /* Premium Accent */
-        #FFF8EB 60%,     /* Warm white (hint of gold) */
-        #FEF3C7 70%,     /* Soft gold */
-        
-        /* Professional Depth */
-        #90af1e 100%    /* Trust navy */
+        #FFFFFF 0%,      /* Pure white */
+        #a7d0fa 15%,     /* Light sky tint */
+        #00ffd0 35%,     /* Professional blue */
+        #00f2ff 50%,     /* Soft blue accent */
+        #00aaff 70%,     /* Gentle golden white */
+        #006aff 85%,     /* Soft gold */
+        #0044ff 100%     /* Deep green-gold trust tone */
     );
     
     background-size: 200% 200%;
-    animation: subtleFlow 20s ease infinite;
+    animation: subtleFlow 10s ease infinite;
 }
 
 @@keyframes subtleFlow {
@@ -57,11 +50,6 @@ body {
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
-
-
-
-
-
 
 
 
@@ -79,16 +67,26 @@ body {
 }
 
 header, footer {
-  background: #2c3e50 !important; /* Dark navy */
-  color: white !important;
-  border-bottom: 1px solid #34495e; /* Slightly darker border */
+
+  border-bottom: 1px solid #000000; 
 }
         header {
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1030;
-            background-color: #98c4f3;
+            background-color: #24253c;
+
+        }
+        .nav-link{
+            color: white;
+        }
+        .nav-link:hover{
+            
+            color: #00f2ff;
+        }
+        nav{
+            color: #ffffff; !important
         }
 
         footer {
@@ -96,6 +94,8 @@ header, footer {
             bottom: 0;
             width: 100%;
             z-index: 1030;
+            background-color: #24253c;
+
         }
 
         main {
@@ -137,29 +137,30 @@ header, footer {
             font-size: 0.7rem;
             top: 5px;
         }
+
     </style>
     @RenderSection("Styles", required: false)
 </head>
 
 <body>
-    <header class="bg-white shadow-sm">
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom">
+    <header class=" shadow-sm">
+        <nav class="navbar navbar-expand-sm navbar-light border-bottom">
             <div class="container-fluid">
                 <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-hand-holding-usd me-2"></i>LoanManagementSystem
+                    <img src="~/images/logo.png" width="100px" alt="Logo">
                 </a>
                 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-                    aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+                <button class="navbar-toggler" style="color: white;" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                    aria-controls="navbarCollapse " aria-expanded="false"  aria-label="Toggle navigation ">
+                    <span class="navbar-toggler-icon text-light"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <ul class="navbar-nav me-auto mb-2 mb-sm-0">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">
+                            <li class="nav-item ">
+                                <span class="nav-link ">
                                     <i class="fas fa-user me-1"></i> @User.Identity.Name
                                 </span>
                             </li>
@@ -168,7 +169,7 @@ header, footer {
                             @if (User.IsInRole("admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">
+                                    <a class="nav-link " asp-controller="Admin" asp-action="Dashboard">
                                         <i class="fas fa-tachometer-alt me-1"></i>Admin Dashboard
                                     </a>
                                 </li>
@@ -176,7 +177,7 @@ header, footer {
                             @if (User.IsInRole("marketing"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Marketing" asp-action="Dashboard">
+                                    <a class="nav-link " asp-controller="Marketing" asp-action="Dashboard">
                                         <i class="fas fa-bullhorn me-1"></i>Marketing Dashboard
                                     </a>
                                 </li>
@@ -184,7 +185,7 @@ header, footer {
                             @if (User.IsInRole("calling"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Calling" asp-action="Dashboard">
+                                    <a class="nav-link " asp-controller="Calling" asp-action="Dashboard">
                                         <i class="fas fa-phone me-1"></i>Calling Dashboard
                                     </a>
                                 </li>
@@ -192,7 +193,7 @@ header, footer {
                             @if (User.IsInRole("office"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Office" asp-action="Dashboard">
+                                    <a class="nav-link " asp-controller="Office" asp-action="Dashboard">
                                         <i class="fas fa-building me-1"></i>Office Dashboard
                                     </a>
                                 </li>
@@ -202,7 +203,7 @@ header, footer {
                             @if (User.IsInRole("admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Commission" asp-action="Index">
+                                    <a class="nav-link " asp-controller="Commission" asp-action="Index">
                                         <i class="fas fa-money-bill-wave me-1"></i>Commissions
                                     </a>
                                 </li>
@@ -210,7 +211,7 @@ header, footer {
                             @if (User.IsInRole("admin") || User.IsInRole("office"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Customers" asp-action="Index">
+                                    <a class="nav-link " asp-controller="Customers" asp-action="Index">
                                         <i class="fas fa-users me-1"></i>Customers
                                     </a>
                                 </li>
@@ -218,7 +219,7 @@ header, footer {
                             @if (User.IsInRole("admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Team" asp-action="Index">
+                                    <a class="nav-link " asp-controller="Team" asp-action="Index">
                                         <i class="fas fa-users-cog me-1"></i>Teams
                                     </a>
                                 </li>
@@ -226,14 +227,14 @@ header, footer {
                             @if (User.IsInRole("admin"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Lead" asp-action="DeletedLeads">
+                                    <a class="nav-link " asp-controller="Lead" asp-action="DeletedLeads">
                                        <i class="fas fa-trash me-1"></i> Deleted Leads</a>
                                 </li>
                             }
 
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Lead" asp-action="Index">
+                                <a class="nav-link " asp-controller="Lead" asp-action="Index">
                                     <i class="fas fa-tasks me-1"></i>Leads
                                 </a>
                             </li>
@@ -264,7 +265,7 @@ header, footer {
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Logout">
+                                <a class="nav-link " asp-controller="Auth" asp-action="Logout">
                                     <i class="fas fa-sign-out-alt me-1"></i>Logout
                                 </a>
                             </li>
@@ -272,7 +273,7 @@ header, footer {
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">
+                                <a class="nav-link " asp-controller="Auth" asp-action="Login">
                                     <i class="fas fa-sign-in-alt me-1"></i>Login
                                 </a>
                             </li>
@@ -287,8 +288,8 @@ header, footer {
         @RenderBody()
     </main>
 
-    <footer class="py-3 bg-light border-top">
-        <div class="container text-center text-black">
+    <footer class="py-3 border-top">
+        <div class=" text-center text-white">
             &copy; 2025 - LoanManagementSystem - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
