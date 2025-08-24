@@ -1,6 +1,108 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<style>
+    .privacy-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.08);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.7;
+        color: #333;
+    }
+
+    .privacy-container h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .privacy-container h2 {
+        font-size: 1.4rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #3e92f2;
+        font-weight: 600;
+    }
+
+    .privacy-container p {
+        margin-bottom: 1rem;
+        text-align: justify;
+    }
+
+    .privacy-container ul {
+        margin: 0.8rem 0 1.5rem 1.5rem;
+        padding: 0;
+    }
+
+    .privacy-container li {
+        margin-bottom: 0.6rem;
+    }
+
+    .highlight-box {
+        background: #f9fbff;
+        border-left: 4px solid #3e92f2;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="privacy-container">
+    <h1>Privacy Policy</h1>
+    <p>
+        At <strong>Loan Management System</strong>, we value and protect your personal information. 
+        This Privacy Policy explains how we collect, use, and safeguard your data when you use our platform.
+    </p>
+
+    <h2>Information We Collect</h2>
+    <ul>
+        <li>Personal details such as name, email, phone number, and address.</li>
+        <li>Financial documents uploaded for loan processing.</li>
+        <li>System usage logs, including IP address and login activity.</li>
+    </ul>
+
+    <h2>How We Use Your Information</h2>
+    <p>Your data may be used for the following purposes:</p>
+    <ul>
+        <li>To process loan applications and verify documents.</li>
+        <li>To communicate updates, approvals, or rejections.</li>
+        <li>For compliance with regulatory requirements.</li>
+        <li>To improve system performance and user experience.</li>
+    </ul>
+
+    <h2>Data Sharing & Security</h2>
+    <div class="highlight-box">
+        <p>
+            We <strong>do not sell or share</strong> your personal information with third parties for marketing purposes.  
+            Access to your data is limited to authorized staff members only.  
+            All data is stored securely with encryption and role-based access control.
+        </p>
+    </div>
+
+    <h2>Your Rights</h2>
+    <ul>
+        <li>You may request access to your personal data at any time.</li>
+        <li>You have the right to correct or update inaccurate information.</li>
+        <li>You may request deletion of your account and associated data (subject to regulatory compliance).</li>
+    </ul>
+
+    <h2>Policy Updates</h2>
+    <p>
+        We may update this Privacy Policy from time to time.  
+        Any changes will be communicated via system notifications or email.  
+        Continued use of the system constitutes acceptance of the updated policy.
+    </p>
+
+    <p style="margin-top:2rem; text-align:center; font-size:0.9rem; color:#666;">
+        Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")
+    </p>
+</div>
+
+
