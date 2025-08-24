@@ -16,16 +16,6 @@ namespace LoanManagementSystem.Controllers
             _context = context;
         }
 
-
-
-
-
-
-
-
-
-
-
         // GET: /Team
         public async Task<IActionResult> Index()
         {
@@ -38,33 +28,11 @@ namespace LoanManagementSystem.Controllers
             return View(teams);
         }
 
-
-
-
-
-
-
-
-
-
-
         // GET: /Team/Create
         public IActionResult Create()
         {
             return View();
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
         // POST: /Team/Create
         [HttpPost]
@@ -79,56 +47,30 @@ namespace LoanManagementSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-public async Task<IActionResult> Members(int id)
-{
-    var team = await _context.Teams
-        .Include(t => t.Members!)
-        .ThenInclude(m => m.User)
-        .FirstOrDefaultAsync(t => t.TeamId == id);
-
-    if (team == null) return NotFound();
-
-    var currentUserIds = team.Members.Select(m => m.UserId).ToList();
-    var availableUsers = await _context.Users
-        .Where(u => !currentUserIds.Contains(u.UserId))
-        .ToListAsync();
-
-    // Create a dictionary of user roles
-    var userRoles = availableUsers.ToDictionary(u => u.UserId, u => u.Role);
-
-    ViewBag.AllUsers = availableUsers;
-    ViewBag.UserRoles = userRoles; // Pass the roles dictionary to the view
-
-    return View(team);
-}
-
-
-
-
-
-
-
-
-
-
-        [HttpPost]
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> AddMember(int teamId, int userId, bool canManageLeads = false, bool canUploadDocs = false, bool canVerifyDocs = false)
+        // GET: /Team/Members/{id}
+        public async Task<IActionResult> Members(int id)
         {
-            // Get the user to check their role
+            var team = await _context.Teams
+                .Include(t => t.Members!)
+                .ThenInclude(m => m.User)
+                .FirstOrDefaultAsync(t => t.TeamId == id);
+
+            if (team == null) return NotFound();
+
+            var currentUserIds = team.Members.Select(m => m.UserId).ToList();
+            var availableUsers = await _context.Users
+                .Where(u => !currentUserIds.Contains(u.UserId))
+                .ToListAsync();
+
+            ViewBag.AllUsers = availableUsers;
+            return View(team);
+        }
+
+        // POST: /Team/AddMember
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMember(int teamId, int userId)
+        {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
@@ -136,22 +78,9 @@ public async Task<IActionResult> Members(int id)
                 return RedirectToAction("Members", new { id = teamId });
             }
 
-            // Set default permissions based on role
-            if (user.Role == "OfficeAgent")
-            {
-                canManageLeads = true;
-                canUploadDocs = true;
-                canVerifyDocs = true;
-            }
-            else if (user.Role == "MarketingAgent" || user.Role == "CallingAgent")
-            {
-                canManageLeads = false;
-                canUploadDocs = true;
-                canVerifyDocs = false;
-            }
+            bool alreadyMember = await _context.TeamMembers
+                .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
 
-            // Prevent duplicates
-            bool alreadyMember = await _context.TeamMembers.AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
             if (alreadyMember)
             {
                 TempData["Error"] = "User is already a member of this team.";
@@ -161,30 +90,15 @@ public async Task<IActionResult> Members(int id)
             var newMember = new TeamMember
             {
                 TeamId = teamId,
-                UserId = userId,
-                CanManageLeads = canManageLeads,
-                CanUploadDocs = canUploadDocs,
-                CanVerifyDocs = canVerifyDocs
+                UserId = userId
             };
 
             _context.TeamMembers.Add(newMember);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Member added successfully with permissions.";
+            TempData["Success"] = "Member added successfully.";
             return RedirectToAction("Members", new { id = teamId });
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
         // POST: /Team/RemoveMember
         [HttpPost]
@@ -201,18 +115,13 @@ public async Task<IActionResult> Members(int id)
             return RedirectToAction("Members", new { id = teamId });
         }
 
-
-
+        // DELETE TEAM
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var team = await _context.Teams.FindAsync(id);
             if (team == null) return NotFound();
-            if (await _context.TeamMembers.AnyAsync(m => m.TeamId == id))
-            {
-                TempData["Error"] = "Cannot delete a team that has members assigned.";
-                return RedirectToAction("Index");
-            }
+
             if (await _context.TeamMembers.AnyAsync(m => m.TeamId == id))
             {
                 TempData["Error"] = "Cannot delete a team that has members assigned.";
@@ -235,12 +144,13 @@ public async Task<IActionResult> Members(int id)
             return RedirectToAction("Index");
         }
 
+        // VIEW TEAM DETAILS
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> View(int id)
         {
             var team = await _context.Teams
                 .Include(t => t.Members)
-                    .ThenInclude(m => m.User)
+                .ThenInclude(m => m.User)
                 .FirstOrDefaultAsync(t => t.TeamId == id);
 
             if (team == null)
@@ -273,10 +183,20 @@ public async Task<IActionResult> Members(int id)
             };
 
             return View(vm);
+            //         }public async Task<IActionResult> Members(int id)
+            // {
+            //     var team = await _context.Teams
+            //         .Include(t => t.Members)
+            //             .ThenInclude(m => m.User)   // 🔥 ensure User is included
+            //         .FirstOrDefaultAsync(t => t.TeamId == id);
+
+            //     if (team == null)
+            //     {
+            //         return NotFound();
+            //     }
+
+            //     return View(team);
         }
 
-
     }
-
-
 }

@@ -1,11 +1,11 @@
-@model LoanManagementSystem.Models.ViewModels.EditLeadViewModel
+@model LoanManagementSystem.ViewModels.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Edit Lead";
+    ViewData["Title"] = "Register New User";
 }
 
 <style>
-    /* Main Container Styles - Permanent Effects */
+    /* Universal Container */
     .universal-container {
         max-width: 800px;
         margin: 2rem auto;
@@ -26,7 +26,24 @@
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    /* Form Elements */
+    .page-header {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+    }
+
+    /* Form Inputs */
     .form-label {
         font-weight: 500;
         color: #f48129;
@@ -91,34 +108,14 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
-    /* Header Animation - Permanent */
-    .page-header {
-        position: relative;
-        display: inline-block;
-        padding-bottom: 5px;
-        margin-bottom: 1.5rem;
-    }
-
-    .page-header::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: linear-gradient(90deg, #6a11cb, #2575fc);
-    }
-
     /* Animations */
     @@keyframes gradientFlow {
         0% {
             background-position: 0% 50%;
         }
-
         50% {
             background-position: 100% 50%;
         }
-
         100% {
             background-position: 0% 50%;
         }
@@ -128,114 +125,92 @@
         0% {
             box-shadow: 0 5px 15px rgba(34, 32, 142, 0.3);
         }
-
         100% {
             box-shadow: 0 15px 30px rgba(34, 32, 142, 0.5);
         }
     }
 
     @@keyframes gentleFloat {
-
-        0%,
-        100% {
+        0%, 100% {
             transform: perspective(500px) translateZ(10px);
         }
-
         50% {
             transform: perspective(500px) translateZ(20px);
         }
     }
 
-    /* Responsive Design */
+    /* Responsive */
     @@media (max-width: 768px) {
         .universal-container {
             padding: 1.5rem;
             margin: 1rem;
             border-radius: 20px;
         }
-
-        /* Make buttons stack and center text */
         .mt-4 {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.5rem;
         }
-
         .btn-custom {
             width: 100%;
             text-align: center;
-            margin-bottom: 0;
-            /* Gap is handled by flexbox gap */
         }
     }
 </style>
 
 <div class="universal-container">
-    <h2 class="page-header">Edit Lead Assignment</h2>
+    <h2 class="page-header">Register New User</h2>
 
-    <form asp-action="Edit" method="post">
+    <form asp-action="Register" method="post">
         @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="LeadId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
         <div class="mb-3">
-            <label asp-for="Status" class="form-label">Status</label>
-            <select asp-for="Status" class="form-control-custom" required>
-                <option value="new">New</option>
-                <option value="assigned">Assigned</option>
-                <option value="in_process">In Process</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-                <option value="disbursed">Disbursed</option>
-            </select>
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control-custom" required />
+            <span asp-validation-for="FullName" class="text-danger"></span>
         </div>
 
-        <div class="form-group">
-            <label asp-for="AssignedTo" class="control-label">Assign To</label>
-            <select asp-for="AssignedTo" class="form-control-custom searchable" required>
-                <option value="">-- Select Staff --</option>
-
-                @foreach (var roleGroup in ((IEnumerable<LoanManagementSystem.Models.User>)ViewBag.Users)
-                                .GroupBy(u => u.Role)
-                                .OrderBy(g => g.Key == "Calling" ? 1 :
-                                g.Key == "Office" ? 2 :
-                                g.Key == "Manager" ? 3 : 99))
-                {
-                    <optgroup label="@roleGroup.Key">
-                        @foreach (var user in roleGroup.OrderBy(u => u.FullName))
-                        {
-                            <option value="@user.UserId" selected="@(user.UserId == Model.AssignedTo ? "selected" : null)">
-                                @user.FullName
-                            </option>
-                        }
-                    </optgroup>
-                }
-            </select>
-            <span asp-validation-for="AssignedTo" class="text-danger"></span>
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control-custom" required />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
-        @section Scripts {
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+        <div class="mb-3">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control-custom" required />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
 
-            <script>
-                $(document).ready(function () {
-                    $('.searchable').select2({
-                        placeholder: "Search staff...",
-                        allowClear: true,
-                        width: '100%'
-                    });
-                });
-            </script>
-        }
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control-custom" type="password" required />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
 
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" class="form-control-custom" type="password" required />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
 
-
-
+        <div class="mb-3">
+            <label asp-for="Role" class="form-label"></label>
+            <select asp-for="Role" class="form-control-custom" required>
+                <option value="">-- Select Role --</option>
+                <option value="admin">Admin</option>
+                <option value="office">Office</option>
+                <option value="calling">Calling</option>
+                <option value="marketing">Marketing</option>
+            </select>
+            <span asp-validation-for="Role" class="text-danger"></span>
+        </div>
 
         <div class="mt-4">
-            <button type="submit" class="btn-custom btn">Update Lead</button>
-            <a asp-action="Index" class="btn-custom btn-secondary-custom">Cancel</a>
+            <button type="submit" class="btn-custom btn-success-custom">Register</button>
+            <a asp-action="Index" asp-controller="Users" class="btn-custom btn-secondary-custom">Cancel</a>
         </div>
     </form>
 </div>

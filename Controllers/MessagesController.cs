@@ -18,17 +18,30 @@ public class MessagesController : Controller
     }
 
     // Inbox
-    public async Task<IActionResult> Index()
-    {
-        int userId = int.Parse(User.FindFirst("UserId")!.Value);
-        var messages = await _context.Messages
-            .Include(m => m.Sender)
-            .Where(m => m.RecipientId == userId)
-            .OrderByDescending(m => m.CreatedAt)
-            .ToListAsync();
+// Inbox + Outbox
+public async Task<IActionResult> Index()
+{
+    int userId = int.Parse(User.FindFirst("UserId")!.Value);
 
-        return View(messages);
-    }
+    // Inbox: Messages received by current user
+    var inbox = await _context.Messages
+        .Include(m => m.Sender)
+        .Where(m => m.RecipientId == userId)
+        .OrderByDescending(m => m.CreatedAt)
+        .ToListAsync();
+
+    // Outbox: Messages sent by current user
+    var outbox = await _context.Messages
+        .Include(m => m.Recipient)
+        .Where(m => m.SenderId == userId)
+        .OrderByDescending(m => m.CreatedAt)
+        .ToListAsync();
+
+    ViewBag.Outbox = outbox; // pass outbox separately
+
+    return View(inbox); // Model = inbox
+}
+
 
     // Compose
     [HttpGet]
@@ -133,4 +146,23 @@ public class MessagesController : Controller
 
         return View(message);
     }
+
+
+    [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Delete(int id)
+{
+    var message = await _context.Messages.FindAsync(id);
+    if (message == null)
+    {
+        return NotFound();
+    }
+
+    _context.Messages.Remove(message);
+    await _context.SaveChangesAsync();
+
+    TempData["Success"] = "Message deleted successfully!";
+    return RedirectToAction(nameof(Index));
+}
+
 }

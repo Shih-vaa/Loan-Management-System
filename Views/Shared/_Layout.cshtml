@@ -174,6 +174,7 @@ header, footer {
                                     </a>
                                 </li>
                             }
+                       
                             @if (User.IsInRole("marketing"))
                             {
                                 <li class="nav-item">
@@ -239,7 +240,17 @@ header, footer {
                                 </a>
                             </li>
                         }
+                           @if (User.IsInRole("admin"))
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Auth" asp-action="Register">
+            <i class="fas fa-user-plus me-1"></i> Register User
+        </a>
+    </li>
+}
+
                     </ul>
+                    
 
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated ?? false)
@@ -263,6 +274,7 @@ header, footer {
                                     </li>
                                 </ul>
                             </li>
+                     
 
                             <li class="nav-item">
                                 <a class="nav-link " asp-controller="Auth" asp-action="Logout">
@@ -278,6 +290,7 @@ header, footer {
                                 </a>
                             </li>
                         }
+
                     </ul>
                 </div>
             </div>

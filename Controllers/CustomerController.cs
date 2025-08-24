@@ -115,23 +115,18 @@ public async Task<IActionResult> Edit(
     var existingCustomer = await _context.Customers.FindAsync(id);
     if (existingCustomer == null) return NotFound();
 
-    // Photo requirement check
-    if ((string.IsNullOrEmpty(existingCustomer.PassportPhotoPath) || removePhoto) 
-        && (customer.PassportPhotoFile == null || customer.PassportPhotoFile.Length == 0))
-    {
-        ModelState.AddModelError("PassportPhotoFile", "Passport photo is required if none exists.");
-    }
-
     if (ModelState.IsValid)
     {
         try
         {
+            // Handle photo removal
             if (removePhoto && !string.IsNullOrEmpty(existingCustomer.PassportPhotoPath))
             {
                 DeleteImage(existingCustomer.PassportPhotoPath);
                 existingCustomer.PassportPhotoPath = null;
             }
 
+            // Handle new photo upload
             if (customer.PassportPhotoFile != null && customer.PassportPhotoFile.Length > 0)
             {
                 if (!string.IsNullOrEmpty(existingCustomer.PassportPhotoPath))
@@ -141,6 +136,7 @@ public async Task<IActionResult> Edit(
                 existingCustomer.PassportPhotoPath = await SaveImage(customer.PassportPhotoFile);
             }
 
+            // Update other fields
             existingCustomer.FullName = customer.FullName;
             existingCustomer.Email = customer.Email;
             existingCustomer.Phone = customer.Phone;
@@ -170,6 +166,7 @@ public async Task<IActionResult> Edit(
 
     return View(customer);
 }
+
 
 
         public async Task<IActionResult> Delete(int? id)

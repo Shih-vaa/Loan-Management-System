@@ -7,6 +7,7 @@ using LoanManagementSystem.Data;
 using LoanManagementSystem.Models;
 using Microsoft.EntityFrameworkCore;
 using LoanManagementSystem.Helpers;
+using LoanManagementSystem.ViewModels;
 
 
 namespace LoanManagementSystem.Controllers
@@ -311,6 +312,58 @@ namespace LoanManagementSystem.Controllers
         {
             public string Email { get; set; }
         }
+        // 📝 GET: Register
+        [Authorize(Roles = "admin")]
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View(new RegisterViewModel());
+        }
+
+        // 📝 POST: Register
+        [Authorize(Roles = "admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Check if email already exists
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+            {
+                ModelState.AddModelError("Email", "Email is already registered.");
+                return View(model);
+            }
+
+            var user = new User
+            {
+                FullName = model.FullName,
+                Email = model.Email,
+                Phone = model.Phone,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                Role = model.Role, // ✅ Admin decides the role
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Log the registration event
+            await AuditLogger.LogAsync(
+                _context, HttpContext,
+                action: "User Registered",
+                description: $"New user {user.Email} registered with role {user.Role}.",
+                controller: "Auth",
+                actionMethod: "Register",
+                userIdOverride: user.UserId,
+                roleOverride: user.Role
+            );
+
+            TempData["Message"] = "User registered successfully.";
+            return RedirectToAction("Index", "Users"); // redirect admin to users list
+        }
+
 
 
 

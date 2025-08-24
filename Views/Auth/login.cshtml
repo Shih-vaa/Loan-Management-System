@@ -1,75 +1,114 @@
 @{
     ViewData["Title"] = "Login";
+    Layout = "_Layout";  // ✅ using your common layout
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <div class="text-center mb-4">
-                        <h2 class="card-title ">Welcome Back!!</h2>
-                        <p class="text-muted">Please enter your credentials</p>
-                    </div>
-                    
-                    <form method="post">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email address</label>
-                            <input type="email" 
-                                   class="form-control form-control-lg" 
-                                   id="email" 
-                                   name="email" 
-                                   placeholder="name@example.com" 
-                                   required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" 
-                                   class="form-control form-control-lg" 
-                                   id="password" 
-                                   name="password" 
-                                   placeholder="••••••••" 
-                                   required>
-                          <a asp-controller="Auth" asp-action="ForgotPassword" class="text-decoration-none">Forgot password?</a>
-
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                            </button>
-                        </div>
-                        
-                        @if (ViewBag.Error != null)
-                        {
-                            <div class="alert alert-danger mt-3">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>@ViewBag.Error
-                            </div>
-                        }
-                    </form>
-                    
-                    @* <div class="text-center mt-4">
-                        <p class="text-muted">Don't have an account? <a href="/register" class="text-decoration-none">Sign up</a></p>
-                    </div> *@
-                </div>
+<div class="login-wrapper">
+    <div class="login-card shadow-lg">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">Welcome Back 👋</h2>
+                <p class="text-muted">Sign in to continue to your dashboard</p>
             </div>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label for="email" class="form-label fw-semibold">Email Address</label>
+                    <input type="email" 
+                           class="form-control form-control-lg" 
+                           id="email" 
+                           name="email" 
+                           placeholder="name@example.com" 
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-semibold">Password</label>
+                    <input type="password" 
+                           class="form-control form-control-lg" 
+                           id="password" 
+                           name="password" 
+                           placeholder="••••••••" 
+                           required>
+                    <div class="d-flex justify-content-end mt-2">
+                        <a asp-controller="Auth" asp-action="ForgotPassword" class="small text-decoration-none fw-medium text-primary">
+                            Forgot password?
+                        </a>
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-gradient btn-lg fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                    </button>
+                </div>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@ViewBag.Error
+                    </div>
+                }
+            </form>
         </div>
     </div>
 </div>
 
+@section Styles {
 <style>
-    body {
-        background-color: #f8f9fa;
+    /* Wrapper centers login card between header & footer */
+    .login-wrapper {
+        min-height: calc(100vh - 116px); /* 56px header + 60px footer */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
-    .card {
-        border-radius: 10px;
-        border: none;
+
+    /* Card styling */
+    .login-card {
+        background: #fff;
+        border-radius: 16px;
+        max-width: 420px;
+        width: 100%;
+        transition: all 0.3s ease-in-out;
     }
+
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Input fields */
     .form-control {
-        border-radius: 8px;
+        border-radius: 10px;
+        padding: 14px;
+        border: 1px solid #e0e0e0;
+        transition: 0.3s;
     }
-    .btn-primary {
-        border-radius: 8px;
+
+    .form-control:focus {
+        border-color: #3e92f2;
+        box-shadow: 0 0 0 0.2rem rgba(62, 146, 242, 0.25);
     }
+
+    /* Gradient Button */
+    .btn-gradient {
+        background: linear-gradient(90deg, #6a11cb, #2575fc);
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        transition: 0.3s;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(90deg, #2575fc, #6a11cb);
+        transform: scale(1.03);
+        box-shadow: 0 8px 18px rgba(37, 117, 252, 0.3);
+    }
+
+    /* Font weights */
+    .fw-medium { font-weight: 500; }
+    .fw-semibold { font-weight: 600; }
+    .fw-bold { font-weight: 700; }
 </style>
+}

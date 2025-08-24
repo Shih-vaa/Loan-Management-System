@@ -20,5 +20,6 @@ namespace LoanManagementSystem.Models
         public User? Creator { get; set; }
 
         public List<TeamMember> Members { get; set; } = new();
+        
     }
 }
